@@ -14,26 +14,31 @@ struct OnboardingView: View {
     
     let slides = [
         OnboardingSlide(
-            emoji: "🤝",
+            useCustomIcon: true, // Utilise le logo
+            emoji: "", // Pas d'emoji
             title: "Les petites promesses",
             body: "Engagements simples, datés, tenus. C'est tout."
         ),
         OnboardingSlide(
+            useCustomIcon: false,
             emoji: "📅",
             title: "Crée ton Promi",
             body: "Titre, date, importance. Pas de bruit."
         ),
         OnboardingSlide(
+            useCustomIcon: false,
             emoji: "❤️",
             title: "Jauge d'intensité",
             body: "Révèle le cœur en deux coups de pinceau."
         ),
         OnboardingSlide(
+            useCustomIcon: false,
             emoji: "🏆",
             title: "Ton Karma grandit",
             body: "Tiens tes promesses, débloque des palettes."
         ),
         OnboardingSlide(
+            useCustomIcon: false,
             emoji: "🎨",
             title: "Pick Promi vibe",
             body: "Change d'ambiance, reste fidèle."
@@ -65,8 +70,16 @@ struct OnboardingView: View {
                             VStack(spacing: Spacing.xl) {
                                 Spacer()
                                 
-                                Text(slides[index].emoji)
-                                    .font(.system(size: 80))
+                                // Affichage conditionnel : logo ou emoji
+                                if slides[index].useCustomIcon {
+                                    Image("LogoPromi")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 120, height: 120)
+                                } else {
+                                    Text(slides[index].emoji)
+                                        .font(.system(size: 80))
+                                }
                                 
                                 Text(slides[index].title)
                                     .font(Typography.title2)
@@ -91,6 +104,7 @@ struct OnboardingView: View {
                             withAnimation {
                                 currentPage += 1
                             }
+                            Haptics.shared.lightTap()
                         } else {
                             completeOnboarding()
                         }
@@ -120,6 +134,7 @@ struct OnboardingView: View {
 }
 
 struct OnboardingSlide {
+    let useCustomIcon: Bool
     let emoji: String
     let title: String
     let body: String

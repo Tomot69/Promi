@@ -12,23 +12,47 @@ struct HeaderView: View {
     let roast: String
     let onAddTap: () -> Void
     
+    @State private var logoPulse: CGFloat = 1.0
+    
     var body: some View {
         VStack(spacing: Spacing.sm) {
-            HStack {
+            HStack(alignment: .center) {
+                // Logo miniature à gauche
+                Image("LogoPromi")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 40, height: 40)
+                    .scaleEffect(logoPulse)
+                    .onAppear {
+                        // Pulse très subtil du logo (tamagotchi)
+                        withAnimation(
+                            Animation.easeInOut(duration: 3.5)
+                                .repeatForever(autoreverses: true)
+                                .delay(Double.random(in: 5...10))
+                        ) {
+                            logoPulse = 1.03
+                        }
+                    }
+                
+                // Texte "Promi" en orange
                 Text("Promi")
                     .font(Typography.title1)
                     .foregroundColor(Brand.orange)
                 
                 Spacer()
                 
-                Button(action: onAddTap) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 24, weight: .medium))
+                // Bouton "+"
+                Button(action: {
+                    Haptics.shared.lightTap()
+                    onAddTap()
+                }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 32, weight: .medium))
                         .foregroundColor(Brand.orange)
                 }
             }
             
-            // Roast Strip
+            // Roast Strip (bande Karma)
             HStack(spacing: Spacing.xs) {
                 Circle()
                     .fill(karmaColor)
@@ -37,6 +61,7 @@ struct HeaderView: View {
                 Text(roast)
                     .font(Typography.callout)
                     .foregroundColor(Brand.textSecondary)
+                    .lineLimit(1)
                 
                 Spacer()
                 
