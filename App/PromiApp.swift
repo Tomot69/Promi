@@ -2,16 +2,30 @@
 //  PromiApp.swift
 //  Promi
 //
-//  Created by MACBOOKPRO on 24/10/2025.
+//  Created on 24/10/2025.
 //
 
 import SwiftUI
 
 @main
 struct PromiApp: App {
+    @StateObject private var userStore = UserStore()
+    @StateObject private var promiStore = PromiStore()
+    @StateObject private var karmaStore = KarmaStore()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if userStore.hasCompletedOnboarding {
+                ContentView()
+                    .environmentObject(userStore)
+                    .environmentObject(promiStore)
+                    .environmentObject(karmaStore)
+            } else {
+                SplashScreenView()
+                    .environmentObject(userStore)
+                    .environmentObject(promiStore)
+                    .environmentObject(karmaStore)
+            }
         }
     }
 }

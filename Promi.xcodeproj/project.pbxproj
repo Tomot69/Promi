@@ -6,8 +6,61 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F04E2EABF4630048149B /* PromiApp.swift */; };
+		52D3F0532EABF4650048149B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52D3F0522EABF4650048149B /* Assets.xcassets */; };
+		52D3F0692EABF6320048149B /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0682EABF6320048149B /* Brand.swift */; };
+		52D3F06B2EABF6FF0048149B /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F06A2EABF6FF0048149B /* Haptics.swift */; };
+		52D3F06D2EABF80C0048149B /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F06C2EABF80C0048149B /* Appearance.swift */; };
+		52D3F06F2EABF83A0048149B /* PromiItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F06E2EABF83A0048149B /* PromiItem.swift */; };
+		52D3F0712EABF8620048149B /* Reaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0702EABF8620048149B /* Reaction.swift */; };
+		52D3F0732EABF8870048149B /* KarmaState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0722EABF8870048149B /* KarmaState.swift */; };
+		52D3F0752EABF8A60048149B /* UserStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0742EABF8A60048149B /* UserStore.swift */; };
+		52D3F0772EABF8CA0048149B /* PromiStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0762EABF8CA0048149B /* PromiStore.swift */; };
+		52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0782EABF9000048149B /* KarmaStore.swift */; };
+		52D3F07B2EABF9DF0048149B /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F07A2EABF9DF0048149B /* SplashScreenView.swift */; };
+		52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F07C2EABFA0A0048149B /* LanguageSelectionView.swift */; };
+		52D3F07F2EABFA2A0048149B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F07E2EABFA2A0048149B /* OnboardingView.swift */; };
+		52D3F0812EABFA8A0048149B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0802EABFA8A0048149B /* ContentView.swift */; };
+		52D3F0832EABFAA90048149B /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0822EABFAA90048149B /* HeaderView.swift */; };
+		52D3F0852EABFADA0048149B /* SortTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0842EABFADA0048149B /* SortTabsView.swift */; };
+		52D3F0872EABFB0C0048149B /* PromiCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0862EABFB0C0048149B /* PromiCardView.swift */; };
+		52D3F0892EABFB780048149B /* BravoButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0882EABFB780048149B /* BravoButton.swift */; };
+		52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F08A2EABFD070048149B /* FloatingButton.swift */; };
+		52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F08C2EABFD260048149B /* AddPromiView.swift */; };
+		52D3F08F2EABFD4E0048149B /* HeartIntensityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F08E2EABFD4E0048149B /* HeartIntensityView.swift */; };
+		52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0902EABFD6F0048149B /* CommentsView.swift */; };
+		52D3F0932EABFD940048149B /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0922EABFD940048149B /* PaletteView.swift */; };
+		52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0942EABFDB10048149B /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		52D3F04B2EABF4630048149B /* Promi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Promi.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		52D3F04E2EABF4630048149B /* PromiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiApp.swift; sourceTree = "<group>"; };
+		52D3F0522EABF4650048149B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		52D3F0682EABF6320048149B /* Brand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brand.swift; sourceTree = "<group>"; };
+		52D3F06A2EABF6FF0048149B /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		52D3F06C2EABF80C0048149B /* Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Appearance.swift; sourceTree = "<group>"; };
+		52D3F06E2EABF83A0048149B /* PromiItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiItem.swift; sourceTree = "<group>"; };
+		52D3F0702EABF8620048149B /* Reaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reaction.swift; sourceTree = "<group>"; };
+		52D3F0722EABF8870048149B /* KarmaState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KarmaState.swift; sourceTree = "<group>"; };
+		52D3F0742EABF8A60048149B /* UserStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStore.swift; sourceTree = "<group>"; };
+		52D3F0762EABF8CA0048149B /* PromiStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiStore.swift; sourceTree = "<group>"; };
+		52D3F0782EABF9000048149B /* KarmaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KarmaStore.swift; sourceTree = "<group>"; };
+		52D3F07A2EABF9DF0048149B /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
+		52D3F07C2EABFA0A0048149B /* LanguageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSelectionView.swift; sourceTree = "<group>"; };
+		52D3F07E2EABFA2A0048149B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		52D3F0802EABFA8A0048149B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		52D3F0822EABFAA90048149B /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
+		52D3F0842EABFADA0048149B /* SortTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortTabsView.swift; sourceTree = "<group>"; };
+		52D3F0862EABFB0C0048149B /* PromiCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiCardView.swift; sourceTree = "<group>"; };
+		52D3F0882EABFB780048149B /* BravoButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BravoButton.swift; sourceTree = "<group>"; };
+		52D3F08A2EABFD070048149B /* FloatingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingButton.swift; sourceTree = "<group>"; };
+		52D3F08C2EABFD260048149B /* AddPromiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPromiView.swift; sourceTree = "<group>"; };
+		52D3F08E2EABFD4E0048149B /* HeartIntensityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartIntensityView.swift; sourceTree = "<group>"; };
+		52D3F0902EABFD6F0048149B /* CommentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsView.swift; sourceTree = "<group>"; };
+		52D3F0922EABFD940048149B /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
+		52D3F0942EABFDB10048149B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +85,13 @@
 		52D3F0422EABF4630048149B = {
 			isa = PBXGroup;
 			children = (
+				52D3F0672EABF5AD0048149B /* App */,
+				52D3F0662EABF59A0048149B /* Core */,
+				52D3F0652EABF5900048149B /* Models */,
+				52D3F0642EABF5820048149B /* Stores */,
+				52D3F0632EABF5760048149B /* Views */,
+				52D3F0622EABF56C0048149B /* Utilities */,
+				52D3F0612EABF55C0048149B /* Ressources */,
 				52D3F04D2EABF4630048149B /* Promi */,
 				52D3F04C2EABF4630048149B /* Products */,
 			);
@@ -43,6 +103,80 @@
 				52D3F04B2EABF4630048149B /* Promi.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		52D3F0612EABF55C0048149B /* Ressources */ = {
+			isa = PBXGroup;
+			children = (
+				52D3F0522EABF4650048149B /* Assets.xcassets */,
+			);
+			path = Ressources;
+			sourceTree = "<group>";
+		};
+		52D3F0622EABF56C0048149B /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		52D3F0632EABF5760048149B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				52D3F07A2EABF9DF0048149B /* SplashScreenView.swift */,
+				52D3F07C2EABFA0A0048149B /* LanguageSelectionView.swift */,
+				52D3F07E2EABFA2A0048149B /* OnboardingView.swift */,
+				52D3F0802EABFA8A0048149B /* ContentView.swift */,
+				52D3F0822EABFAA90048149B /* HeaderView.swift */,
+				52D3F0842EABFADA0048149B /* SortTabsView.swift */,
+				52D3F0862EABFB0C0048149B /* PromiCardView.swift */,
+				52D3F0882EABFB780048149B /* BravoButton.swift */,
+				52D3F08A2EABFD070048149B /* FloatingButton.swift */,
+				52D3F08C2EABFD260048149B /* AddPromiView.swift */,
+				52D3F08E2EABFD4E0048149B /* HeartIntensityView.swift */,
+				52D3F0902EABFD6F0048149B /* CommentsView.swift */,
+				52D3F0922EABFD940048149B /* PaletteView.swift */,
+				52D3F0942EABFDB10048149B /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		52D3F0642EABF5820048149B /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				52D3F0742EABF8A60048149B /* UserStore.swift */,
+				52D3F0762EABF8CA0048149B /* PromiStore.swift */,
+				52D3F0782EABF9000048149B /* KarmaStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
+		52D3F0652EABF5900048149B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				52D3F06E2EABF83A0048149B /* PromiItem.swift */,
+				52D3F0702EABF8620048149B /* Reaction.swift */,
+				52D3F0722EABF8870048149B /* KarmaState.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		52D3F0662EABF59A0048149B /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				52D3F0682EABF6320048149B /* Brand.swift */,
+				52D3F06A2EABF6FF0048149B /* Haptics.swift */,
+				52D3F06C2EABF80C0048149B /* Appearance.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		52D3F0672EABF5AD0048149B /* App */ = {
+			isa = PBXGroup;
+			children = (
+				52D3F04E2EABF4630048149B /* PromiApp.swift */,
+			);
+			path = App;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -109,6 +243,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52D3F0532EABF4650048149B /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +254,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52D3F0732EABF8870048149B /* KarmaState.swift in Sources */,
+				52D3F06D2EABF80C0048149B /* Appearance.swift in Sources */,
+				52D3F0812EABFA8A0048149B /* ContentView.swift in Sources */,
+				52D3F06B2EABF6FF0048149B /* Haptics.swift in Sources */,
+				52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */,
+				52D3F0772EABF8CA0048149B /* PromiStore.swift in Sources */,
+				52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */,
+				52D3F0712EABF8620048149B /* Reaction.swift in Sources */,
+				52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */,
+				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
+				52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */,
+				52D3F06F2EABF83A0048149B /* PromiItem.swift in Sources */,
+				52D3F0752EABF8A60048149B /* UserStore.swift in Sources */,
+				52D3F08F2EABFD4E0048149B /* HeartIntensityView.swift in Sources */,
+				52D3F0692EABF6320048149B /* Brand.swift in Sources */,
+				52D3F0852EABFADA0048149B /* SortTabsView.swift in Sources */,
+				52D3F0832EABFAA90048149B /* HeaderView.swift in Sources */,
+				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
+				52D3F0872EABFB0C0048149B /* PromiCardView.swift in Sources */,
+				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
+				52D3F07B2EABF9DF0048149B /* SplashScreenView.swift in Sources */,
+				52D3F0892EABFB780048149B /* BravoButton.swift in Sources */,
+				52D3F07F2EABFA2A0048149B /* OnboardingView.swift in Sources */,
+				52D3F0932EABFD940048149B /* PaletteView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,6 +412,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Pour prendre des photos";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pour enregistrer des notes audio";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Pour ajouter des photos à vos Promis";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -284,6 +446,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Pour prendre des photos";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pour enregistrer des notes audio";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Pour ajouter des photos à vos Promis";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
