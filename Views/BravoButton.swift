@@ -2,7 +2,7 @@
 //  BravoButton.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -15,31 +15,29 @@ struct BravoButton: View {
     let count: Int
     let isActive: Bool
     
-    @State private var scale: CGFloat = 1.0
-    
     var body: some View {
-        Button(action: {
-            promiStore.toggleBravo(promiId: promiId, userId: userStore.localUserId)
-            
-            withAnimation(AnimationPreset.springBouncy) {
-                scale = 1.2
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(AnimationPreset.spring) {
-                    scale = 1.0
-                }
-            }
-        }) {
+        Button(action: toggleBravo) {
             HStack(spacing: Spacing.xxs) {
-                Image(systemName: "hand.thumbsup.fill")
+                Image(systemName: isActive ? "hand.thumbsup.fill" : "hand.thumbsup")
                     .font(.system(size: 14))
-                    .foregroundColor(isActive ? Brand.orange : Brand.textSecondary)
-                
                 Text("\(count)")
                     .font(Typography.caption)
-                    .foregroundColor(Brand.textSecondary)
             }
-            .scaleEffect(scale)
+            .foregroundColor(isActive ? Brand.orange : userStore.selectedPalette.textSecondaryColor)
+        }
+    }
+    
+    private func toggleBravo() {
+        if isActive {
+            // Remove bravo (for now, we don't implement removal)
+            Haptics.shared.lightTap()
+        } else {
+            let bravo = Bravo(
+                promiId: promiId,
+                userId: userStore.localUserId
+            )
+            promiStore.addBravo(bravo)
+            Haptics.shared.success()
         }
     }
 }

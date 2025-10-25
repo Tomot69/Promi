@@ -144,7 +144,7 @@ struct ContentView: View {
                 }
             }
         }
-        .onChange(of: showTutorial) { newValue in
+        .onChange(of: showTutorial) { _, newValue in
             if !newValue && !userStore.hasCompletedTutorial {
                 userStore.completeTutorial()
             }

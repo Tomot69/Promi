@@ -18,7 +18,7 @@ struct BottomIconsBar: View {
         VStack {
             Spacer()
             
-            HStack(spacing: Spacing.xxxl) {
+            HStack(spacing: Spacing.xxl) { // Plus rapprochées (xxxl → xxl)
                 // Draft
                 Button(action: {
                     Haptics.shared.lightTap()
@@ -55,7 +55,8 @@ struct BottomIconsBar: View {
                         .frame(width: 32, height: 32)
                 }
             }
-            .padding(.bottom, Spacing.xxl) // Plus bas qu'avant
+            .frame(maxWidth: .infinity) // Centrage parfait
+            .padding(.bottom, Spacing.xxxl) // Encore plus bas (xxl → xxxl)
         }
     }
 }

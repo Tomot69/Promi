@@ -2,7 +2,7 @@
 //  PromiStore.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import Foundation
@@ -14,9 +14,10 @@ class PromiStore: ObservableObject {
     @Published var bravos: [Bravo] = []
     @Published var comments: [Comment] = []
     
-    private let fileName = "promis.json"
-    private let bravosFileName = "bravos.json"
-    private let commentsFileName = "comments.json"
+    private let userDefaults = UserDefaults.standard
+    private let promisKey = "promiItems"
+    private let bravosKey = "promiBravos"
+    private let commentsKey = "promiComments"
     
     init() {
         loadPromis()
@@ -24,17 +25,17 @@ class PromiStore: ObservableObject {
         loadComments()
     }
     
-    // MARK: - Promi CRUD
     func addPromi(_ promi: PromiItem) {
         promis.append(promi)
-        savePromis()
-        Haptics.shared.success()
+        persistPromis()
+        objectWillChange.send()
     }
     
     func updatePromi(_ promi: PromiItem) {
         if let index = promis.firstIndex(where: { $0.id == promi.id }) {
             promis[index] = promi
-            savePromis()
+            persistPromis()
+            objectWillChange.send()
         }
     }
     
@@ -42,110 +43,100 @@ class PromiStore: ObservableObject {
         promis.removeAll { $0.id == promi.id }
         bravos.removeAll { $0.promiId == promi.id }
         comments.removeAll { $0.promiId == promi.id }
-        savePromis()
-        saveBravos()
-        saveComments()
+        persistPromis()
+        persistBravos()
+        persistComments()
+        objectWillChange.send()
     }
     
     func markAsDone(_ promi: PromiItem) {
-        var updated = promi
-        updated.status = .done
-        updated.completedAt = Date()
-        updatePromi(updated)
-        Haptics.shared.success()
+        if let index = promis.firstIndex(where: { $0.id == promi.id }) {
+            promis[index].status = .done
+            promis[index].completedAt = Date()
+            persistPromis()
+            objectWillChange.send()
+        }
     }
     
     func markAsOpen(_ promi: PromiItem) {
-        var updated = promi
-        updated.status = .open
-        updated.completedAt = nil
-        updatePromi(updated)
-        Haptics.shared.lightTap()
+        if let index = promis.firstIndex(where: { $0.id == promi.id }) {
+            promis[index].status = .open
+            promis[index].completedAt = nil
+            persistPromis()
+            objectWillChange.send()
+        }
     }
     
-    // MARK: - Bravo CRUD
-    func toggleBravo(promiId: UUID, userId: String) {
-        if let existing = bravos.first(where: { $0.promiId == promiId && $0.userId == userId }) {
-            bravos.removeAll { $0.id == existing.id }
-        } else {
-            let newBravo = Bravo(promiId: promiId, userId: userId)
-            bravos.append(newBravo)
-        }
-        saveBravos()
-        Haptics.shared.tinyPop()
+    // MARK: - Bravos
+    func addBravo(_ bravo: Bravo) {
+        bravos.append(bravo)
+        persistBravos()
+        objectWillChange.send()
     }
     
     func getBravosCount(for promiId: UUID) -> Int {
-        bravos.filter { $0.promiId == promiId }.count
+        return bravos.filter { $0.promiId == promiId }.count
     }
     
     func hasBravo(promiId: UUID, userId: String) -> Bool {
-        bravos.contains { $0.promiId == promiId && $0.userId == userId }
+        return bravos.contains { $0.promiId == promiId && $0.userId == userId }
     }
     
-    // MARK: - Comment CRUD
-    func addComment(promiId: UUID, authorId: String, text: String) {
-        let comment = Comment(promiId: promiId, authorId: authorId, text: text)
+    // MARK: - Comments
+    func addComment(_ comment: Comment) {
         comments.append(comment)
-        saveComments()
-        Haptics.shared.lightTap()
-    }
-    
-    func getComments(for promiId: UUID) -> [Comment] {
-        comments.filter { $0.promiId == promiId }.sorted { $0.createdAt < $1.createdAt }
+        persistComments()
+        objectWillChange.send()
     }
     
     func getCommentsCount(for promiId: UUID) -> Int {
-        comments.filter { $0.promiId == promiId }.count
+        return comments.filter { $0.promiId == promiId }.count
+    }
+    
+    func getComments(for promiId: UUID) -> [Comment] {
+        return comments.filter { $0.promiId == promiId }
     }
     
     // MARK: - Persistence
-    private func getDocumentsDirectory() -> URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-    }
-    
-    private func savePromis() {
-        let url = getDocumentsDirectory().appendingPathComponent(fileName)
-        if let data = try? JSONEncoder().encode(promis) {
-            try? data.write(to: url)
-        }
-    }
-    
     private func loadPromis() {
-        let url = getDocumentsDirectory().appendingPathComponent(fileName)
-        if let data = try? Data(contentsOf: url),
-           let decoded = try? JSONDecoder().decode([PromiItem].self, from: data) {
-            promis = decoded
+        guard let data = userDefaults.data(forKey: promisKey),
+              let decoded = try? JSONDecoder().decode([PromiItem].self, from: data) else {
+            return
         }
+        promis = decoded
     }
     
-    private func saveBravos() {
-        let url = getDocumentsDirectory().appendingPathComponent(bravosFileName)
-        if let data = try? JSONEncoder().encode(bravos) {
-            try? data.write(to: url)
+    private func persistPromis() {
+        if let encoded = try? JSONEncoder().encode(promis) {
+            userDefaults.set(encoded, forKey: promisKey)
         }
     }
     
     private func loadBravos() {
-        let url = getDocumentsDirectory().appendingPathComponent(bravosFileName)
-        if let data = try? Data(contentsOf: url),
-           let decoded = try? JSONDecoder().decode([Bravo].self, from: data) {
-            bravos = decoded
+        guard let data = userDefaults.data(forKey: bravosKey),
+              let decoded = try? JSONDecoder().decode([Bravo].self, from: data) else {
+            return
         }
+        bravos = decoded
     }
     
-    private func saveComments() {
-        let url = getDocumentsDirectory().appendingPathComponent(commentsFileName)
-        if let data = try? JSONEncoder().encode(comments) {
-            try? data.write(to: url)
+    private func persistBravos() {
+        if let encoded = try? JSONEncoder().encode(bravos) {
+            userDefaults.set(encoded, forKey: bravosKey)
         }
     }
     
     private func loadComments() {
-        let url = getDocumentsDirectory().appendingPathComponent(commentsFileName)
-        if let data = try? Data(contentsOf: url),
-           let decoded = try? JSONDecoder().decode([Comment].self, from: data) {
-            comments = decoded
+        guard let data = userDefaults.data(forKey: commentsKey),
+              let decoded = try? JSONDecoder().decode([Comment].self, from: data) else {
+            return
+        }
+        comments = decoded
+    }
+    
+    private func persistComments() {
+        if let encoded = try? JSONEncoder().encode(comments) {
+            userDefaults.set(encoded, forKey: commentsKey)
         }
     }
 }

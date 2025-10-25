@@ -10,6 +10,8 @@
 		521AFCC12EAD39D5009D2334 /* PromiDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC02EAD39D5009D2334 /* PromiDraft.swift */; };
 		521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC22EAD39F7009D2334 /* DraftStore.swift */; };
 		521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */; };
+		521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC62EAD3E49009D2334 /* EditPromiView.swift */; };
+		521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */; };
 		529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */; };
 		529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */; };
 		529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */; };
@@ -56,6 +58,8 @@
 		521AFCC02EAD39D5009D2334 /* PromiDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiDraft.swift; sourceTree = "<group>"; };
 		521AFCC22EAD39F7009D2334 /* DraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStore.swift; sourceTree = "<group>"; };
 		521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalIntensityGaugeView.swift; sourceTree = "<group>"; };
+		521AFCC62EAD3E49009D2334 /* EditPromiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPromiView.swift; sourceTree = "<group>"; };
+		521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseSlightSlapView.swift; sourceTree = "<group>"; };
 		5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlideData.swift; sourceTree = "<group>"; };
 		529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseAnimationView.swift; sourceTree = "<group>"; };
@@ -187,6 +191,8 @@
 				52E1A2482EAD155F007EFAA8 /* MinimalPromiCardView.swift */,
 				52E1A24A2EAD1580007EFAA8 /* DraftsView.swift */,
 				521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */,
+				521AFCC62EAD3E49009D2334 /* EditPromiView.swift */,
+				521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -326,6 +332,7 @@
 				529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */,
 				529895AA2EAC5797000F57F8 /* NewHeaderView.swift in Sources */,
 				521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */,
+				521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */,
 				52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */,
 				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
 				52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */,
@@ -345,6 +352,7 @@
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
 				52E1A2432EAD14EF007EFAA8 /* BottomIconsBar.swift in Sources */,
 				52E1A2412EAD14D1007EFAA8 /* CustomIcons.swift in Sources */,
+				521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */,
 				529895B22EAC6181000F57F8 /* TutorialOverlayView.swift in Sources */,
 				52D3F07B2EABF9DF0048149B /* SplashScreenView.swift in Sources */,
 				52D3F0892EABFB780048149B /* BravoButton.swift in Sources */,
