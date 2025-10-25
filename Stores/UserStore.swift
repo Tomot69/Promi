@@ -2,7 +2,7 @@
 //  UserStore.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import Foundation
@@ -14,6 +14,7 @@ class UserStore: ObservableObject {
     @Published var selectedLanguage: String
     @Published var selectedPalette: Palette
     @Published var hasCompletedOnboarding: Bool
+    @Published var hasCompletedTutorial: Bool
     
     private let userDefaults = UserDefaults.standard
     
@@ -36,6 +37,9 @@ class UserStore: ObservableObject {
         
         // Onboarding
         self.hasCompletedOnboarding = userDefaults.bool(forKey: "hasCompletedOnboarding")
+        
+        // Tutorial
+        self.hasCompletedTutorial = userDefaults.bool(forKey: "hasCompletedTutorial")
     }
     
     func setLanguage(_ language: String) {
@@ -53,6 +57,18 @@ class UserStore: ObservableObject {
     func completeOnboarding() {
         hasCompletedOnboarding = true
         userDefaults.set(true, forKey: "hasCompletedOnboarding")
+        objectWillChange.send()
+    }
+    
+    func completeTutorial() {
+        hasCompletedTutorial = true
+        userDefaults.set(true, forKey: "hasCompletedTutorial")
+        objectWillChange.send()
+    }
+    
+    func resetTutorial() {
+        hasCompletedTutorial = false
+        userDefaults.set(false, forKey: "hasCompletedTutorial")
         objectWillChange.send()
     }
     

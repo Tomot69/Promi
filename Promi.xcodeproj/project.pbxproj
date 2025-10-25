@@ -15,6 +15,8 @@
 		529895AA2EAC5797000F57F8 /* NewHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A92EAC5797000F57F8 /* NewHeaderView.swift */; };
 		529895AC2EAC57B7000F57F8 /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AB2EAC57B7000F57F8 /* IconButton.swift */; };
 		529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AD2EAC57E0000F57F8 /* KarmaView.swift */; };
+		529895B02EAC6153000F57F8 /* TutorialStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AF2EAC6153000F57F8 /* TutorialStep.swift */; };
+		529895B22EAC6181000F57F8 /* TutorialOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895B12EAC6181000F57F8 /* TutorialOverlayView.swift */; };
 		52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F04E2EABF4630048149B /* PromiApp.swift */; };
 		52D3F0532EABF4650048149B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52D3F0522EABF4650048149B /* Assets.xcassets */; };
 		52D3F0692EABF6320048149B /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0682EABF6320048149B /* Brand.swift */; };
@@ -51,6 +53,8 @@
 		529895A92EAC5797000F57F8 /* NewHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewHeaderView.swift; sourceTree = "<group>"; };
 		529895AB2EAC57B7000F57F8 /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
 		529895AD2EAC57E0000F57F8 /* KarmaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KarmaView.swift; sourceTree = "<group>"; };
+		529895AF2EAC6153000F57F8 /* TutorialStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialStep.swift; sourceTree = "<group>"; };
+		529895B12EAC6181000F57F8 /* TutorialOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialOverlayView.swift; sourceTree = "<group>"; };
 		52D3F04B2EABF4630048149B /* Promi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Promi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D3F04E2EABF4630048149B /* PromiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiApp.swift; sourceTree = "<group>"; };
 		52D3F0522EABF4650048149B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -160,6 +164,7 @@
 				529895A92EAC5797000F57F8 /* NewHeaderView.swift */,
 				529895AB2EAC57B7000F57F8 /* IconButton.swift */,
 				529895AD2EAC57E0000F57F8 /* KarmaView.swift */,
+				529895B12EAC6181000F57F8 /* TutorialOverlayView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -181,6 +186,7 @@
 				52D3F0702EABF8620048149B /* Reaction.swift */,
 				52D3F0722EABF8870048149B /* KarmaState.swift */,
 				529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */,
+				529895AF2EAC6153000F57F8 /* TutorialStep.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -300,12 +306,14 @@
 				52D3F08F2EABFD4E0048149B /* HeartIntensityView.swift in Sources */,
 				52D3F0692EABF6320048149B /* Brand.swift in Sources */,
 				529895A62EAC56BF000F57F8 /* PromiValidationAnimationView.swift in Sources */,
+				529895B02EAC6153000F57F8 /* TutorialStep.swift in Sources */,
 				52D3F0852EABFADA0048149B /* SortTabsView.swift in Sources */,
 				52D3F0832EABFAA90048149B /* HeaderView.swift in Sources */,
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
 				529895A82EAC5746000F57F8 /* UrgencyIntensityView.swift in Sources */,
 				52D3F0872EABFB0C0048149B /* PromiCardView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
+				529895B22EAC6181000F57F8 /* TutorialOverlayView.swift in Sources */,
 				52D3F07B2EABF9DF0048149B /* SplashScreenView.swift in Sources */,
 				52D3F0892EABFB780048149B /* BravoButton.swift in Sources */,
 				52D3F07F2EABFA2A0048149B /* OnboardingView.swift in Sources */,

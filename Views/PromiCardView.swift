@@ -2,7 +2,7 @@
 //  PromiCardView.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -14,19 +14,22 @@ struct PromiCardView: View {
     let promi: PromiItem
     @State private var offset: CGFloat = 0
     @State private var showComments = false
+    @State private var cardScale: CGFloat = 1.0
     
     var body: some View {
         HStack(spacing: Spacing.md) {
             VStack(alignment: .leading, spacing: Spacing.xs) {
+                // Title
                 Text(promi.title)
                     .font(Typography.bodyEmphasis)
-                    .foregroundColor(Brand.textPrimary)
+                    .foregroundColor(userStore.selectedPalette.textPrimaryColor)
                     .strikethrough(promi.status == .done)
                 
+                // Date + Importance
                 HStack(spacing: Spacing.xxs) {
                     Text(formattedDate)
                         .font(Typography.caption)
-                        .foregroundColor(Brand.textSecondary)
+                        .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                     
                     if isOverdue {
                         Text("(!)")
@@ -38,10 +41,11 @@ struct PromiCardView: View {
                         .font(Typography.caption)
                 }
                 
+                // Assignee
                 if let assignee = promi.assignee {
                     Text("Pour : \(assignee)")
                         .font(Typography.caption)
-                        .foregroundColor(Brand.textSecondary)
+                        .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                 }
                 
                 // Social actions
@@ -59,7 +63,7 @@ struct PromiCardView: View {
                             Text("\(promiStore.getCommentsCount(for: promi.id))")
                                 .font(Typography.caption)
                         }
-                        .foregroundColor(Brand.textSecondary)
+                        .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                     }
                 }
                 .padding(.top, Spacing.xxs)
@@ -67,6 +71,7 @@ struct PromiCardView: View {
             
             Spacer()
             
+            // Done checkmark
             if promi.status == .done {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
@@ -80,6 +85,7 @@ struct PromiCardView: View {
                 .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
         )
         .opacity(promi.status == .done ? Opacity.secondary : Opacity.opaque)
+        .scaleEffect(cardScale)
         .offset(x: offset)
         .gesture(
             DragGesture()
@@ -89,6 +95,15 @@ struct PromiCardView: View {
                 .onEnded { gesture in
                     if gesture.translation.width > 100 {
                         // Swipe right: Done/Undo
+                        withAnimation(AnimationPreset.springBouncy) {
+                            cardScale = 1.05
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation(AnimationPreset.spring) {
+                                cardScale = 1.0
+                            }
+                        }
+                        
                         if promi.status == .open {
                             promiStore.markAsDone(promi)
                         } else {

@@ -2,7 +2,7 @@
 //  SettingsView.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -15,17 +15,46 @@ struct SettingsView: View {
         NavigationView {
             List {
                 Section("Langue") {
-                    Picker("Langue", selection: $userStore.selectedLanguage) {
-                        Text("🇫🇷 Français").tag("fr")
-                        Text("🇬🇧 English").tag("en")
-                        Text("🇪🇸 Español").tag("es")
+                    HStack {
+                        Text("Langue actuelle")
+                        Spacer()
+                        Text(userStore.getLanguageName())
+                            .foregroundColor(Brand.textSecondary)
                     }
-                    .pickerStyle(.menu)
                 }
                 
                 Section("Apparence") {
-                    Button("Changer de palette") {
-                        // Navigation handled by parent
+                    HStack {
+                        Text("Palette actuelle")
+                        Spacer()
+                        Text(userStore.selectedPalette.displayName)
+                            .foregroundColor(Brand.textSecondary)
+                    }
+                }
+                
+                Section("Tutoriel") {
+                    Button(action: {
+                        userStore.resetTutorial()
+                        Haptics.shared.success()
+                        dismiss()
+                    }) {
+                        HStack {
+                            Text("Revoir le tutoriel")
+                                .foregroundColor(Brand.textPrimary)
+                            Spacer()
+                            Image(systemName: "arrow.clockwise")
+                                .foregroundColor(Brand.orange)
+                        }
+                    }
+                }
+                
+                Section("Compte") {
+                    HStack {
+                        Text("ID Utilisateur")
+                        Spacer()
+                        Text(String(userStore.localUserId.prefix(8)))
+                            .font(Typography.caption)
+                            .foregroundColor(Brand.textSecondary)
                     }
                 }
                 
@@ -33,7 +62,14 @@ struct SettingsView: View {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text("1.0")
+                        Text("1.0.0")
+                            .foregroundColor(Brand.textSecondary)
+                    }
+                    
+                    HStack {
+                        Text("Build")
+                        Spacer()
+                        Text("2025.10.25")
                             .foregroundColor(Brand.textSecondary)
                     }
                 }
@@ -45,6 +81,7 @@ struct SettingsView: View {
                     Button("Fermer") {
                         dismiss()
                     }
+                    .foregroundColor(Brand.orange)
                 }
             }
         }

@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -17,6 +17,10 @@ struct ContentView: View {
     @State private var showSettings = false
     @State private var showKarma = false
     @State private var selectedSort: SortOption = .date
+    
+    // Tutorial
+    @State private var showTutorial = false
+    @State private var currentTutorialStep = 0
     
     var body: some View {
         ZStack {
@@ -68,9 +72,18 @@ struct ContentView: View {
                 // Promi List
                 if sortedPromis.isEmpty {
                     Spacer()
-                    Text("Aucun Promi pour le moment")
-                        .font(Typography.body)
-                        .foregroundColor(userStore.selectedPalette.textSecondaryColor)
+                    VStack(spacing: Spacing.md) {
+                        Text("👋")
+                            .font(.system(size: 60))
+                        
+                        Text("Aucun Promi pour le moment")
+                            .font(Typography.body)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor)
+                        
+                        Text("Tape sur + pour commencer")
+                            .font(Typography.caption)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.7))
+                    }
                     Spacer()
                 } else {
                     ScrollView {
@@ -110,6 +123,15 @@ struct ContentView: View {
                 }
                 .padding(.bottom, Spacing.xl)
             }
+            
+            // Tutorial Overlay
+            if showTutorial {
+                TutorialOverlayView(
+                    isPresented: $showTutorial,
+                    currentStep: $currentTutorialStep,
+                    steps: TutorialContent.getSteps(language: userStore.selectedLanguage)
+                )
+            }
         }
         .sheet(isPresented: $showAddPromi) {
             AddPromiView()
@@ -125,6 +147,20 @@ struct ContentView: View {
         }
         .onAppear {
             karmaStore.updateKarma(basedOn: promiStore.promis)
+            
+            // Afficher le tutoriel si jamais complété
+            if !userStore.hasCompletedTutorial {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    withAnimation(AnimationPreset.easeOut) {
+                        showTutorial = true
+                    }
+                }
+            }
+        }
+        .onChange(of: showTutorial) { newValue in
+            if !newValue && !userStore.hasCompletedTutorial {
+                userStore.completeTutorial()
+            }
         }
     }
     
