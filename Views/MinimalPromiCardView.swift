@@ -14,56 +14,59 @@ struct MinimalPromiCardView: View {
     let promi: PromiItem
     @State private var offset: CGFloat = 0
     @State private var showEditView = false
+    @State private var isPressed = false
     
     var body: some View {
         Button(action: {
-            Haptics.shared.lightTap()
+            Haptics.shared.tinyPop()
             showEditView = true
         }) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 // Title
                 Text(promi.title)
                     .font(Typography.body)
-                    .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                    .strikethrough(promi.status == .done)
+                    .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(promi.status == .done ? 0.3 : 1.0))
+                    .strikethrough(promi.status == .done, color: userStore.selectedPalette.textPrimaryColor.opacity(0.2))
                     .multilineTextAlignment(.leading)
+                    .lineSpacing(2)
                 
-                // Date + Intensity dot
-                HStack(spacing: Spacing.xs) {
+                // Date + Indicators (ultra-discrets)
+                HStack(spacing: Spacing.sm) {
                     Text(formattedDate)
                         .font(Typography.caption2)
-                        .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
+                        .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                     
                     if isOverdue {
                         Circle()
-                            .fill(Color.red.opacity(0.6))
-                            .frame(width: 3, height: 3)
+                            .fill(Color.red.opacity(0.4))
+                            .frame(width: 2, height: 2)
                     }
                     
                     Spacer()
                     
-                    // Intensity indicator (mini orange dot)
+                    // Intensity dot (ultra-subtil)
                     if promi.intensity > 70 {
                         Circle()
-                            .fill(Brand.orange)
-                            .frame(width: 3, height: 3)
+                            .fill(Brand.orange.opacity(0.6))
+                            .frame(width: 2, height: 2)
                     }
                 }
                 
-                // Assignee
+                // Assignee (ultra-discret)
                 if let assignee = promi.assignee {
                     Text("→ \(assignee)")
                         .font(Typography.caption2)
-                        .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                        .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.3))
                 }
             }
-            .padding(Spacing.md)
+            .padding(.vertical, Spacing.lg)
+            .padding(.horizontal, Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.xs)
-                    .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.06), lineWidth: 0.3)
+                    .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.04), lineWidth: 0.2) // Ultra-fin
             )
-            .opacity(promi.status == .done ? 0.3 : 1.0)
+            .scaleEffect(isPressed ? 0.98 : 1.0)
         }
         .buttonStyle(PlainButtonStyle())
         .offset(x: offset)
@@ -83,6 +86,19 @@ struct MinimalPromiCardView: View {
                     }
                     withAnimation(AnimationPreset.spring) {
                         offset = 0
+                    }
+                }
+        )
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    withAnimation(AnimationPreset.springBouncy) {
+                        isPressed = true
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(AnimationPreset.spring) {
+                        isPressed = false
                     }
                 }
         )

@@ -11,34 +11,43 @@ struct MinimalHeaderView: View {
     let textColor: Color
     let onAddTap: () -> Void
     
+    @State private var logoPulse: CGFloat = 1.0
+    
     var body: some View {
-        VStack(spacing: Spacing.md) {
-            // Logo centré XL en haut
+        VStack(spacing: Spacing.lg) {
+            // Logo centré XL avec pulse ultra-subtil (tamagotchi)
             Image("LogoPromi")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 100, height: 100) // Plus grand : 60 → 100
+                .frame(width: 100, height: 100)
+                .scaleEffect(logoPulse)
+                .onAppear {
+                    withAnimation(
+                        Animation.easeInOut(duration: 4.0)
+                            .repeatForever(autoreverses: true)
+                    ) {
+                        logoPulse = 1.02
+                    }
+                }
             
-            // "Promi" à gauche + "+" à droite (alignés au centre du logo)
+            // "Promi" à gauche + "+" à droite (ultra-discrets)
             HStack(alignment: .center) {
-                // "Promi" texte (toujours orange)
                 Text("Promi")
                     .font(Typography.title1)
-                    .foregroundColor(Brand.orange)
+                    .foregroundColor(Brand.orange.opacity(0.9))
                 
                 Spacer()
                 
-                // Bouton + ultra-discret
                 Button(action: {
-                    Haptics.shared.lightTap()
+                    Haptics.shared.tinyPop()
                     onAddTap()
                 }) {
                     Image(systemName: "plus")
-                        .font(.system(size: 24, weight: .ultraLight))
-                        .foregroundColor(textColor)
+                        .font(.system(size: 22, weight: .ultraLight))
+                        .foregroundColor(textColor.opacity(0.6))
                 }
             }
-            .padding(.top, Spacing.xs)
+            .padding(.top, Spacing.xxs)
         }
     }
 }

@@ -44,7 +44,6 @@ struct AddPromiView: View {
     
     var body: some View {
         ZStack {
-            // Background adaptatif
             userStore.selectedPalette.backgroundColor
                 .ignoresSafeArea()
             
@@ -54,126 +53,119 @@ struct AddPromiView: View {
                     Button(action: handleClose) {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .ultraLight))
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.5))
                     }
                     
                     Spacer()
                     
-                    // Title avec "Promi" en orange
                     HStack(spacing: 4) {
                         Text(titleText.replacingOccurrences(of: "Promi", with: ""))
                             .font(Typography.callout)
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.6))
                         
                         Text("Promi")
                             .font(Typography.callout)
-                            .foregroundColor(Brand.orange)
+                            .foregroundColor(Brand.orange.opacity(0.8))
                     }
                     
                     Spacer()
                     
-                    // Placeholder pour équilibre
                     Color.clear
                         .frame(width: 16, height: 16)
                 }
-                .padding(.horizontal, Spacing.xl)
-                .padding(.top, Spacing.xl)
-                .padding(.bottom, Spacing.lg)
+                .padding(.horizontal, Spacing.xxl)
+                .padding(.top, Spacing.xxl)
+                .padding(.bottom, Spacing.xl)
                 
                 // Content scrollable
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.xl) {
+                    VStack(alignment: .leading, spacing: Spacing.xxl) {
                         // Title field (ultra-minimal)
                         TextField(placeholderText, text: $title)
                             .font(Typography.body)
                             .foregroundColor(userStore.selectedPalette.textPrimaryColor)
                             .padding(.vertical, Spacing.md)
-                            .padding(.horizontal, 0)
                             .overlay(
                                 Rectangle()
-                                    .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.1))
-                                    .frame(height: 0.5),
+                                    .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.06))
+                                    .frame(height: 0.2),
                                 alignment: .bottom
                             )
                         
-                        // Date & Time (ultra-minimal)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                        // Date & Time
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "When" : "Quand")
                                 .font(Typography.caption)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                             
                             DatePicker("", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
-                                .accentColor(Brand.orange)
+                                .accentColor(Brand.orange.opacity(0.8))
                         }
                         
-                        // Person (ultra-minimal)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                        // Person
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "For whom" : "Pour qui")
                                 .font(Typography.caption)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                             
                             TextField(userStore.selectedLanguage.starts(with: "en") ? "Someone..." : "Quelqu'un...", text: $assignee)
                                 .font(Typography.body)
                                 .foregroundColor(userStore.selectedPalette.textPrimaryColor)
                                 .padding(.vertical, Spacing.md)
-                                .padding(.horizontal, 0)
                                 .overlay(
                                     Rectangle()
-                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.1))
-                                        .frame(height: 0.5),
+                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.06))
+                                        .frame(height: 0.2),
                                     alignment: .bottom
                                 )
                         }
                         
-                        // Audio button (placeholder)
+                        // Audio button (ultra-discret)
                         Button(action: {
-                            Haptics.shared.lightTap()
-                            // TODO: Audio recording
+                            Haptics.shared.tinyPop()
                         }) {
                             HStack(spacing: Spacing.xs) {
                                 Image(systemName: "mic")
-                                    .font(.system(size: 14))
+                                    .font(.system(size: 12))
                                 Text(userStore.selectedLanguage.starts(with: "en") ? "Add audio" : "Ajouter audio")
-                                    .font(Typography.caption)
+                                    .font(Typography.caption2)
                             }
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.6))
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                         }
                         
-                        // Intensity gauge (ultra-minimal avec animation)
+                        // Intensity gauge
                         MinimalIntensityGaugeView(
                             intensity: $intensity,
                             question: intensityQuestion,
                             textColor: userStore.selectedPalette.textSecondaryColor
                         )
                         
-                        Spacer(minLength: 100)
+                        Spacer(minLength: 120)
                     }
-                    .padding(.horizontal, Spacing.xl)
+                    .padding(.horizontal, Spacing.xxl)
                 }
                 
                 Spacer()
                 
-                // Bottom button (centré, ultra-minimal)
+                // Bottom button (ultra-minimal)
                 Button(action: createPromi) {
                     Text(buttonText)
                         .font(Typography.bodyEmphasis)
-                        .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                        .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(title.isEmpty ? 0.3 : 0.8))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Spacing.md)
                         .background(
                             RoundedRectangle(cornerRadius: CornerRadius.xs)
-                                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.2), lineWidth: 0.5)
+                                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.1), lineWidth: 0.2)
                         )
                 }
                 .disabled(title.isEmpty)
-                .opacity(title.isEmpty ? 0.3 : 1.0)
-                .padding(.horizontal, Spacing.xl)
-                .padding(.bottom, Spacing.xxl)
+                .padding(.horizontal, Spacing.xxl)
+                .padding(.bottom, Spacing.xxxl)
             }
             
-            // Validation Animation Overlay
             if showValidationAnimation {
                 PromiValidationAnimationView(isPresented: $showValidationAnimation)
                     .transition(.opacity)

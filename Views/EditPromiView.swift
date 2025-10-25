@@ -57,12 +57,12 @@ struct EditPromiView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header ultra-minimal
+                // Header
                 HStack {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .ultraLight))
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.5))
                     }
                     
                     Spacer()
@@ -70,11 +70,11 @@ struct EditPromiView: View {
                     HStack(spacing: 4) {
                         Text(titleText.replacingOccurrences(of: "Promi", with: ""))
                             .font(Typography.callout)
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.6))
                         
                         Text("Promi")
                             .font(Typography.callout)
-                            .foregroundColor(Brand.orange)
+                            .foregroundColor(Brand.orange.opacity(0.8))
                     }
                     
                     Spacer()
@@ -82,45 +82,41 @@ struct EditPromiView: View {
                     Button(action: { showDeleteConfirmation = true }) {
                         Image(systemName: "trash")
                             .font(.system(size: 14, weight: .ultraLight))
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                     }
                 }
-                .padding(.horizontal, Spacing.xl)
-                .padding(.top, Spacing.xl)
-                .padding(.bottom, Spacing.lg)
+                .padding(.horizontal, Spacing.xxl)
+                .padding(.top, Spacing.xxl)
+                .padding(.bottom, Spacing.xl)
                 
-                // Content scrollable
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.xl) {
-                        // Title field
+                    VStack(alignment: .leading, spacing: Spacing.xxl) {
                         TextField("", text: $title)
                             .font(Typography.body)
                             .foregroundColor(userStore.selectedPalette.textPrimaryColor)
                             .padding(.vertical, Spacing.md)
                             .overlay(
                                 Rectangle()
-                                    .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.1))
-                                    .frame(height: 0.5),
+                                    .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.06))
+                                    .frame(height: 0.2),
                                 alignment: .bottom
                             )
                         
-                        // Date & Time
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "When" : "Quand")
                                 .font(Typography.caption)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                             
                             DatePicker("", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
-                                .accentColor(Brand.orange)
+                                .accentColor(Brand.orange.opacity(0.8))
                         }
                         
-                        // Person
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "For whom" : "Pour qui")
                                 .font(Typography.caption)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                             
                             TextField("", text: $assignee)
                                 .font(Typography.body)
@@ -128,53 +124,48 @@ struct EditPromiView: View {
                                 .padding(.vertical, Spacing.md)
                                 .overlay(
                                     Rectangle()
-                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.1))
-                                        .frame(height: 0.5),
+                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.06))
+                                        .frame(height: 0.2),
                                     alignment: .bottom
                                 )
                         }
                         
-                        // Intensity gauge
                         MinimalIntensityGaugeView(
                             intensity: $intensity,
                             question: intensityQuestion,
                             textColor: userStore.selectedPalette.textSecondaryColor
                         )
                         
-                        Spacer(minLength: 100)
+                        Spacer(minLength: 120)
                     }
-                    .padding(.horizontal, Spacing.xl)
+                    .padding(.horizontal, Spacing.xxl)
                 }
                 
                 Spacer()
                 
-                // Bottom buttons
                 VStack(spacing: Spacing.md) {
-                    // Save changes
                     Button(action: saveChanges) {
                         Text(userStore.selectedLanguage.starts(with: "en") ? "Save changes" : "Enregistrer")
                             .font(Typography.bodyEmphasis)
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.8))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Spacing.md)
                             .background(
                                 RoundedRectangle(cornerRadius: CornerRadius.xs)
-                                    .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.2), lineWidth: 0.5)
+                                    .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.1), lineWidth: 0.2)
                             )
                     }
                     
-                    // Mark as done / Reopen
                     Button(action: toggleStatus) {
                         Text(buttonText)
                             .font(Typography.callout)
-                            .foregroundColor(Brand.orange.opacity(0.8))
+                            .foregroundColor(Brand.orange.opacity(0.6))
                     }
                 }
-                .padding(.horizontal, Spacing.xl)
-                .padding(.bottom, Spacing.xxl)
+                .padding(.horizontal, Spacing.xxl)
+                .padding(.bottom, Spacing.xxxl)
             }
             
-            // Validation Animation
             if showValidationAnimation {
                 PinkyPromiseSlightSlapView(isPresented: $showValidationAnimation)
                     .transition(.opacity)
