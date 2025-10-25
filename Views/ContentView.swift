@@ -16,6 +16,7 @@ struct ContentView: View {
     @State private var showPalette = false
     @State private var showSettings = false
     @State private var showKarma = false
+    @State private var showDrafts = false
     @State private var selectedSort: SortOption = .date
     
     // Tutorial
@@ -24,105 +25,89 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // Background (avec animation de changement)
+            // Background minimaliste
             userStore.selectedPalette.backgroundColor
                 .ignoresSafeArea()
                 .animation(AnimationPreset.easeOut, value: userStore.selectedPalette)
             
             VStack(spacing: 0) {
-                // Header (logo + Promi + bouton +)
-                NewHeaderView(
+                // Header minimaliste
+                MinimalHeaderView(
                     textColor: userStore.selectedPalette.textPrimaryColor,
                     onAddTap: { showAddPromi = true }
                 )
-                .padding(.horizontal, Spacing.lg)
-                .padding(.top, Spacing.lg)
+                .padding(.horizontal, Spacing.xl)
+                .padding(.top, Spacing.xl)
                 
-                // Roast Strip (Karma)
+                // Roast Strip (ultra-discret)
                 Button(action: { showKarma = true }) {
                     HStack(spacing: Spacing.xs) {
                         Circle()
                             .fill(karmaColor)
-                            .frame(width: 8, height: 8)
+                            .frame(width: 6, height: 6)
                         
                         Text(karmaStore.getRoast(language: userStore.selectedLanguage))
-                            .font(Typography.callout)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor)
+                            .font(Typography.caption)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.6))
                             .lineLimit(1)
                         
                         Spacer()
                         
                         Text("\(karmaStore.karmaState.percentage)%")
-                            .font(Typography.caption)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor)
+                            .font(Typography.caption2)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
                     }
                 }
-                .padding(.horizontal, Spacing.lg)
+                .padding(.horizontal, Spacing.xl)
                 .padding(.vertical, Spacing.sm)
                 
-                // Sort Tabs
-                SortTabsView(
+                // Sort Tabs (ultra-minimalistes)
+                MinimalSortTabsView(
                     selectedSort: $selectedSort,
                     textColor: userStore.selectedPalette.textSecondaryColor,
-                    accentColor: userStore.selectedPalette.accentColor
+                    accentColor: userStore.selectedPalette.textPrimaryColor
                 )
-                .padding(.horizontal, Spacing.lg)
-                .padding(.vertical, Spacing.md)
+                .padding(.horizontal, Spacing.xl)
+                .padding(.top, Spacing.md)
+                .padding(.bottom, Spacing.lg)
                 
                 // Promi List
                 if sortedPromis.isEmpty {
                     Spacer()
                     VStack(spacing: Spacing.md) {
-                        Text("👋")
-                            .font(.system(size: 60))
+                        Text("🤍")
+                            .font(.system(size: 48))
                         
                         Text("Aucun Promi pour le moment")
-                            .font(Typography.body)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor)
+                            .font(Typography.callout)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.6))
                         
                         Text("Tape sur + pour commencer")
                             .font(Typography.caption)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.7))
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                     }
                     Spacer()
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: Spacing.md) {
+                        LazyVStack(spacing: Spacing.lg) {
                             ForEach(sortedPromis) { promi in
-                                PromiCardView(promi: promi)
+                                MinimalPromiCardView(promi: promi)
                             }
                         }
-                        .padding(.horizontal, Spacing.lg)
-                        .padding(.bottom, Spacing.xxxl)
+                        .padding(.horizontal, Spacing.xl)
+                        .padding(.bottom, 120) // Espace pour les icônes du bas
                     }
                 }
             }
             
-            // Bottom Icons (floating)
-            VStack {
-                Spacer()
-                HStack(spacing: Spacing.lg) {
-                    Spacer()
-                    
-                    // Palette
-                    IconButton(icon: "paintpalette", color: userStore.selectedPalette.accentColor) {
-                        showPalette = true
-                    }
-                    
-                    // Karma
-                    IconButton(icon: "chart.bar.fill", color: Brand.orange) {
-                        showKarma = true
-                    }
-                    
-                    // Settings
-                    IconButton(icon: "gearshape.fill", color: userStore.selectedPalette.textSecondaryColor) {
-                        showSettings = true
-                    }
-                    
-                    Spacer()
-                }
-                .padding(.bottom, Spacing.xl)
-            }
+            // Bottom Icons Bar (fixe, centré, plus bas)
+            BottomIconsBar(
+                textColor: userStore.selectedPalette.textPrimaryColor,
+                onDraftTap: { showDrafts = true },
+                onPaletteTap: { showPalette = true },
+                onKarmaTap: { showKarma = true },
+                onSettingsTap: { showSettings = true }
+            )
             
             // Tutorial Overlay
             if showTutorial {
@@ -145,10 +130,12 @@ struct ContentView: View {
         .sheet(isPresented: $showKarma) {
             KarmaView()
         }
+        .sheet(isPresented: $showDrafts) {
+            DraftsView()
+        }
         .onAppear {
             karmaStore.updateKarma(basedOn: promiStore.promis)
             
-            // Afficher le tutoriel si jamais complété
             if !userStore.hasCompletedTutorial {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     withAnimation(AnimationPreset.easeOut) {
@@ -176,26 +163,22 @@ struct ContentView: View {
         case .person:
             return openPromis.sorted { ($0.assignee ?? "") < ($1.assignee ?? "") }
         case .importance:
-            let order: [Importance: Int] = [.urgent: 0, .normal: 1, .low: 2]
-            return openPromis.sorted { (order[$0.importance] ?? 99) < (order[$1.importance] ?? 99) }
+            return openPromis.sorted { $0.intensity > $1.intensity }
         case .karma:
             return openPromis.sorted { $0.intensity > $1.intensity }
         case .inspiration:
             return openPromis.shuffled()
+        case .groups:
+            return openPromis // TODO: Implémenter groupes premium
         }
     }
     
     private var karmaColor: Color {
         let karma = karmaStore.karmaState.percentage
-        if karma >= 90 {
-            return Brand.karmaExcellent
-        } else if karma >= 70 {
-            return Brand.karmaGood
-        } else if karma >= 50 {
-            return Brand.karmaAverage
-        } else {
-            return Brand.karmaPoor
-        }
+        if karma >= 90 { return Brand.karmaExcellent }
+        else if karma >= 70 { return Brand.karmaGood }
+        else if karma >= 50 { return Brand.karmaAverage }
+        else { return Brand.karmaPoor }
     }
 }
 
@@ -203,7 +186,8 @@ enum SortOption: String, CaseIterable {
     case date = "Date"
     case urgency = "Urgence"
     case person = "Personne"
-    case importance = "Important"
+    case importance = "Intensité"
     case karma = "Karma"
     case inspiration = "Inspi"
+    case groups = "Groupes" // Premium
 }

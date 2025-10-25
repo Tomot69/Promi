@@ -2,7 +2,7 @@
 //  SplashScreenView.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -26,11 +26,11 @@ struct SplashScreenView: View {
                 VStack(spacing: Spacing.xl) {
                     Spacer()
                     
-                    // Logo vectoriel
+                    // Logo vectoriel (PLUS GRAND)
                     Image("LogoPromi")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 200, height: 200)
+                        .frame(width: 280, height: 280) // Augmenté de 200 → 280
                         .scaleEffect(logoScale * heartPulse)
                         .opacity(logoOpacity)
                     
@@ -59,7 +59,7 @@ struct SplashScreenView: View {
                 }
                 
                 // Animation du texte
-                withAnimation(AnimationPreset.easeOut.delay(0.8)) {
+                withAnimation(AnimationPreset.easeOut.delay(0.9)) {
                     textOpacity = 1.0
                 }
                 
@@ -67,13 +67,13 @@ struct SplashScreenView: View {
                 withAnimation(
                     Animation.easeInOut(duration: 2.0)
                         .repeatCount(2, autoreverses: true)
-                        .delay(1.2)
+                        .delay(1.3)
                 ) {
-                    heartPulse = 1.05
+                    heartPulse = 1.03
                 }
                 
-                // Transition vers LanguageSelection après 3 secondes
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.2) {
+                // Transition vers LanguageSelection (TIMING RALLONGÉ)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) { // 3.2 → 4.0 secondes
                     withAnimation(AnimationPreset.easeOut) {
                         isActive = true
                     }

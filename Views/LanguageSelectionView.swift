@@ -2,7 +2,7 @@
 //  LanguageSelectionView.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -26,12 +26,12 @@ struct LanguageSelectionView: View {
                 VStack(spacing: Spacing.xl) {
                     Spacer()
                     
-                    // Logo miniature
+                    // Logo plus grand
                     Image("LogoPromi")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 80, height: 80)
-                        .padding(.bottom, Spacing.sm)
+                        .frame(width: 140, height: 140) // Augmenté de 80 → 140
+                        .padding(.bottom, Spacing.md)
                     
                     // Titre
                     Text(LocalizationManager.shared.getLocalizedString("language.title", language: selectedLanguage ?? "en"))
@@ -157,8 +157,11 @@ struct LanguageButton: View {
             .padding(Spacing.md)
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.sm)
-                    .fill(isSelected ? Brand.orange.opacity(0.1) : Color.white)
-                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
+                    .fill(isSelected ? Brand.orange.opacity(0.05) : Color.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.sm)
+                            .stroke(Brand.textPrimary.opacity(0.08), lineWidth: 0.3) // Ultra-fin
+                    )
             )
             .scaleEffect(isPressed ? 0.97 : 1.0)
         }

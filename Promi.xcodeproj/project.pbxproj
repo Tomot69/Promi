@@ -42,6 +42,12 @@
 		52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0902EABFD6F0048149B /* CommentsView.swift */; };
 		52D3F0932EABFD940048149B /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0922EABFD940048149B /* PaletteView.swift */; };
 		52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0942EABFDB10048149B /* SettingsView.swift */; };
+		52E1A2412EAD14D1007EFAA8 /* CustomIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A2402EAD14D1007EFAA8 /* CustomIcons.swift */; };
+		52E1A2432EAD14EF007EFAA8 /* BottomIconsBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A2422EAD14EF007EFAA8 /* BottomIconsBar.swift */; };
+		52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A2442EAD150C007EFAA8 /* MinimalHeaderView.swift */; };
+		52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A2462EAD1541007EFAA8 /* MinimalSortTabsView.swift */; };
+		52E1A2492EAD155F007EFAA8 /* MinimalPromiCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A2482EAD155F007EFAA8 /* MinimalPromiCardView.swift */; };
+		52E1A24B2EAD1580007EFAA8 /* DraftsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A24A2EAD1580007EFAA8 /* DraftsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -81,6 +87,12 @@
 		52D3F0902EABFD6F0048149B /* CommentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsView.swift; sourceTree = "<group>"; };
 		52D3F0922EABFD940048149B /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
 		52D3F0942EABFDB10048149B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		52E1A2402EAD14D1007EFAA8 /* CustomIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomIcons.swift; sourceTree = "<group>"; };
+		52E1A2422EAD14EF007EFAA8 /* BottomIconsBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomIconsBar.swift; sourceTree = "<group>"; };
+		52E1A2442EAD150C007EFAA8 /* MinimalHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalHeaderView.swift; sourceTree = "<group>"; };
+		52E1A2462EAD1541007EFAA8 /* MinimalSortTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalSortTabsView.swift; sourceTree = "<group>"; };
+		52E1A2482EAD155F007EFAA8 /* MinimalPromiCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalPromiCardView.swift; sourceTree = "<group>"; };
+		52E1A24A2EAD1580007EFAA8 /* DraftsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -165,6 +177,12 @@
 				529895AB2EAC57B7000F57F8 /* IconButton.swift */,
 				529895AD2EAC57E0000F57F8 /* KarmaView.swift */,
 				529895B12EAC6181000F57F8 /* TutorialOverlayView.swift */,
+				52E1A2402EAD14D1007EFAA8 /* CustomIcons.swift */,
+				52E1A2422EAD14EF007EFAA8 /* BottomIconsBar.swift */,
+				52E1A2442EAD150C007EFAA8 /* MinimalHeaderView.swift */,
+				52E1A2462EAD1541007EFAA8 /* MinimalSortTabsView.swift */,
+				52E1A2482EAD155F007EFAA8 /* MinimalPromiCardView.swift */,
+				52E1A24A2EAD1580007EFAA8 /* DraftsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -286,8 +304,10 @@
 			files = (
 				52D3F0732EABF8870048149B /* KarmaState.swift in Sources */,
 				52D3F06D2EABF80C0048149B /* Appearance.swift in Sources */,
+				52E1A24B2EAD1580007EFAA8 /* DraftsView.swift in Sources */,
 				52D3F0812EABFA8A0048149B /* ContentView.swift in Sources */,
 				52D3F06B2EABF6FF0048149B /* Haptics.swift in Sources */,
+				52E1A2492EAD155F007EFAA8 /* MinimalPromiCardView.swift in Sources */,
 				52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */,
 				529895AC2EAC57B7000F57F8 /* IconButton.swift in Sources */,
 				529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */,
@@ -298,6 +318,7 @@
 				529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */,
 				529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */,
 				529895AA2EAC5797000F57F8 /* NewHeaderView.swift in Sources */,
+				52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */,
 				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
 				52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */,
 				52D3F06F2EABF83A0048149B /* PromiItem.swift in Sources */,
@@ -311,8 +332,11 @@
 				52D3F0832EABFAA90048149B /* HeaderView.swift in Sources */,
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
 				529895A82EAC5746000F57F8 /* UrgencyIntensityView.swift in Sources */,
+				52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */,
 				52D3F0872EABFB0C0048149B /* PromiCardView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
+				52E1A2432EAD14EF007EFAA8 /* BottomIconsBar.swift in Sources */,
+				52E1A2412EAD14D1007EFAA8 /* CustomIcons.swift in Sources */,
 				529895B22EAC6181000F57F8 /* TutorialOverlayView.swift in Sources */,
 				52D3F07B2EABF9DF0048149B /* SplashScreenView.swift in Sources */,
 				52D3F0892EABFB780048149B /* BravoButton.swift in Sources */,
