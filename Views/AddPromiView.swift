@@ -52,87 +52,93 @@ struct AddPromiView: View {
                 HStack {
                     Button(action: handleClose) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .ultraLight))
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.5))
+                            .font(.system(size: 18, weight: .ultraLight))
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.4))
                     }
                     
                     Spacer()
                     
+                    // Titre avec "Promi" en orange
                     HStack(spacing: 4) {
                         Text(titleText.replacingOccurrences(of: "Promi", with: ""))
                             .font(Typography.callout)
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.6))
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.5))
                         
                         Text("Promi")
                             .font(Typography.callout)
-                            .foregroundColor(Brand.orange.opacity(0.8))
+                            .foregroundColor(Brand.orange.opacity(0.85))
                     }
                     
                     Spacer()
                     
-                    Color.clear
-                        .frame(width: 16, height: 16)
+                    Color.clear.frame(width: 18, height: 18)
                 }
-                .padding(.horizontal, Spacing.xxl)
-                .padding(.top, Spacing.xxl)
-                .padding(.bottom, Spacing.xl)
+                .padding(.horizontal, Spacing.xxxl)
+                .padding(.top, Spacing.xxxl)
+                .padding(.bottom, Spacing.xxl)
                 
-                // Content scrollable
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.xxl) {
-                        // Title field (ultra-minimal)
+                    VStack(alignment: .leading, spacing: Spacing.xxxl) {
+                        // Title field
                         TextField(placeholderText, text: $title)
                             .font(Typography.body)
                             .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                            .padding(.vertical, Spacing.md)
+                            .padding(.vertical, Spacing.lg)
                             .overlay(
                                 Rectangle()
-                                    .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.06))
-                                    .frame(height: 0.2),
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                userStore.selectedPalette.textPrimaryColor.opacity(0.08),
+                                                userStore.selectedPalette.textPrimaryColor.opacity(0.02)
+                                            ],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .frame(height: 0.15),
                                 alignment: .bottom
                             )
                         
-                        // Date & Time
+                        // Date
                         VStack(alignment: .leading, spacing: Spacing.sm) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "When" : "Quand")
                                 .font(Typography.caption)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.35))
                             
                             DatePicker("", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
-                                .accentColor(Brand.orange.opacity(0.8))
+                                .accentColor(Brand.orange.opacity(0.85))
                         }
                         
                         // Person
                         VStack(alignment: .leading, spacing: Spacing.sm) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "For whom" : "Pour qui")
                                 .font(Typography.caption)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.35))
                             
                             TextField(userStore.selectedLanguage.starts(with: "en") ? "Someone..." : "Quelqu'un...", text: $assignee)
                                 .font(Typography.body)
                                 .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                                .padding(.vertical, Spacing.md)
+                                .padding(.vertical, Spacing.lg)
                                 .overlay(
                                     Rectangle()
-                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.06))
-                                        .frame(height: 0.2),
+                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.05))
+                                        .frame(height: 0.15),
                                     alignment: .bottom
                                 )
                         }
                         
-                        // Audio button (ultra-discret)
-                        Button(action: {
-                            Haptics.shared.tinyPop()
-                        }) {
+                        // Audio button
+                        Button(action: { Haptics.shared.tinyPop() }) {
                             HStack(spacing: Spacing.xs) {
                                 Image(systemName: "mic")
                                     .font(.system(size: 12))
                                 Text(userStore.selectedLanguage.starts(with: "en") ? "Add audio" : "Ajouter audio")
                                     .font(Typography.caption2)
                             }
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.3))
                         }
                         
                         // Intensity gauge
@@ -142,27 +148,32 @@ struct AddPromiView: View {
                             textColor: userStore.selectedPalette.textSecondaryColor
                         )
                         
-                        Spacer(minLength: 120)
+                        Spacer(minLength: 140)
                     }
-                    .padding(.horizontal, Spacing.xxl)
+                    .padding(.horizontal, Spacing.xxxl)
                 }
                 
                 Spacer()
                 
-                // Bottom button (ultra-minimal)
+                // Bottom button (orange invitant)
                 Button(action: createPromi) {
                     Text(buttonText)
                         .font(Typography.bodyEmphasis)
-                        .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(title.isEmpty ? 0.3 : 0.8))
+                        .foregroundColor(title.isEmpty ? userStore.selectedPalette.textPrimaryColor.opacity(0.25) : Brand.orange.opacity(0.9))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.md)
+                        .padding(.vertical, Spacing.lg)
                         .background(
                             RoundedRectangle(cornerRadius: CornerRadius.xs)
-                                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.1), lineWidth: 0.2)
+                                .stroke(
+                                    title.isEmpty
+                                    ? userStore.selectedPalette.textPrimaryColor.opacity(0.08)
+                                    : Brand.orange.opacity(0.3),
+                                    lineWidth: 0.5
+                                )
                         )
                 }
                 .disabled(title.isEmpty)
-                .padding(.horizontal, Spacing.xxl)
+                .padding(.horizontal, Spacing.xxxl)
                 .padding(.bottom, Spacing.xxxl)
             }
             

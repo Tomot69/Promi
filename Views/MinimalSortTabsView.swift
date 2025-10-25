@@ -14,35 +14,42 @@ struct MinimalSortTabsView: View {
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.xxl) {
+            HStack(spacing: Spacing.xxxl) { // Encore plus d'espace
                 ForEach(SortOption.allCases, id: \.self) { option in
                     Button(action: {
-                        selectedSort = option
+                        withAnimation(AnimationPreset.spring) {
+                            selectedSort = option
+                        }
                         Haptics.shared.tinyPop()
                     }) {
                         VStack(spacing: Spacing.xxs) {
                             Text(option.rawValue)
                                 .font(Typography.caption)
-                                .foregroundColor(selectedSort == option ? accentColor.opacity(0.8) : textColor.opacity(0.3))
+                                .foregroundColor(
+                                    selectedSort == option
+                                    ? accentColor.opacity(0.9)
+                                    : textColor.opacity(0.25)
+                                )
                             
-                            // Underline ultra-subtil
+                            // Dot au lieu de ligne (plus original)
                             if selectedSort == option {
-                                Rectangle()
-                                    .fill(accentColor.opacity(0.4))
-                                    .frame(height: 0.3)
-                                    .transition(.opacity)
+                                Circle()
+                                    .fill(Brand.orange.opacity(0.5))
+                                    .frame(width: 3, height: 3)
+                                    .transition(.scale.combined(with: .opacity))
                             } else {
-                                Rectangle()
+                                Circle()
                                     .fill(Color.clear)
-                                    .frame(height: 0.3)
+                                    .frame(width: 3, height: 3)
                             }
                         }
-                        .frame(minWidth: 50)
+                        .frame(minWidth: 60)
                     }
                     .disabled(option == .groups)
-                    .opacity(option == .groups ? 0.2 : 1.0)
+                    .opacity(option == .groups ? 0.15 : 1.0)
                 }
             }
+            .padding(.horizontal, Spacing.xs)
         }
     }
 }

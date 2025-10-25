@@ -19,88 +19,86 @@ struct ContentView: View {
     @State private var showDrafts = false
     @State private var selectedSort: SortOption = .date
     
-    // Tutorial
     @State private var showTutorial = false
     @State private var currentTutorialStep = 0
     
     var body: some View {
         ZStack {
-            // Background minimaliste
             userStore.selectedPalette.backgroundColor
                 .ignoresSafeArea()
                 .animation(AnimationPreset.easeOut, value: userStore.selectedPalette)
             
             VStack(spacing: 0) {
-                // Header minimaliste
+                // Header (Promi + logo + +)
                 MinimalHeaderView(
                     textColor: userStore.selectedPalette.textPrimaryColor,
                     onAddTap: { showAddPromi = true }
                 )
-                .padding(.horizontal, Spacing.xl)
-                .padding(.top, Spacing.xl)
+                .padding(.horizontal, Spacing.xxl) // Plus d'espace
+                .padding(.top, Spacing.xxl)
                 
-                // Roast Strip (ultra-discret)
+                // Roast Strip (ultra-discret, presque invisible)
                 Button(action: { showKarma = true }) {
                     HStack(spacing: Spacing.xs) {
                         Circle()
-                            .fill(karmaColor)
-                            .frame(width: 6, height: 6)
+                            .fill(karmaColor.opacity(0.5))
+                            .frame(width: 4, height: 4)
                         
                         Text(karmaStore.getRoast(language: userStore.selectedLanguage))
-                            .font(Typography.caption)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.6))
+                            .font(Typography.caption2)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.3))
                             .lineLimit(1)
                         
                         Spacer()
-                        
-                        Text("\(karmaStore.karmaState.percentage)%")
-                            .font(Typography.caption2)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
                     }
                 }
-                .padding(.horizontal, Spacing.xl)
-                .padding(.vertical, Spacing.sm)
+                .padding(.horizontal, Spacing.xxl)
+                .padding(.vertical, Spacing.md)
                 
-                // Sort Tabs (ultra-minimalistes)
+                // Sort Tabs
                 MinimalSortTabsView(
                     selectedSort: $selectedSort,
                     textColor: userStore.selectedPalette.textSecondaryColor,
                     accentColor: userStore.selectedPalette.textPrimaryColor
                 )
-                .padding(.horizontal, Spacing.xl)
-                .padding(.top, Spacing.md)
-                .padding(.bottom, Spacing.lg)
+                .padding(.top, Spacing.xl)
+                .padding(.bottom, Spacing.xl)
                 
                 // Promi List
                 if sortedPromis.isEmpty {
                     Spacer()
-                    VStack(spacing: Spacing.md) {
-                        Text("🤍")
-                            .font(.system(size: 48))
+                    VStack(spacing: Spacing.lg) {
+                        Circle()
+                            .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.08), lineWidth: 0.5)
+                            .frame(width: 80, height: 80)
+                            .overlay(
+                                Text("🤍")
+                                    .font(.system(size: 32))
+                            )
                         
                         Text("Aucun Promi pour le moment")
                             .font(Typography.callout)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.6))
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                         
                         Text("Tape sur + pour commencer")
-                            .font(Typography.caption)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                            .font(Typography.caption2)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.25))
                     }
                     Spacer()
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: Spacing.lg) {
+                        LazyVStack(spacing: Spacing.xl) { // Plus d'espace entre les cartes
                             ForEach(sortedPromis) { promi in
                                 MinimalPromiCardView(promi: promi)
                             }
                         }
-                        .padding(.horizontal, Spacing.xl)
-                        .padding(.bottom, 120) // Espace pour les icônes du bas
+                        .padding(.horizontal, Spacing.xxl)
+                        .padding(.bottom, 140)
                     }
                 }
             }
             
-            // Bottom Icons Bar (fixe, centré, plus bas)
+            // Bottom Icons Bar
             BottomIconsBar(
                 textColor: userStore.selectedPalette.textPrimaryColor,
                 onDraftTap: { showDrafts = true },
@@ -109,7 +107,6 @@ struct ContentView: View {
                 onSettingsTap: { showSettings = true }
             )
             
-            // Tutorial Overlay
             if showTutorial {
                 TutorialOverlayView(
                     isPresented: $showTutorial,
@@ -169,7 +166,7 @@ struct ContentView: View {
         case .inspiration:
             return openPromis.shuffled()
         case .groups:
-            return openPromis // TODO: Implémenter groupes premium
+            return openPromis
         }
     }
     
@@ -189,5 +186,5 @@ enum SortOption: String, CaseIterable {
     case importance = "Intensité"
     case karma = "Karma"
     case inspiration = "Inspi"
-    case groups = "Groupes" // Premium
+    case groups = "Groupes"
 }

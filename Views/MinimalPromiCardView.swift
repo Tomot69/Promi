@@ -14,59 +14,75 @@ struct MinimalPromiCardView: View {
     let promi: PromiItem
     @State private var offset: CGFloat = 0
     @State private var showEditView = false
-    @State private var isPressed = false
+    @State private var isHovered = false
     
     var body: some View {
         Button(action: {
             Haptics.shared.tinyPop()
             showEditView = true
         }) {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                // Title
-                Text(promi.title)
-                    .font(Typography.body)
-                    .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(promi.status == .done ? 0.3 : 1.0))
-                    .strikethrough(promi.status == .done, color: userStore.selectedPalette.textPrimaryColor.opacity(0.2))
-                    .multilineTextAlignment(.leading)
-                    .lineSpacing(2)
+            HStack(spacing: 0) {
+                // Barre latérale ultra-fine (orange si haute intensité)
+                Rectangle()
+                    .fill(promi.intensity > 70 ? Brand.orange.opacity(0.6) : Color.clear)
+                    .frame(width: 1.5)
                 
-                // Date + Indicators (ultra-discrets)
-                HStack(spacing: Spacing.sm) {
-                    Text(formattedDate)
-                        .font(Typography.caption2)
-                        .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    // Title
+                    Text(promi.title)
+                        .font(Typography.body)
+                        .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(promi.status == .done ? 0.25 : 0.95))
+                        .strikethrough(promi.status == .done, color: userStore.selectedPalette.textPrimaryColor.opacity(0.15))
+                        .multilineTextAlignment(.leading)
+                        .lineSpacing(3)
                     
-                    if isOverdue {
-                        Circle()
-                            .fill(Color.red.opacity(0.4))
-                            .frame(width: 2, height: 2)
-                    }
-                    
-                    Spacer()
-                    
-                    // Intensity dot (ultra-subtil)
-                    if promi.intensity > 70 {
-                        Circle()
-                            .fill(Brand.orange.opacity(0.6))
-                            .frame(width: 2, height: 2)
+                    // Meta infos (ultra-discret)
+                    HStack(spacing: Spacing.sm) {
+                        // Date
+                        Text(formattedDate)
+                            .font(Typography.caption2)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.35))
+                        
+                        // Overdue indicator
+                        if isOverdue {
+                            Text("!")
+                                .font(Typography.caption2)
+                                .foregroundColor(Color.red.opacity(0.4))
+                        }
+                        
+                        Spacer()
+                        
+                        // Assignee si présent
+                        if let assignee = promi.assignee {
+                            Text(assignee)
+                                .font(Typography.caption2)
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.3))
+                        }
                     }
                 }
-                
-                // Assignee (ultra-discret)
-                if let assignee = promi.assignee {
-                    Text("→ \(assignee)")
-                        .font(Typography.caption2)
-                        .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.3))
-                }
+                .padding(.vertical, Spacing.lg)
+                .padding(.horizontal, Spacing.lg)
             }
-            .padding(.vertical, Spacing.lg)
-            .padding(.horizontal, Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
+                // Fond transparent avec contour ultra-subtil
                 RoundedRectangle(cornerRadius: CornerRadius.xs)
-                    .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.04), lineWidth: 0.2) // Ultra-fin
+                    .fill(isHovered ? userStore.selectedPalette.textPrimaryColor.opacity(0.015) : Color.clear)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.xs)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        userStore.selectedPalette.textPrimaryColor.opacity(0.03),
+                                        userStore.selectedPalette.textPrimaryColor.opacity(0.01)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 0.15
+                            )
+                    )
             )
-            .scaleEffect(isPressed ? 0.98 : 1.0)
         }
         .buttonStyle(PlainButtonStyle())
         .offset(x: offset)
@@ -92,13 +108,11 @@ struct MinimalPromiCardView: View {
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in
-                    withAnimation(AnimationPreset.springBouncy) {
-                        isPressed = true
-                    }
+                    isHovered = true
                 }
                 .onEnded { _ in
-                    withAnimation(AnimationPreset.spring) {
-                        isPressed = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isHovered = false
                     }
                 }
         )
