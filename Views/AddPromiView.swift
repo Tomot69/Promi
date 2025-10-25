@@ -48,7 +48,7 @@ struct AddPromiView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header ultra-minimal
+                // Header
                 HStack {
                     Button(action: handleClose) {
                         Image(systemName: "xmark")
@@ -58,14 +58,13 @@ struct AddPromiView: View {
                     
                     Spacer()
                     
-                    // Titre avec "Promi" en orange
                     HStack(spacing: 4) {
                         Text(titleText.replacingOccurrences(of: "Promi", with: ""))
-                            .font(Typography.callout)
+                            .font(.system(size: 15, weight: .regular))
                             .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.5))
                         
                         Text("Promi")
-                            .font(Typography.callout)
+                            .font(.system(size: 15, weight: .regular))
                             .foregroundColor(Brand.orange.opacity(0.85))
                     }
                     
@@ -73,17 +72,17 @@ struct AddPromiView: View {
                     
                     Color.clear.frame(width: 18, height: 18)
                 }
-                .padding(.horizontal, Spacing.xxxl)
-                .padding(.top, Spacing.xxxl)
-                .padding(.bottom, Spacing.xxl)
+                .padding(.horizontal, 32)
+                .padding(.top, 32)
+                .padding(.bottom, 24)
                 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.xxxl) {
+                    VStack(alignment: .leading, spacing: 32) {
                         // Title field
                         TextField(placeholderText, text: $title)
-                            .font(Typography.body)
+                            .font(.system(size: 16, weight: .regular))
                             .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                            .padding(.vertical, Spacing.lg)
+                            .padding(.vertical, 16)
                             .overlay(
                                 Rectangle()
                                     .fill(
@@ -101,9 +100,9 @@ struct AddPromiView: View {
                             )
                         
                         // Date
-                        VStack(alignment: .leading, spacing: Spacing.sm) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "When" : "Quand")
-                                .font(Typography.caption)
+                                .font(.system(size: 12, weight: .regular))
                                 .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.35))
                             
                             DatePicker("", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
@@ -113,15 +112,15 @@ struct AddPromiView: View {
                         }
                         
                         // Person
-                        VStack(alignment: .leading, spacing: Spacing.sm) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "For whom" : "Pour qui")
-                                .font(Typography.caption)
+                                .font(.system(size: 12, weight: .regular))
                                 .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.35))
                             
                             TextField(userStore.selectedLanguage.starts(with: "en") ? "Someone..." : "Quelqu'un...", text: $assignee)
-                                .font(Typography.body)
+                                .font(.system(size: 16, weight: .regular))
                                 .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                                .padding(.vertical, Spacing.lg)
+                                .padding(.vertical, 16)
                                 .overlay(
                                     Rectangle()
                                         .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.05))
@@ -132,11 +131,11 @@ struct AddPromiView: View {
                         
                         // Audio button
                         Button(action: { Haptics.shared.tinyPop() }) {
-                            HStack(spacing: Spacing.xs) {
+                            HStack(spacing: 8) {
                                 Image(systemName: "mic")
                                     .font(.system(size: 12))
                                 Text(userStore.selectedLanguage.starts(with: "en") ? "Add audio" : "Ajouter audio")
-                                    .font(Typography.caption2)
+                                    .font(.system(size: 11, weight: .regular))
                             }
                             .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.3))
                         }
@@ -150,20 +149,20 @@ struct AddPromiView: View {
                         
                         Spacer(minLength: 140)
                     }
-                    .padding(.horizontal, Spacing.xxxl)
+                    .padding(.horizontal, 32)
                 }
                 
                 Spacer()
                 
-                // Bottom button (orange invitant)
+                // Bottom button
                 Button(action: createPromi) {
                     Text(buttonText)
-                        .font(Typography.bodyEmphasis)
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(title.isEmpty ? userStore.selectedPalette.textPrimaryColor.opacity(0.25) : Brand.orange.opacity(0.9))
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, Spacing.lg)
+                        .padding(.vertical, 16)
                         .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.xs)
+                            RoundedRectangle(cornerRadius: 4)
                                 .stroke(
                                     title.isEmpty
                                     ? userStore.selectedPalette.textPrimaryColor.opacity(0.08)
@@ -173,8 +172,8 @@ struct AddPromiView: View {
                         )
                 }
                 .disabled(title.isEmpty)
-                .padding(.horizontal, Spacing.xxxl)
-                .padding(.bottom, Spacing.xxxl)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 32)
             }
             
             if showValidationAnimation {
@@ -223,7 +222,7 @@ struct AddPromiView: View {
         
         promiStore.addPromi(newPromi)
         
-        withAnimation(AnimationPreset.easeOut) {
+        withAnimation(Animation.easeOut(duration: 0.3)) {
             showValidationAnimation = true
         }
         

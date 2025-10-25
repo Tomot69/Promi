@@ -11,79 +11,117 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var userStore: UserStore
     
+    @State private var showLanguagePicker = false
+    
     var body: some View {
         NavigationView {
-            List {
-                Section("Langue") {
-                    HStack {
-                        Text("Langue actuelle")
-                        Spacer()
-                        Text(userStore.getLanguageName())
-                            .foregroundColor(Brand.textSecondary)
-                    }
-                }
+            ZStack {
+                userStore.selectedPalette.backgroundColor
+                    .ignoresSafeArea()
                 
-                Section("Apparence") {
-                    HStack {
-                        Text("Palette actuelle")
-                        Spacer()
-                        Text(userStore.selectedPalette.displayName)
-                            .foregroundColor(Brand.textSecondary)
-                    }
-                }
-                
-                Section("Tutoriel") {
-                    Button(action: {
-                        userStore.resetTutorial()
-                        Haptics.shared.success()
-                        dismiss()
-                    }) {
-                        HStack {
-                            Text("Revoir le tutoriel")
-                                .foregroundColor(Brand.textPrimary)
-                            Spacer()
-                            Image(systemName: "arrow.clockwise")
-                                .foregroundColor(Brand.orange)
+                ScrollView {
+                    VStack(spacing: 32) {
+                        // Header
+                        VStack(spacing: 8) {
+                            Text("Réglages")
+                                .font(.system(size: 24, weight: .regular))
+                                .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.9))
                         }
-                    }
-                }
-                
-                Section("Compte") {
-                    HStack {
-                        Text("ID Utilisateur")
-                        Spacer()
-                        Text(String(userStore.localUserId.prefix(8)))
-                            .font(Typography.caption)
-                            .foregroundColor(Brand.textSecondary)
-                    }
-                }
-                
-                Section("À propos") {
-                    HStack {
-                        Text("Version")
-                        Spacer()
-                        Text("1.0.0")
-                            .foregroundColor(Brand.textSecondary)
-                    }
-                    
-                    HStack {
-                        Text("Build")
-                        Spacer()
-                        Text("2025.10.25")
-                            .foregroundColor(Brand.textSecondary)
+                        .padding(.top, 24)
+                        
+                        // Settings list
+                        VStack(spacing: 24) {
+                            // Language
+                            Button(action: { showLanguagePicker = true }) {
+                                SettingsRow(
+                                    icon: "globe",
+                                    label: "Langue",
+                                    value: userStore.selectedLanguage.uppercased()
+                                )
+                            }
+                            
+                            // Premium
+                            Button(action: {}) {
+                                SettingsRow(
+                                    icon: "star",
+                                    label: "Premium",
+                                    value: "Bientôt"
+                                )
+                            }
+                            .disabled(true)
+                            .opacity(0.4)
+                            
+                            // Notifications
+                            Button(action: {}) {
+                                SettingsRow(
+                                    icon: "bell",
+                                    label: "Notifications",
+                                    value: "Bientôt"
+                                )
+                            }
+                            .disabled(true)
+                            .opacity(0.4)
+                            
+                            // About
+                            Button(action: {}) {
+                                SettingsRow(
+                                    icon: "info.circle",
+                                    label: "À propos",
+                                    value: "v1.0"
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 32)
                     }
                 }
             }
-            .navigationTitle("Réglages")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Fermer") {
                         dismiss()
                     }
-                    .foregroundColor(Brand.orange)
+                    .foregroundColor(Brand.orange.opacity(0.85))
+                    .font(.system(size: 15, weight: .regular))
                 }
             }
         }
+        .sheet(isPresented: $showLanguagePicker) {
+            LanguageSelectionView()
+        }
+    }
+}
+
+// MARK: - Settings Row
+struct SettingsRow: View {
+    @EnvironmentObject var userStore: UserStore
+    let icon: String
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .ultraLight))
+                .foregroundColor(userStore.selectedPalette.textSecondaryColor)
+                .frame(width: 24)
+            
+            Text(label)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.8))
+            
+            Spacer()
+            
+            Text(value)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(userStore.selectedPalette.textSecondaryColor)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.06), lineWidth: 0.2)
+        )
     }
 }

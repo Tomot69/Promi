@@ -2,7 +2,7 @@
 //  KarmaView.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -15,70 +15,67 @@ struct KarmaView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.white.ignoresSafeArea()
+                userStore.selectedPalette.backgroundColor
+                    .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: Spacing.xl) {
-                        // Jauge circulaire
-                        ZStack {
-                            Circle()
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 12)
-                                .frame(width: 180, height: 180)
+                    VStack(spacing: 32) {
+                        VStack(spacing: 16) {
+                            Text("Karma")
+                                .font(.system(size: 24, weight: .regular))
+                                .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.9))
                             
-                            Circle()
-                                .trim(from: 0, to: CGFloat(karmaStore.karmaState.percentage) / 100.0)
-                                .stroke(karmaColor, style: StrokeStyle(lineWidth: 12, lineCap: .round))
-                                .frame(width: 180, height: 180)
-                                .rotationEffect(.degrees(-90))
-                                .animation(AnimationPreset.spring, value: karmaStore.karmaState.percentage)
-                            
-                            VStack(spacing: Spacing.xxs) {
-                                Text("\(karmaStore.karmaState.percentage)%")
-                                    .font(.system(size: 48, weight: .semibold))
-                                    .foregroundColor(Brand.textPrimary)
-                                
-                                Text("Karma")
-                                    .font(Typography.callout)
-                                    .foregroundColor(Brand.textSecondary)
-                            }
+                            Text("\(karmaStore.karmaState.percentage)%")
+                                .font(.system(size: 72, weight: .ultraLight))
+                                .foregroundColor(karmaColor)
                         }
-                        .padding(.top, Spacing.xl)
+                        .padding(.top, 32)
                         
-                        // Roast
                         Text(karmaStore.getRoast(language: userStore.selectedLanguage))
-                            .font(Typography.body)
-                            .foregroundColor(Brand.textSecondary)
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal, Spacing.xl)
+                            .padding(.horizontal, 32)
                         
-                        // Badges
-                        VStack(alignment: .leading, spacing: Spacing.md) {
-                            Text("Badges")
-                                .font(Typography.title3)
-                                .foregroundColor(Brand.textPrimary)
+                        VStack(spacing: 24) {
+                            KarmaStatRow(
+                                label: "Total",
+                                value: "\(karmaStore.karmaState.totalPromis)",
+                                color: userStore.selectedPalette.textPrimaryColor
+                            )
                             
-                            ForEach(Badge.allCases, id: \.self) { badge in
-                                BadgeRow(
-                                    badge: badge,
-                                    isUnlocked: karmaStore.karmaState.earnedBadges.contains(badge)
-                                )
-                            }
+                            KarmaStatRow(
+                                label: "Tenus",
+                                value: "\(karmaStore.karmaState.completedPromis)",
+                                color: Brand.karmaGood
+                            )
+                            
+                            KarmaStatRow(
+                                label: "Ratés",
+                                value: "\(karmaStore.karmaState.failedPromis)",
+                                color: Brand.karmaPoor
+                            )
+                            
+                            KarmaStatRow(
+                                label: "En cours",
+                                value: "\(karmaStore.karmaState.pendingPromis)",
+                                color: Brand.karmaAverage
+                            )
                         }
-                        .padding(.horizontal, Spacing.lg)
-                        
-                        Spacer()
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 24)
                     }
-                    .padding(.vertical, Spacing.xl)
                 }
             }
-            .navigationTitle("Karma Score")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Fermer") {
                         dismiss()
                     }
-                    .foregroundColor(Brand.orange)
+                    .foregroundColor(Brand.orange.opacity(0.85))
+                    .font(.system(size: 15, weight: .regular))
                 }
             }
         }
@@ -86,43 +83,37 @@ struct KarmaView: View {
     
     private var karmaColor: Color {
         let karma = karmaStore.karmaState.percentage
-        if karma >= 90 {
-            return Brand.karmaExcellent
-        } else if karma >= 70 {
-            return Brand.karmaGood
-        } else if karma >= 50 {
-            return Brand.karmaAverage
-        } else {
-            return Brand.karmaPoor
-        }
+        if karma >= 90 { return Brand.karmaExcellent }
+        else if karma >= 70 { return Brand.karmaGood }
+        else if karma >= 50 { return Brand.karmaAverage }
+        else { return Brand.karmaPoor }
     }
 }
 
-struct BadgeRow: View {
-    let badge: Badge
-    let isUnlocked: Bool
+// MARK: - Karma Stat Row
+struct KarmaStatRow: View {
+    @EnvironmentObject var userStore: UserStore
+    let label: String
+    let value: String
+    let color: Color
     
     var body: some View {
-        HStack(spacing: Spacing.md) {
-            Text(isUnlocked ? "✅" : "🔒")
-                .font(.system(size: 24))
-            
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                Text(badge.title)
-                    .font(Typography.bodyEmphasis)
-                    .foregroundColor(isUnlocked ? Brand.textPrimary : Brand.textSecondary)
-                
-                Text(badge.description)
-                    .font(Typography.caption)
-                    .foregroundColor(Brand.textSecondary)
-            }
+        HStack {
+            Text(label)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundColor(userStore.selectedPalette.textSecondaryColor)
             
             Spacer()
+            
+            Text(value)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(color.opacity(0.8))
         }
-        .padding(Spacing.md)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
         .background(
-            RoundedRectangle(cornerRadius: CornerRadius.sm)
-                .fill(isUnlocked ? Brand.orange.opacity(0.1) : Color.gray.opacity(0.05))
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.06), lineWidth: 0.2)
         )
     }
 }

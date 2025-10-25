@@ -30,17 +30,17 @@ struct OnboardingView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Header avec Skip (ultra-discret)
+                    // Header avec Skip
                     HStack {
                         Spacer()
                         
                         Button(action: skipToLast) {
                             Text("Skip")
-                                .font(Typography.caption)
+                                .font(.system(size: 12, weight: .regular))
                                 .foregroundColor(Brand.textSecondary.opacity(0.5))
                         }
-                        .padding(.trailing, Spacing.xl)
-                        .padding(.top, Spacing.xl)
+                        .padding(.trailing, 24)
+                        .padding(.top, 24)
                     }
                     
                     // Slides
@@ -52,30 +52,30 @@ struct OnboardingView: View {
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                     
-                    // Custom page indicators (ultra-minimalistes)
-                    HStack(spacing: Spacing.xs) {
+                    // Page indicators
+                    HStack(spacing: 8) {
                         ForEach(0..<slides.count, id: \.self) { index in
                             Circle()
                                 .fill(currentPage == index ? Brand.textPrimary.opacity(0.6) : Brand.textPrimary.opacity(0.15))
                                 .frame(width: 6, height: 6)
                         }
                     }
-                    .padding(.bottom, Spacing.md)
+                    .padding(.bottom, 16)
                     
-                    // Bottom Button (ultra-minimal)
+                    // Bottom Button
                     Button(action: handleNextButton) {
                         Text(getButtonText())
-                            .font(Typography.callout)
+                            .font(.system(size: 15, weight: .regular))
                             .foregroundColor(Brand.textPrimary)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, Spacing.md)
+                            .padding(.vertical, 16)
                             .background(
-                                RoundedRectangle(cornerRadius: CornerRadius.xs)
+                                RoundedRectangle(cornerRadius: 4)
                                     .stroke(Brand.textPrimary.opacity(0.2), lineWidth: 0.5)
                             )
                     }
-                    .padding(.horizontal, Spacing.xl)
-                    .padding(.bottom, Spacing.xxl)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
                 }
             }
         }
@@ -83,7 +83,7 @@ struct OnboardingView: View {
     
     private func skipToLast() {
         Haptics.shared.lightTap()
-        withAnimation(AnimationPreset.spring) {
+        withAnimation(Animation.spring(response: 0.3, dampingFraction: 0.7)) {
             currentPage = slides.count - 1
         }
     }
@@ -92,11 +92,11 @@ struct OnboardingView: View {
         Haptics.shared.lightTap()
         
         if currentPage < slides.count - 1 {
-            withAnimation(AnimationPreset.spring) {
+            withAnimation(Animation.spring(response: 0.3, dampingFraction: 0.7)) {
                 currentPage += 1
             }
         } else {
-            withAnimation(AnimationPreset.easeOut) {
+            withAnimation(Animation.easeOut(duration: 0.3)) {
                 showPinkyAnimation = true
             }
         }
@@ -113,7 +113,7 @@ struct OnboardingView: View {
     private func completeOnboarding() {
         userStore.completeOnboarding()
         Haptics.shared.success()
-        withAnimation(AnimationPreset.spring) {
+        withAnimation(Animation.spring(response: 0.3, dampingFraction: 0.7)) {
             navigateToHome = true
         }
     }
@@ -125,10 +125,10 @@ struct MinimalOnboardingSlideView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: Spacing.xl) {
+            VStack(spacing: 24) {
                 Spacer()
                 
-                // Icon (ultra-minimal)
+                // Icon
                 Group {
                     switch slide.type {
                     case .concept:
@@ -147,35 +147,35 @@ struct MinimalOnboardingSlideView: View {
                             .font(.system(size: 60))
                     }
                 }
-                .padding(.bottom, Spacing.lg)
+                .padding(.bottom, 16)
                 
                 // Title
                 Text(slide.title)
-                    .font(Typography.title3)
+                    .font(.system(size: 20, weight: .regular))
                     .foregroundColor(Brand.textPrimary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.xxl)
+                    .padding(.horizontal, 32)
                 
                 // Body
                 Text(slide.body)
-                    .font(Typography.callout)
+                    .font(.system(size: 15, weight: .regular))
                     .foregroundColor(Brand.textSecondary.opacity(0.7))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.xxl)
+                    .padding(.horizontal, 32)
                     .lineSpacing(4)
                 
-                // Examples (ultra-épurés)
+                // Examples
                 if let examples = slide.examples {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                    VStack(alignment: .leading, spacing: 8) {
                         ForEach(examples, id: \.self) { example in
                             Text(example)
-                                .font(Typography.caption)
+                                .font(.system(size: 12, weight: .regular))
                                 .foregroundColor(Brand.textSecondary.opacity(0.5))
                                 .multilineTextAlignment(.leading)
                         }
                     }
-                    .padding(.horizontal, Spacing.xxl)
-                    .padding(.top, Spacing.md)
+                    .padding(.horizontal, 32)
+                    .padding(.top, 16)
                 }
                 
                 Spacer()

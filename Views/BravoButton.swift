@@ -17,11 +17,11 @@ struct BravoButton: View {
     
     var body: some View {
         Button(action: toggleBravo) {
-            HStack(spacing: Spacing.xxs) {
+            HStack(spacing: 4) {
                 Image(systemName: isActive ? "hand.thumbsup.fill" : "hand.thumbsup")
                     .font(.system(size: 14))
                 Text("\(count)")
-                    .font(Typography.caption)
+                    .font(.system(size: 12, weight: .regular))
             }
             .foregroundColor(isActive ? Brand.orange : userStore.selectedPalette.textSecondaryColor)
         }
@@ -29,7 +29,6 @@ struct BravoButton: View {
     
     private func toggleBravo() {
         if isActive {
-            // Remove bravo (for now, we don't implement removal)
             Haptics.shared.lightTap()
         } else {
             let bravo = Bravo(

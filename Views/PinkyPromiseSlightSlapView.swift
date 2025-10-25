@@ -20,23 +20,19 @@ struct PinkyPromiseSlightSlapView: View {
             Color.black.opacity(0.3)
                 .ignoresSafeArea()
             
-            VStack(spacing: Spacing.lg) {
-                // Deux doigts en pinky (ultra-minimal)
+            VStack(spacing: 16) {
                 ZStack {
-                    // Doigt 1
                     Text("🤙")
                         .font(.system(size: 50))
                         .rotationEffect(.degrees(-30))
                         .offset(x: finger1Offset)
                     
-                    // Doigt 2
                     Text("🤙")
                         .font(.system(size: 50))
                         .rotationEffect(.degrees(30))
                         .scaleEffect(x: -1, y: 1)
                         .offset(x: finger2Offset)
                     
-                    // Checkmark
                     Image(systemName: "checkmark")
                         .font(.system(size: 40, weight: .ultraLight))
                         .foregroundColor(Brand.orange)
@@ -52,26 +48,22 @@ struct PinkyPromiseSlightSlapView: View {
     }
     
     private func startAnimation() {
-        // Phase 1 : Les doigts se rapprochent (slap léger)
-        withAnimation(AnimationPreset.springBouncy.delay(0.1)) {
+        withAnimation(Animation.spring(response: 0.6, dampingFraction: 0.7).delay(0.1)) {
             finger1Offset = -10
             finger2Offset = 10
         }
         
-        // Haptic au moment du contact
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             Haptics.shared.gentleNudge()
         }
         
-        // Phase 2 : Checkmark apparaît
-        withAnimation(AnimationPreset.spring.delay(0.4)) {
+        withAnimation(Animation.spring(response: 0.3, dampingFraction: 0.6).delay(0.4)) {
             checkmarkScale = 1.0
             checkmarkOpacity = 1.0
         }
         
-        // Phase 3 : Fermeture automatique
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            withAnimation(AnimationPreset.easeOut) {
+            withAnimation(Animation.easeOut(duration: 0.3)) {
                 isPresented = false
             }
         }

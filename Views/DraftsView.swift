@@ -19,30 +19,35 @@ struct DraftsView: View {
                     .ignoresSafeArea()
                 
                 if draftStore.drafts.isEmpty {
-                    VStack(spacing: Spacing.xl) {
+                    VStack(spacing: 24) {
                         Spacer()
                         
-                        Text("📝")
-                            .font(.system(size: 60))
+                        Circle()
+                            .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.08), lineWidth: 0.5)
+                            .frame(width: 80, height: 80)
+                            .overlay(
+                                Text("📝")
+                                    .font(.system(size: 32))
+                            )
                         
-                        Text("Drafts")
-                            .font(Typography.title3)
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                        Text("Brouillons")
+                            .font(.system(size: 20, weight: .regular))
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.8))
                         
-                        Text(userStore.selectedLanguage.starts(with: "en") ? "No drafts yet" : "Aucun brouillon")
-                            .font(Typography.callout)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.6))
+                        Text("Aucun brouillon")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                         
                         Spacer()
                     }
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: Spacing.md) {
+                        LazyVStack(spacing: 16) {
                             ForEach(draftStore.drafts) { draft in
                                 DraftCardView(draft: draft)
                             }
                         }
-                        .padding(Spacing.xl)
+                        .padding(32)
                     }
                 }
             }
@@ -50,10 +55,11 @@ struct DraftsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(userStore.selectedLanguage.starts(with: "en") ? "Close" : "Fermer") {
+                    Button("Fermer") {
                         dismiss()
                     }
-                    .foregroundColor(Brand.orange)
+                    .foregroundColor(Brand.orange.opacity(0.85))
+                    .font(.system(size: 15, weight: .regular))
                 }
             }
         }
@@ -65,19 +71,20 @@ struct DraftCardView: View {
     let draft: PromiDraft
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(draft.title.isEmpty ? "Sans titre" : draft.title)
-                .font(Typography.body)
-                .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                .font(.system(size: 16, weight: .regular))
+                .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.8))
             
             Text(draft.createdAt, style: .relative)
-                .font(Typography.caption2)
-                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(userStore.selectedPalette.textSecondaryColor)
         }
-        .padding(Spacing.md)
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: CornerRadius.xs)
-                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.1), lineWidth: 0.3)
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.06), lineWidth: 0.2)
         )
     }
 }

@@ -26,34 +26,34 @@ struct ContentView: View {
         ZStack {
             userStore.selectedPalette.backgroundColor
                 .ignoresSafeArea()
-                .animation(AnimationPreset.easeOut, value: userStore.selectedPalette)
+                .animation(Animation.easeOut(duration: 0.3), value: userStore.selectedPalette)
             
             VStack(spacing: 0) {
-                // Header (Promi + logo + +)
+                // Header
                 MinimalHeaderView(
                     textColor: userStore.selectedPalette.textPrimaryColor,
                     onAddTap: { showAddPromi = true }
                 )
-                .padding(.horizontal, Spacing.xxl) // Plus d'espace
-                .padding(.top, Spacing.xxl)
+                .padding(.horizontal, 32)
+                .padding(.top, 32)
                 
-                // Roast Strip (ultra-discret, presque invisible)
+                // Roast Strip
                 Button(action: { showKarma = true }) {
-                    HStack(spacing: Spacing.xs) {
+                    HStack(spacing: 8) {
                         Circle()
                             .fill(karmaColor.opacity(0.5))
                             .frame(width: 4, height: 4)
                         
                         Text(karmaStore.getRoast(language: userStore.selectedLanguage))
-                            .font(Typography.caption2)
+                            .font(.system(size: 11, weight: .regular))
                             .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.3))
                             .lineLimit(1)
                         
                         Spacer()
                     }
                 }
-                .padding(.horizontal, Spacing.xxl)
-                .padding(.vertical, Spacing.md)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 16)
                 
                 // Sort Tabs
                 MinimalSortTabsView(
@@ -61,13 +61,13 @@ struct ContentView: View {
                     textColor: userStore.selectedPalette.textSecondaryColor,
                     accentColor: userStore.selectedPalette.textPrimaryColor
                 )
-                .padding(.top, Spacing.xl)
-                .padding(.bottom, Spacing.xl)
+                .padding(.top, 24)
+                .padding(.bottom, 24)
                 
                 // Promi List
                 if sortedPromis.isEmpty {
                     Spacer()
-                    VStack(spacing: Spacing.lg) {
+                    VStack(spacing: 16) {
                         Circle()
                             .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.08), lineWidth: 0.5)
                             .frame(width: 80, height: 80)
@@ -77,22 +77,22 @@ struct ContentView: View {
                             )
                         
                         Text("Aucun Promi pour le moment")
-                            .font(Typography.callout)
+                            .font(.system(size: 15, weight: .regular))
                             .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                         
                         Text("Tape sur + pour commencer")
-                            .font(Typography.caption2)
+                            .font(.system(size: 11, weight: .regular))
                             .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.25))
                     }
                     Spacer()
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: Spacing.xl) { // Plus d'espace entre les cartes
+                        LazyVStack(spacing: 24) {
                             ForEach(sortedPromis) { promi in
                                 MinimalPromiCardView(promi: promi)
                             }
                         }
-                        .padding(.horizontal, Spacing.xxl)
+                        .padding(.horizontal, 32)
                         .padding(.bottom, 140)
                     }
                 }
@@ -135,7 +135,7 @@ struct ContentView: View {
             
             if !userStore.hasCompletedTutorial {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    withAnimation(AnimationPreset.easeOut) {
+                    withAnimation(Animation.easeOut(duration: 0.3)) {
                         showTutorial = true
                     }
                 }

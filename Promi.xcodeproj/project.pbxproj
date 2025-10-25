@@ -16,7 +16,6 @@
 		529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */; };
 		529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */; };
 		529895A62EAC56BF000F57F8 /* PromiValidationAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A52EAC56BF000F57F8 /* PromiValidationAnimationView.swift */; };
-		529895AA2EAC5797000F57F8 /* NewHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A92EAC5797000F57F8 /* NewHeaderView.swift */; };
 		529895AC2EAC57B7000F57F8 /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AB2EAC57B7000F57F8 /* IconButton.swift */; };
 		529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AD2EAC57E0000F57F8 /* KarmaView.swift */; };
 		529895B02EAC6153000F57F8 /* TutorialStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AF2EAC6153000F57F8 /* TutorialStep.swift */; };
@@ -36,13 +35,9 @@
 		52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F07C2EABFA0A0048149B /* LanguageSelectionView.swift */; };
 		52D3F07F2EABFA2A0048149B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F07E2EABFA2A0048149B /* OnboardingView.swift */; };
 		52D3F0812EABFA8A0048149B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0802EABFA8A0048149B /* ContentView.swift */; };
-		52D3F0832EABFAA90048149B /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0822EABFAA90048149B /* HeaderView.swift */; };
-		52D3F0852EABFADA0048149B /* SortTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0842EABFADA0048149B /* SortTabsView.swift */; };
-		52D3F0872EABFB0C0048149B /* PromiCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0862EABFB0C0048149B /* PromiCardView.swift */; };
 		52D3F0892EABFB780048149B /* BravoButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0882EABFB780048149B /* BravoButton.swift */; };
 		52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F08A2EABFD070048149B /* FloatingButton.swift */; };
 		52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F08C2EABFD260048149B /* AddPromiView.swift */; };
-		52D3F08F2EABFD4E0048149B /* HeartIntensityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F08E2EABFD4E0048149B /* HeartIntensityView.swift */; };
 		52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0902EABFD6F0048149B /* CommentsView.swift */; };
 		52D3F0932EABFD940048149B /* PaletteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0922EABFD940048149B /* PaletteView.swift */; };
 		52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0942EABFDB10048149B /* SettingsView.swift */; };
@@ -64,7 +59,6 @@
 		529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlideData.swift; sourceTree = "<group>"; };
 		529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseAnimationView.swift; sourceTree = "<group>"; };
 		529895A52EAC56BF000F57F8 /* PromiValidationAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiValidationAnimationView.swift; sourceTree = "<group>"; };
-		529895A92EAC5797000F57F8 /* NewHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewHeaderView.swift; sourceTree = "<group>"; };
 		529895AB2EAC57B7000F57F8 /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
 		529895AD2EAC57E0000F57F8 /* KarmaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KarmaView.swift; sourceTree = "<group>"; };
 		529895AF2EAC6153000F57F8 /* TutorialStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialStep.swift; sourceTree = "<group>"; };
@@ -85,13 +79,9 @@
 		52D3F07C2EABFA0A0048149B /* LanguageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSelectionView.swift; sourceTree = "<group>"; };
 		52D3F07E2EABFA2A0048149B /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		52D3F0802EABFA8A0048149B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		52D3F0822EABFAA90048149B /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
-		52D3F0842EABFADA0048149B /* SortTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortTabsView.swift; sourceTree = "<group>"; };
-		52D3F0862EABFB0C0048149B /* PromiCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiCardView.swift; sourceTree = "<group>"; };
 		52D3F0882EABFB780048149B /* BravoButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BravoButton.swift; sourceTree = "<group>"; };
 		52D3F08A2EABFD070048149B /* FloatingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingButton.swift; sourceTree = "<group>"; };
 		52D3F08C2EABFD260048149B /* AddPromiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPromiView.swift; sourceTree = "<group>"; };
-		52D3F08E2EABFD4E0048149B /* HeartIntensityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartIntensityView.swift; sourceTree = "<group>"; };
 		52D3F0902EABFD6F0048149B /* CommentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsView.swift; sourceTree = "<group>"; };
 		52D3F0922EABFD940048149B /* PaletteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteView.swift; sourceTree = "<group>"; };
 		52D3F0942EABFDB10048149B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -168,19 +158,14 @@
 				52D3F07C2EABFA0A0048149B /* LanguageSelectionView.swift */,
 				52D3F07E2EABFA2A0048149B /* OnboardingView.swift */,
 				52D3F0802EABFA8A0048149B /* ContentView.swift */,
-				52D3F0822EABFAA90048149B /* HeaderView.swift */,
-				52D3F0842EABFADA0048149B /* SortTabsView.swift */,
-				52D3F0862EABFB0C0048149B /* PromiCardView.swift */,
 				52D3F0882EABFB780048149B /* BravoButton.swift */,
 				52D3F08A2EABFD070048149B /* FloatingButton.swift */,
 				52D3F08C2EABFD260048149B /* AddPromiView.swift */,
-				52D3F08E2EABFD4E0048149B /* HeartIntensityView.swift */,
 				52D3F0902EABFD6F0048149B /* CommentsView.swift */,
 				52D3F0922EABFD940048149B /* PaletteView.swift */,
 				52D3F0942EABFDB10048149B /* SettingsView.swift */,
 				529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */,
 				529895A52EAC56BF000F57F8 /* PromiValidationAnimationView.swift */,
-				529895A92EAC5797000F57F8 /* NewHeaderView.swift */,
 				529895AB2EAC57B7000F57F8 /* IconButton.swift */,
 				529895AD2EAC57E0000F57F8 /* KarmaView.swift */,
 				529895B12EAC6181000F57F8 /* TutorialOverlayView.swift */,
@@ -330,7 +315,6 @@
 				52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */,
 				529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */,
 				529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */,
-				529895AA2EAC5797000F57F8 /* NewHeaderView.swift in Sources */,
 				521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */,
 				521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */,
 				52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */,
@@ -340,15 +324,11 @@
 				529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */,
 				521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */,
 				52D3F0752EABF8A60048149B /* UserStore.swift in Sources */,
-				52D3F08F2EABFD4E0048149B /* HeartIntensityView.swift in Sources */,
 				52D3F0692EABF6320048149B /* Brand.swift in Sources */,
 				529895A62EAC56BF000F57F8 /* PromiValidationAnimationView.swift in Sources */,
 				529895B02EAC6153000F57F8 /* TutorialStep.swift in Sources */,
-				52D3F0852EABFADA0048149B /* SortTabsView.swift in Sources */,
-				52D3F0832EABFAA90048149B /* HeaderView.swift in Sources */,
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
 				52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */,
-				52D3F0872EABFB0C0048149B /* PromiCardView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
 				52E1A2432EAD14EF007EFAA8 /* BottomIconsBar.swift in Sources */,
 				52E1A2412EAD14D1007EFAA8 /* CustomIcons.swift in Sources */,

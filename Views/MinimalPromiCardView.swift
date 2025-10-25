@@ -12,123 +12,108 @@ struct MinimalPromiCardView: View {
     @EnvironmentObject var userStore: UserStore
     
     let promi: PromiItem
-    @State private var offset: CGFloat = 0
+    
     @State private var showEditView = false
-    @State private var isHovered = false
+    @State private var showComments = false
+    
+    private var timeRemaining: String {
+        let now = Date()
+        let interval = promi.dueDate.timeIntervalSince(now)
+        let days = Int(interval / 86400)
+        let hours = Int((interval.truncatingRemainder(dividingBy: 86400)) / 3600)
+        
+        if days > 0 {
+            return "\(days)j"
+        } else if hours > 0 {
+            return "\(hours)h"
+        } else {
+            return "Bientôt"
+        }
+    }
+    
+    private var commentsCount: Int {
+        promiStore.comments.filter { $0.promiId == promi.id }.count
+    }
     
     var body: some View {
         Button(action: {
-            Haptics.shared.tinyPop()
+            Haptics.shared.lightTap()
             showEditView = true
         }) {
-            HStack(spacing: 0) {
-                // Barre latérale ultra-fine (orange si haute intensité)
-                Rectangle()
-                    .fill(promi.intensity > 70 ? Brand.orange.opacity(0.6) : Color.clear)
-                    .frame(width: 1.5)
-                
-                VStack(alignment: .leading, spacing: Spacing.sm) {
-                    // Title
-                    Text(promi.title)
-                        .font(Typography.body)
-                        .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(promi.status == .done ? 0.25 : 0.95))
-                        .strikethrough(promi.status == .done, color: userStore.selectedPalette.textPrimaryColor.opacity(0.15))
-                        .multilineTextAlignment(.leading)
-                        .lineSpacing(3)
-                    
-                    // Meta infos (ultra-discret)
-                    HStack(spacing: Spacing.sm) {
-                        // Date
-                        Text(formattedDate)
-                            .font(Typography.caption2)
-                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.35))
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(promi.title)
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.85))
+                            .lineLimit(2)
                         
-                        // Overdue indicator
-                        if isOverdue {
-                            Text("!")
-                                .font(Typography.caption2)
-                                .foregroundColor(Color.red.opacity(0.4))
-                        }
-                        
-                        Spacer()
-                        
-                        // Assignee si présent
                         if let assignee = promi.assignee {
-                            Text(assignee)
-                                .font(Typography.caption2)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.3))
+                            Text("pour \(assignee)")
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
                         }
                     }
+                    
+                    Spacer()
+                    
+                    Text(timeRemaining)
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                 }
-                .padding(.vertical, Spacing.lg)
-                .padding(.horizontal, Spacing.lg)
+                
+                HStack(spacing: 16) {
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(intensityColor)
+                            .frame(width: 4, height: 4)
+                        
+                        Text(intensityLabel)
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        Haptics.shared.lightTap()
+                        showComments = true
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "bubble.left")
+                                .font(.system(size: 12))
+                            Text("\(commentsCount)")
+                                .font(.system(size: 11, weight: .regular))
+                        }
+                        .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                    }
+                }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
             .background(
-                // Fond transparent avec contour ultra-subtil
-                RoundedRectangle(cornerRadius: CornerRadius.xs)
-                    .fill(isHovered ? userStore.selectedPalette.textPrimaryColor.opacity(0.015) : Color.clear)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.xs)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        userStore.selectedPalette.textPrimaryColor.opacity(0.03),
-                                        userStore.selectedPalette.textPrimaryColor.opacity(0.01)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 0.15
-                            )
-                    )
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.06), lineWidth: 0.2)
             )
         }
-        .buttonStyle(PlainButtonStyle())
-        .offset(x: offset)
-        .gesture(
-            DragGesture()
-                .onChanged { gesture in
-                    offset = gesture.translation.width
-                }
-                .onEnded { gesture in
-                    if gesture.translation.width > 100 {
-                        if promi.status == .open {
-                            promiStore.markAsDone(promi)
-                        } else {
-                            promiStore.markAsOpen(promi)
-                        }
-                        Haptics.shared.gentleNudge()
-                    }
-                    withAnimation(AnimationPreset.spring) {
-                        offset = 0
-                    }
-                }
-        )
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    isHovered = true
-                }
-                .onEnded { _ in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        isHovered = false
-                    }
-                }
-        )
         .sheet(isPresented: $showEditView) {
             EditPromiView(promi: promi)
         }
+        .sheet(isPresented: $showComments) {
+            CommentsView(promiId: promi.id)
+        }
     }
     
-    private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .short
-        return formatter.string(from: promi.dueDate)
+    private var intensityColor: Color {
+        let intensity = promi.intensity
+        if intensity >= 80 { return Brand.orange.opacity(0.8) }
+        else if intensity >= 50 { return Brand.orange.opacity(0.5) }
+        else { return Brand.orange.opacity(0.3) }
     }
     
-    private var isOverdue: Bool {
-        promi.status == .open && promi.dueDate < Date()
+    private var intensityLabel: String {
+        let intensity = promi.intensity
+        if intensity >= 80 { return "très important" }
+        else if intensity >= 50 { return "important" }
+        else { return "normal" }
     }
 }

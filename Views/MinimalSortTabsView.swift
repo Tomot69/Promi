@@ -14,42 +14,34 @@ struct MinimalSortTabsView: View {
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.xxxl) { // Encore plus d'espace
+            HStack(spacing: 24) {
                 ForEach(SortOption.allCases, id: \.self) { option in
                     Button(action: {
-                        withAnimation(AnimationPreset.spring) {
+                        withAnimation(Animation.spring(response: 0.3, dampingFraction: 0.7)) {
                             selectedSort = option
                         }
                         Haptics.shared.tinyPop()
                     }) {
-                        VStack(spacing: Spacing.xxs) {
+                        VStack(spacing: 4) {
                             Text(option.rawValue)
-                                .font(Typography.caption)
+                                .font(.system(size: 13, weight: selectedSort == option ? .semibold : .regular))
                                 .foregroundColor(
                                     selectedSort == option
-                                    ? accentColor.opacity(0.9)
-                                    : textColor.opacity(0.25)
+                                    ? Brand.orange.opacity(0.85)
+                                    : textColor.opacity(0.4)
                                 )
                             
-                            // Dot au lieu de ligne (plus original)
                             if selectedSort == option {
-                                Circle()
-                                    .fill(Brand.orange.opacity(0.5))
-                                    .frame(width: 3, height: 3)
-                                    .transition(.scale.combined(with: .opacity))
-                            } else {
-                                Circle()
-                                    .fill(Color.clear)
-                                    .frame(width: 3, height: 3)
+                                Rectangle()
+                                    .fill(Brand.orange.opacity(0.6))
+                                    .frame(height: 1)
+                                    .transition(.scale)
                             }
                         }
-                        .frame(minWidth: 60)
                     }
-                    .disabled(option == .groups)
-                    .opacity(option == .groups ? 0.15 : 1.0)
                 }
             }
-            .padding(.horizontal, Spacing.xs)
+            .padding(.horizontal, 32)
         }
     }
 }

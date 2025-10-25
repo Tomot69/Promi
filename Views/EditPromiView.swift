@@ -57,75 +57,74 @@ struct EditPromiView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
                 HStack {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .ultraLight))
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.5))
+                            .font(.system(size: 18, weight: .ultraLight))
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.4))
                     }
                     
                     Spacer()
                     
                     HStack(spacing: 4) {
                         Text(titleText.replacingOccurrences(of: "Promi", with: ""))
-                            .font(Typography.callout)
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.6))
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.5))
                         
                         Text("Promi")
-                            .font(Typography.callout)
-                            .foregroundColor(Brand.orange.opacity(0.8))
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(Brand.orange.opacity(0.85))
                     }
                     
                     Spacer()
                     
                     Button(action: { showDeleteConfirmation = true }) {
                         Image(systemName: "trash")
-                            .font(.system(size: 14, weight: .ultraLight))
+                            .font(.system(size: 16, weight: .ultraLight))
                             .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
                     }
                 }
-                .padding(.horizontal, Spacing.xxl)
-                .padding(.top, Spacing.xxl)
-                .padding(.bottom, Spacing.xl)
+                .padding(.horizontal, 32)
+                .padding(.top, 32)
+                .padding(.bottom, 24)
                 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.xxl) {
+                    VStack(alignment: .leading, spacing: 32) {
                         TextField("", text: $title)
-                            .font(Typography.body)
+                            .font(.system(size: 16, weight: .regular))
                             .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                            .padding(.vertical, Spacing.md)
+                            .padding(.vertical, 16)
                             .overlay(
                                 Rectangle()
                                     .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.06))
-                                    .frame(height: 0.2),
+                                    .frame(height: 0.15),
                                 alignment: .bottom
                             )
                         
-                        VStack(alignment: .leading, spacing: Spacing.sm) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "When" : "Quand")
-                                .font(Typography.caption)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                             
                             DatePicker("", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
-                                .accentColor(Brand.orange.opacity(0.8))
+                                .accentColor(Brand.orange.opacity(0.85))
                         }
                         
-                        VStack(alignment: .leading, spacing: Spacing.sm) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text(userStore.selectedLanguage.starts(with: "en") ? "For whom" : "Pour qui")
-                                .font(Typography.caption)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                             
                             TextField("", text: $assignee)
-                                .font(Typography.body)
+                                .font(.system(size: 16, weight: .regular))
                                 .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                                .padding(.vertical, Spacing.md)
+                                .padding(.vertical, 16)
                                 .overlay(
                                     Rectangle()
-                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.06))
-                                        .frame(height: 0.2),
+                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.05))
+                                        .frame(height: 0.15),
                                     alignment: .bottom
                                 )
                         }
@@ -136,34 +135,34 @@ struct EditPromiView: View {
                             textColor: userStore.selectedPalette.textSecondaryColor
                         )
                         
-                        Spacer(minLength: 120)
+                        Spacer(minLength: 140)
                     }
-                    .padding(.horizontal, Spacing.xxl)
+                    .padding(.horizontal, 32)
                 }
                 
                 Spacer()
                 
-                VStack(spacing: Spacing.md) {
+                VStack(spacing: 16) {
                     Button(action: saveChanges) {
                         Text(userStore.selectedLanguage.starts(with: "en") ? "Save changes" : "Enregistrer")
-                            .font(Typography.bodyEmphasis)
-                            .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.8))
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Brand.orange.opacity(0.9))
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, Spacing.md)
+                            .padding(.vertical, 16)
                             .background(
-                                RoundedRectangle(cornerRadius: CornerRadius.xs)
-                                    .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.1), lineWidth: 0.2)
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Brand.orange.opacity(0.3), lineWidth: 0.5)
                             )
                     }
                     
                     Button(action: toggleStatus) {
                         Text(buttonText)
-                            .font(Typography.callout)
+                            .font(.system(size: 15, weight: .regular))
                             .foregroundColor(Brand.orange.opacity(0.6))
                     }
                 }
-                .padding(.horizontal, Spacing.xxl)
-                .padding(.bottom, Spacing.xxxl)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 32)
             }
             
             if showValidationAnimation {
@@ -197,7 +196,7 @@ struct EditPromiView: View {
         if promi.status == .open {
             promiStore.markAsDone(promi)
             
-            withAnimation(AnimationPreset.easeOut) {
+            withAnimation(Animation.easeOut(duration: 0.3)) {
                 showValidationAnimation = true
             }
             

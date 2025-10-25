@@ -13,11 +13,10 @@ struct CommentsView: View {
     @EnvironmentObject var userStore: UserStore
     
     let promiId: UUID
-    
     @State private var newCommentText = ""
     
     private var comments: [Comment] {
-        promiStore.getComments(for: promiId)
+        promiStore.comments.filter { $0.promiId == promiId }
     }
     
     var body: some View {
@@ -27,45 +26,44 @@ struct CommentsView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Comments list
                     if comments.isEmpty {
                         Spacer()
-                        VStack(spacing: Spacing.md) {
-                            Text("💬")
-                                .font(.system(size: 60))
+                        
+                        VStack(spacing: 16) {
+                            Circle()
+                                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.08), lineWidth: 0.5)
+                                .frame(width: 60, height: 60)
+                                .overlay(
+                                    Text("💬")
+                                        .font(.system(size: 24))
+                                )
                             
-                            Text(userStore.selectedLanguage.starts(with: "en") ? "No comments yet" : "Aucun commentaire")
-                                .font(Typography.callout)
-                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.6))
+                            Text("Aucun commentaire")
+                                .font(.system(size: 15, weight: .regular))
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
                         }
+                        
                         Spacer()
                     } else {
                         ScrollView {
-                            LazyVStack(alignment: .leading, spacing: Spacing.md) {
+                            LazyVStack(spacing: 16) {
                                 ForEach(comments) { comment in
-                                    CommentBubbleView(comment: comment)
+                                    CommentRowView(comment: comment)
                                 }
                             }
-                            .padding(Spacing.lg)
+                            .padding(24)
                         }
                     }
                     
-                    // Input area (ultra-minimal)
-                    HStack(spacing: Spacing.md) {
-                        TextField(
-                            userStore.selectedLanguage.starts(with: "en") ? "Add a comment..." : "Ajouter un commentaire...",
-                            text: $newCommentText,
-                            axis: .vertical
-                        )
-                        .font(Typography.callout)
-                        .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                        .lineLimit(3)
-                        .padding(.vertical, Spacing.sm)
-                        .padding(.horizontal, Spacing.md)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.xs)
-                                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.1), lineWidth: 0.3)
-                        )
+                    HStack(spacing: 12) {
+                        TextField("Ajouter un commentaire...", text: $newCommentText)
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                            .padding(12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.1), lineWidth: 0.5)
+                            )
                         
                         Button(action: addComment) {
                             Image(systemName: "arrow.up.circle.fill")
@@ -74,72 +72,63 @@ struct CommentsView: View {
                         }
                         .disabled(newCommentText.isEmpty)
                     }
-                    .padding(Spacing.lg)
-                    .background(
-                        userStore.selectedPalette.backgroundColor
-                            .shadow(color: Color.black.opacity(0.05), radius: 8, y: -2)
-                    )
+                    .padding(24)
                 }
             }
-            .navigationTitle("")
+            .navigationTitle("Commentaires")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(userStore.selectedLanguage.starts(with: "en") ? "Close" : "Fermer") {
+                    Button("Fermer") {
                         dismiss()
                     }
-                    .foregroundColor(Brand.orange)
+                    .foregroundColor(Brand.orange.opacity(0.85))
+                    .font(.system(size: 15, weight: .regular))
                 }
             }
         }
     }
     
     private func addComment() {
-        guard !newCommentText.isEmpty else { return }
-        
-        let trimmedText = String(newCommentText.prefix(240))
-        
         let comment = Comment(
             promiId: promiId,
-            authorId: userStore.localUserId,
-            text: trimmedText
+            userId: userStore.localUserId,
+            text: newCommentText
         )
         
         promiStore.addComment(comment)
-        
         newCommentText = ""
-        Haptics.shared.success()
+        Haptics.shared.lightTap()
     }
 }
 
-// MARK: - Comment Bubble View
-struct CommentBubbleView: View {
+// MARK: - Comment Row View
+struct CommentRowView: View {
     @EnvironmentObject var userStore: UserStore
     let comment: Comment
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            HStack(spacing: Spacing.xs) {
-                Text(String(comment.authorId.prefix(8)))
-                    .font(Typography.caption2)
-                    .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Utilisateur")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.7))
                 
                 Spacer()
                 
                 Text(comment.createdAt, style: .relative)
-                    .font(Typography.caption2)
-                    .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.4))
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
             }
             
             Text(comment.text)
-                .font(Typography.callout)
-                .foregroundColor(userStore.selectedPalette.textPrimaryColor)
-                .fixedSize(horizontal: false, vertical: true)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.8))
         }
-        .padding(Spacing.md)
+        .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: CornerRadius.xs)
-                .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.03))
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.06), lineWidth: 0.2)
         )
     }
 }

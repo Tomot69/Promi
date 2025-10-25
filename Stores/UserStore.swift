@@ -12,67 +12,78 @@ import Combine
 class UserStore: ObservableObject {
     @Published var localUserId: String
     @Published var selectedLanguage: String
-    @Published var selectedPalette: Palette
+    @Published var selectedPalette: ColorPalette
     @Published var hasCompletedOnboarding: Bool
     @Published var hasCompletedTutorial: Bool
+    @Published var isPremium: Bool
     
     private let userDefaults = UserDefaults.standard
     
+    private let userIdKey = "localUserId"
+    private let languageKey = "selectedLanguage"
+    private let paletteKey = "selectedPalette"
+    private let onboardingKey = "hasCompletedOnboarding"
+    private let tutorialKey = "hasCompletedTutorial"
+    private let premiumKey = "isPremium"
+    
     init() {
-        // Local User ID (généré une seule fois)
-        if let savedId = userDefaults.string(forKey: "localUserId") {
-            self.localUserId = savedId
+        // Load or generate user ID
+        if let savedUserId = userDefaults.string(forKey: userIdKey) {
+            self.localUserId = savedUserId
         } else {
-            let newId = UUID().uuidString
-            userDefaults.set(newId, forKey: "localUserId")
-            self.localUserId = newId
+            let newUserId = UUID().uuidString
+            userDefaults.set(newUserId, forKey: userIdKey)
+            self.localUserId = newUserId
         }
         
-        // Langue (défaut : français)
-        self.selectedLanguage = userDefaults.string(forKey: "selectedLanguage") ?? "fr"
+        // Load language
+        self.selectedLanguage = userDefaults.string(forKey: languageKey) ?? "fr"
         
-        // Palette
-        let paletteRaw = userDefaults.string(forKey: "selectedPalette") ?? "promi"
-        self.selectedPalette = Palette(rawValue: paletteRaw) ?? .promi
+        // Load palette
+        if let paletteRawValue = userDefaults.string(forKey: paletteKey),
+           let palette = ColorPalette(rawValue: paletteRawValue) {
+            self.selectedPalette = palette
+        } else {
+            self.selectedPalette = .pureWhite
+        }
         
-        // Onboarding
-        self.hasCompletedOnboarding = userDefaults.bool(forKey: "hasCompletedOnboarding")
+        // Load onboarding status
+        self.hasCompletedOnboarding = userDefaults.bool(forKey: onboardingKey)
         
-        // Tutorial
-        self.hasCompletedTutorial = userDefaults.bool(forKey: "hasCompletedTutorial")
+        // Load tutorial status
+        self.hasCompletedTutorial = userDefaults.bool(forKey: tutorialKey)
+        
+        // Load premium status
+        self.isPremium = userDefaults.bool(forKey: premiumKey)
     }
     
-    func setLanguage(_ language: String) {
+    func updateLanguage(_ language: String) {
         selectedLanguage = language
-        userDefaults.set(language, forKey: "selectedLanguage")
+        userDefaults.set(language, forKey: languageKey)
         objectWillChange.send()
     }
     
-    func setPalette(_ palette: Palette) {
+    func updatePalette(_ palette: ColorPalette) {
         selectedPalette = palette
-        userDefaults.set(palette.rawValue, forKey: "selectedPalette")
+        userDefaults.set(palette.rawValue, forKey: paletteKey)
         objectWillChange.send()
     }
     
     func completeOnboarding() {
         hasCompletedOnboarding = true
-        userDefaults.set(true, forKey: "hasCompletedOnboarding")
+        userDefaults.set(true, forKey: onboardingKey)
         objectWillChange.send()
     }
     
     func completeTutorial() {
         hasCompletedTutorial = true
-        userDefaults.set(true, forKey: "hasCompletedTutorial")
+        userDefaults.set(true, forKey: tutorialKey)
         objectWillChange.send()
     }
     
-    func resetTutorial() {
-        hasCompletedTutorial = false
-        userDefaults.set(false, forKey: "hasCompletedTutorial")
+    func setPremium(_ isPremium: Bool) {
+        self.isPremium = isPremium
+        userDefaults.set(isPremium, forKey: premiumKey)
         objectWillChange.send()
-    }
-    
-    func getLanguageName() -> String {
-        LocalizationManager.shared.availableLanguages.first(where: { $0.code == selectedLanguage })?.name ?? "Français"
     }
 }

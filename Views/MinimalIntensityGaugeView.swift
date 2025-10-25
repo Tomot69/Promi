@@ -28,21 +28,21 @@ struct MinimalIntensityGaugeView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
+        VStack(alignment: .leading, spacing: 16) {
             // Question
             Text(question)
-                .font(Typography.caption)
+                .font(.system(size: 12, weight: .regular))
                 .foregroundColor(textColor.opacity(0.6))
             
-            // Intensity label (apparaît au-dessus de la jauge)
+            // Intensity label
             Text(intensityLabel)
-                .font(Typography.caption2)
+                .font(.system(size: 11, weight: .regular))
                 .foregroundColor(Brand.orange.opacity(0.8))
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.bottom, Spacing.xxs)
+                .padding(.bottom, 4)
             
-            HStack(spacing: Spacing.md) {
-                // Cœur progressif (ultra-minimal)
+            HStack(spacing: 16) {
+                // Cœur progressif
                 ZStack {
                     HeartStrokePath(isLeft: true)
                         .trim(from: 0, to: heartStroke1)
@@ -56,7 +56,7 @@ struct MinimalIntensityGaugeView: View {
                 }
                 .frame(width: 40, height: 40)
                 
-                // Slider ultra-minimal
+                // Slider
                 Slider(value: Binding(
                     get: { Double(intensity) },
                     set: { newValue in
@@ -81,7 +81,7 @@ struct MinimalIntensityGaugeView: View {
     private func updateHeartStrokes(for value: Int) {
         let progress = CGFloat(value) / 100.0
         
-        withAnimation(AnimationPreset.spring) {
+        withAnimation(Animation.spring(response: 0.3, dampingFraction: 0.6)) {
             if progress <= 0.5 {
                 heartStroke1 = progress * 2.0
                 heartStroke2 = 0.0

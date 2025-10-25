@@ -8,74 +8,39 @@
 import SwiftUI
 
 struct SplashScreenView: View {
-    @State private var isActive = false
-    @State private var logoScale: CGFloat = 0.7
+    @EnvironmentObject var userStore: UserStore
+    @State private var logoScale: CGFloat = 0.5
     @State private var logoOpacity: Double = 0.0
-    @State private var textOpacity: Double = 0.0
-    @State private var heartPulse: CGFloat = 1.0
+    @State private var navigateToNext = false
     
     var body: some View {
-        if isActive {
-            LanguageSelectionView()
+        if navigateToNext {
+            if userStore.hasCompletedOnboarding {
+                ContentView()
+            } else {
+                LanguageSelectionView()
+            }
         } else {
             ZStack {
-                // Fond blanc pur
                 Color.white
                     .ignoresSafeArea()
                 
-                VStack(spacing: Spacing.xl) {
-                    Spacer()
-                    
-                    // Logo vectoriel (PLUS GRAND)
-                    Image("LogoPromi")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 280, height: 280) // Augmenté de 200 → 280
-                        .scaleEffect(logoScale * heartPulse)
-                        .opacity(logoOpacity)
-                    
-                    // Phrase marquante
-                    VStack(spacing: Spacing.xs) {
-                        Text("Promi")
-                            .font(Typography.title1)
-                            .foregroundColor(Brand.orange)
-                            .opacity(textOpacity)
-                        
-                        Text("L'art des petites promesses")
-                            .font(Typography.callout)
-                            .foregroundColor(Brand.textSecondary)
-                            .opacity(textOpacity)
-                    }
-                    
-                    Spacer()
-                    Spacer()
-                }
+                Image("LogoPromi")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 120, height: 120)
+                    .scaleEffect(logoScale)
+                    .opacity(logoOpacity)
             }
             .onAppear {
-                // Animation d'entrée du logo
-                withAnimation(AnimationPreset.spring.delay(0.3)) {
+                withAnimation(Animation.spring(response: 0.6, dampingFraction: 0.7)) {
                     logoScale = 1.0
                     logoOpacity = 1.0
                 }
                 
-                // Animation du texte
-                withAnimation(AnimationPreset.easeOut.delay(0.9)) {
-                    textOpacity = 1.0
-                }
-                
-                // Pulse subtil du cœur (tamagotchi)
-                withAnimation(
-                    Animation.easeInOut(duration: 2.0)
-                        .repeatCount(2, autoreverses: true)
-                        .delay(1.3)
-                ) {
-                    heartPulse = 1.03
-                }
-                
-                // Transition vers LanguageSelection (TIMING RALLONGÉ)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) { // 3.2 → 4.0 secondes
-                    withAnimation(AnimationPreset.easeOut) {
-                        isActive = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    withAnimation(Animation.easeOut(duration: 0.3)) {
+                        navigateToNext = true
                     }
                 }
             }

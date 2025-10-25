@@ -2,39 +2,39 @@
 //  Reaction.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import Foundation
 
-// MARK: - Bravo Model
-struct Bravo: Identifiable, Codable, Equatable {
+// MARK: - Bravo (Like)
+struct Bravo: Identifiable, Codable {
     let id: UUID
     let promiId: UUID
-    let userId: String // localUserId
+    let userId: String
     let createdAt: Date
     
-    init(id: UUID = UUID(), promiId: UUID, userId: String, createdAt: Date = Date()) {
-        self.id = id
+    init(promiId: UUID, userId: String) {
+        self.id = UUID()
         self.promiId = promiId
         self.userId = userId
-        self.createdAt = createdAt
+        self.createdAt = Date()
     }
 }
 
-// MARK: - Comment Model
-struct Comment: Identifiable, Codable, Equatable {
+// MARK: - Comment
+struct Comment: Identifiable, Codable {
     let id: UUID
     let promiId: UUID
-    let authorId: String
-    var text: String // max 240
+    let userId: String
+    let text: String
     let createdAt: Date
     
-    init(id: UUID = UUID(), promiId: UUID, authorId: String, text: String, createdAt: Date = Date()) {
-        self.id = id
+    init(promiId: UUID, userId: String, text: String) {
+        self.id = UUID()
         self.promiId = promiId
-        self.authorId = authorId
+        self.userId = userId
         self.text = text
-        self.createdAt = createdAt
+        self.createdAt = Date()
     }
 }

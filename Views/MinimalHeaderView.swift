@@ -15,17 +15,15 @@ struct MinimalHeaderView: View {
     @State private var logoRotation: Double = 0.0
     
     var body: some View {
-        VStack(spacing: Spacing.xl) {
-            // Top bar : "Promi" à gauche + "+" à droite (symétriques)
+        VStack(spacing: 24) {
+            // Top bar
             HStack(alignment: .center) {
-                // "Promi" texte (orange subtil)
                 Text("Promi")
-                    .font(Typography.title2)
+                    .font(.system(size: 24, weight: .regular))
                     .foregroundColor(Brand.orange.opacity(0.85))
                 
                 Spacer()
                 
-                // Bouton + (orange invitant, comme le logo)
                 Button(action: {
                     Haptics.shared.tinyPop()
                     onAddTap()
@@ -36,15 +34,14 @@ struct MinimalHeaderView: View {
                 }
             }
             
-            // Logo centré XL (respire, pulse ultra-subtil + rotation micro)
+            // Logo centré
             Image("LogoPromi")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 120, height: 120) // Plus grand : 100 → 120
+                .frame(width: 120, height: 120)
                 .scaleEffect(logoPulse)
                 .rotationEffect(.degrees(logoRotation))
                 .onAppear {
-                    // Pulse ultra-subtil (tamagotchi)
                     withAnimation(
                         Animation.easeInOut(duration: 4.5)
                             .repeatForever(autoreverses: true)
@@ -52,7 +49,6 @@ struct MinimalHeaderView: View {
                         logoPulse = 1.015
                     }
                     
-                    // Rotation micro (1 degré toutes les 6 secondes)
                     withAnimation(
                         Animation.easeInOut(duration: 6.0)
                             .repeatForever(autoreverses: true)

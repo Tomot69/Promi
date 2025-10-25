@@ -9,11 +9,14 @@ import SwiftUI
 
 struct LanguageSelectionView: View {
     @EnvironmentObject var userStore: UserStore
+    @State private var selectedLanguage = "fr"
     @State private var navigateToOnboarding = false
-    @State private var selectedLanguage: String? = nil
-    @State private var showEasterEgg = false
     
-    private let languages = LocalizationManager.shared.availableLanguages
+    private let languages = [
+        ("fr", "Français", "🇫🇷"),
+        ("en", "English", "🇬🇧"),
+        ("es", "Español", "🇪🇸")
+    ]
     
     var body: some View {
         if navigateToOnboarding {
@@ -23,147 +26,88 @@ struct LanguageSelectionView: View {
                 Color.white
                     .ignoresSafeArea()
                 
-                VStack(spacing: Spacing.xl) {
+                VStack(spacing: 48) {
                     Spacer()
                     
-                    // Logo plus grand
+                    // Logo
                     Image("LogoPromi")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 140, height: 140) // Augmenté de 80 → 140
-                        .padding(.bottom, Spacing.md)
+                        .frame(width: 100, height: 100)
                     
-                    // Titre
-                    Text(LocalizationManager.shared.getLocalizedString("language.title", language: selectedLanguage ?? "en"))
-                        .font(Typography.title2)
-                        .foregroundColor(Brand.textPrimary)
-                        .multilineTextAlignment(.center)
+                    // Title
+                    VStack(spacing: 8) {
+                        Text("Promi")
+                            .font(.system(size: 32, weight: .regular))
+                            .foregroundColor(Brand.orange)
+                        
+                        Text("Choisis ta langue")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(Brand.textSecondary)
+                    }
                     
-                    // Sous-titre
-                    Text(LocalizationManager.shared.getLocalizedString("language.subtitle", language: selectedLanguage ?? "en"))
-                        .font(Typography.callout)
-                        .foregroundColor(Brand.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, Spacing.xl)
-                    
-                    // Liste des langues (scrollable)
-                    ScrollView {
-                        VStack(spacing: Spacing.sm) {
-                            // Langues principales
-                            ForEach(languages.filter { !$0.code.contains("-") || $0.code == "de-AT" }, id: \.code) { lang in
-                                LanguageButton(
-                                    emoji: lang.emoji,
-                                    name: lang.name,
-                                    isSelected: selectedLanguage == lang.code
-                                ) {
-                                    selectLanguage(lang.code)
-                                }
-                            }
-                            
-                            // Divider subtil
-                            if !showEasterEgg {
-                                Button(action: {
-                                    withAnimation(AnimationPreset.spring) {
-                                        showEasterEgg = true
-                                    }
-                                    Haptics.shared.lightTap()
-                                }) {
-                                    HStack {
-                                        Text("···")
-                                            .font(Typography.body)
-                                            .foregroundColor(Brand.textSecondary)
-                                        Text("Dialectes & easter eggs")
-                                            .font(Typography.caption)
-                                            .foregroundColor(Brand.textSecondary)
-                                        Text("···")
-                                            .font(Typography.body)
-                                            .foregroundColor(Brand.textSecondary)
-                                    }
-                                    .padding(.vertical, Spacing.sm)
-                                }
-                            }
-                            
-                            // Dialectes (easter eggs)
-                            if showEasterEgg {
-                                ForEach(languages.filter { $0.code.contains("-") && $0.code != "de-AT" }, id: \.code) { lang in
-                                    LanguageButton(
-                                        emoji: lang.emoji,
-                                        name: lang.name,
-                                        isSelected: selectedLanguage == lang.code
-                                    ) {
-                                        selectLanguage(lang.code)
+                    // Language buttons
+                    VStack(spacing: 16) {
+                        ForEach(languages, id: \.0) { code, name, flag in
+                            Button(action: {
+                                selectedLanguage = code
+                                Haptics.shared.lightTap()
+                            }) {
+                                HStack(spacing: 16) {
+                                    Text(flag)
+                                        .font(.system(size: 32))
+                                    
+                                    Text(name)
+                                        .font(.system(size: 16, weight: .regular))
+                                        .foregroundColor(Brand.textPrimary)
+                                    
+                                    Spacer()
+                                    
+                                    if selectedLanguage == code {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 16, weight: .regular))
+                                            .foregroundColor(Brand.orange)
                                     }
                                 }
+                                .padding(16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(
+                                            selectedLanguage == code
+                                            ? Brand.orange.opacity(0.4)
+                                            : Brand.textPrimary.opacity(0.1),
+                                            lineWidth: selectedLanguage == code ? 0.8 : 0.3
+                                        )
+                                )
                             }
                         }
-                        .padding(.horizontal, Spacing.xl)
                     }
-                    .frame(maxHeight: 400)
+                    .padding(.horizontal, 32)
                     
                     Spacer()
+                    
+                    // Continue button
+                    Button(action: {
+                        userStore.updateLanguage(selectedLanguage)
+                        Haptics.shared.success()
+                        withAnimation(Animation.easeOut(duration: 0.3)) {
+                            navigateToOnboarding = true
+                        }
+                    }) {
+                        Text("Continuer")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Brand.orange)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(Brand.orange.opacity(0.3), lineWidth: 0.5)
+                            )
+                    }
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 48)
                 }
             }
-        }
-    }
-    
-    private func selectLanguage(_ code: String) {
-        selectedLanguage = code
-        userStore.setLanguage(code)
-        Haptics.shared.success()
-        
-        withAnimation(AnimationPreset.spring.delay(0.3)) {
-            navigateToOnboarding = true
-        }
-    }
-}
-
-// MARK: - Language Button Component
-struct LanguageButton: View {
-    let emoji: String
-    let name: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    @State private var isPressed = false
-    
-    var body: some View {
-        Button(action: {
-            withAnimation(AnimationPreset.springBouncy) {
-                isPressed = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(AnimationPreset.spring) {
-                    isPressed = false
-                }
-            }
-            action()
-        }) {
-            HStack(spacing: Spacing.md) {
-                Text(emoji)
-                    .font(.system(size: 32))
-                
-                Text(name)
-                    .font(Typography.body)
-                    .foregroundColor(Brand.textPrimary)
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(Brand.orange)
-                        .font(.system(size: 20))
-                }
-            }
-            .padding(Spacing.md)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.sm)
-                    .fill(isSelected ? Brand.orange.opacity(0.05) : Color.white)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.sm)
-                            .stroke(Brand.textPrimary.opacity(0.08), lineWidth: 0.3) // Ultra-fin
-                    )
-            )
-            .scaleEffect(isPressed ? 0.97 : 1.0)
         }
     }
 }
