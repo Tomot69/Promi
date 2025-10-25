@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */; };
+		529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */; };
+		529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */; };
 		52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F04E2EABF4630048149B /* PromiApp.swift */; };
 		52D3F0532EABF4650048149B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52D3F0522EABF4650048149B /* Assets.xcassets */; };
 		52D3F0692EABF6320048149B /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0682EABF6320048149B /* Brand.swift */; };
@@ -37,6 +39,8 @@
 
 /* Begin PBXFileReference section */
 		5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
+		529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlideData.swift; sourceTree = "<group>"; };
+		529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseAnimationView.swift; sourceTree = "<group>"; };
 		52D3F04B2EABF4630048149B /* Promi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Promi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D3F04E2EABF4630048149B /* PromiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiApp.swift; sourceTree = "<group>"; };
 		52D3F0522EABF4650048149B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -140,6 +144,7 @@
 				52D3F0902EABFD6F0048149B /* CommentsView.swift */,
 				52D3F0922EABFD940048149B /* PaletteView.swift */,
 				52D3F0942EABFDB10048149B /* SettingsView.swift */,
+				529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -160,6 +165,7 @@
 				52D3F06E2EABF83A0048149B /* PromiItem.swift */,
 				52D3F0702EABF8620048149B /* Reaction.swift */,
 				52D3F0722EABF8870048149B /* KarmaState.swift */,
+				529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -267,6 +273,8 @@
 				52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */,
 				52D3F0712EABF8620048149B /* Reaction.swift in Sources */,
 				52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */,
+				529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */,
+				529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */,
 				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
 				52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */,
 				52D3F06F2EABF83A0048149B /* PromiItem.swift in Sources */,
