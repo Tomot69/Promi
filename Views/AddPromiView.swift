@@ -10,12 +10,26 @@ import SwiftUI
 struct AddPromiView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var promiStore: PromiStore
+    @EnvironmentObject var userStore: UserStore
     
     @State private var title = ""
     @State private var dueDate = Date()
     @State private var importance: Importance = .normal
     @State private var assignee = ""
-    @State private var intensity = 50
+    @State private var urgencyIntensity = 50 // Jauge unique 0-100
+    @State private var showValidationAnimation = false
+    
+    private var buttonText: String {
+        userStore.selectedLanguage.starts(with: "en") ? "Make it happen" : "Valider ce Promi"
+    }
+    
+    private var urgencyQuestion: String {
+        if userStore.selectedLanguage.starts(with: "en") {
+            return "How badly do you want this Promi to happen?"
+        } else {
+            return "À quel point veux-tu tenir ce Promi ?"
+        }
+    }
     
     var body: some View {
         NavigationView {
@@ -23,7 +37,7 @@ struct AddPromiView: View {
                 Color.white.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.lg) {
+                    VStack(alignment: .leading, spacing: Spacing.xl) {
                         // Title
                         VStack(alignment: .leading, spacing: Spacing.xs) {
                             Text("Titre *")
@@ -51,7 +65,7 @@ struct AddPromiView: View {
                         }
                         
                         // Person
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                        VStack(alignment: .leading, spacing: Spacing.xs) {  // ✅ CORRIGÉ ICI
                             Text("Personne")
                                 .font(Typography.callout)
                                 .foregroundColor(Brand.textSecondary)
@@ -65,7 +79,7 @@ struct AddPromiView: View {
                                 )
                         }
                         
-                        // Importance
+                        // Importance (simple selector)
                         VStack(alignment: .leading, spacing: Spacing.xs) {
                             Text("Importance *")
                                 .font(Typography.callout)
@@ -91,29 +105,42 @@ struct AddPromiView: View {
                             }
                         }
                         
-                        // Heart Intensity
-                        HeartIntensityView(intensity: $intensity)
+                        // Urgency Intensity (jauge unique avec cœur progressif)
+                        UrgencyIntensityView(
+                            intensity: $urgencyIntensity,
+                            question: urgencyQuestion
+                        )
                         
-                        Spacer()
+                        Spacer(minLength: Spacing.xl)
                     }
                     .padding(Spacing.lg)
                 }
+                
+                // Validation Animation Overlay
+                if showValidationAnimation {
+                    PromiValidationAnimationView(isPresented: $showValidationAnimation)
+                        .transition(.opacity)
+                }
             }
-            .navigationTitle("Envoyer un Promi")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Annuler") {
+                    Button(action: {
                         dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(Brand.textPrimary)
                     }
-                    .foregroundColor(Brand.textSecondary)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Créer") {
-                        createPromi()
+                    Button(action: createPromi) {
+                        Text(buttonText)
+                            .font(Typography.bodyEmphasis)
+                            .foregroundColor(Brand.orange)
                     }
-                    .foregroundColor(Brand.orange)
                     .disabled(title.isEmpty)
                 }
             }
@@ -126,10 +153,19 @@ struct AddPromiView: View {
             dueDate: dueDate,
             importance: importance,
             assignee: assignee.isEmpty ? nil : assignee,
-            intensity: intensity
+            intensity: urgencyIntensity
         )
         
         promiStore.addPromi(newPromi)
-        dismiss()
+        
+        // Animation de validation
+        withAnimation(AnimationPreset.easeOut) {
+            showValidationAnimation = true
+        }
+        
+        // Fermeture après animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            dismiss()
+        }
     }
 }
