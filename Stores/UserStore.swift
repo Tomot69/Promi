@@ -27,7 +27,7 @@ class UserStore: ObservableObject {
             self.localUserId = newId
         }
         
-        // Langue
+        // Langue (défaut : français)
         self.selectedLanguage = userDefaults.string(forKey: "selectedLanguage") ?? "fr"
         
         // Palette
@@ -41,15 +41,22 @@ class UserStore: ObservableObject {
     func setLanguage(_ language: String) {
         selectedLanguage = language
         userDefaults.set(language, forKey: "selectedLanguage")
+        objectWillChange.send()
     }
     
     func setPalette(_ palette: Palette) {
         selectedPalette = palette
         userDefaults.set(palette.rawValue, forKey: "selectedPalette")
+        objectWillChange.send()
     }
     
     func completeOnboarding() {
         hasCompletedOnboarding = true
         userDefaults.set(true, forKey: "hasCompletedOnboarding")
+        objectWillChange.send()
+    }
+    
+    func getLanguageName() -> String {
+        LocalizationManager.shared.availableLanguages.first(where: { $0.code == selectedLanguage })?.name ?? "Français"
     }
 }

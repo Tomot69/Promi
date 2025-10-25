@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */; };
 		52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F04E2EABF4630048149B /* PromiApp.swift */; };
 		52D3F0532EABF4650048149B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52D3F0522EABF4650048149B /* Assets.xcassets */; };
 		52D3F0692EABF6320048149B /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0682EABF6320048149B /* Brand.swift */; };
@@ -35,6 +36,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		52D3F04B2EABF4630048149B /* Promi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Promi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D3F04E2EABF4630048149B /* PromiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiApp.swift; sourceTree = "<group>"; };
 		52D3F0522EABF4650048149B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -116,6 +118,7 @@
 		52D3F0622EABF56C0048149B /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 				52D3F0812EABFA8A0048149B /* ContentView.swift in Sources */,
 				52D3F06B2EABF6FF0048149B /* Haptics.swift in Sources */,
 				52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */,
+				529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */,
 				52D3F0772EABF8CA0048149B /* PromiStore.swift in Sources */,
 				52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */,
 				52D3F0712EABF8620048149B /* Reaction.swift in Sources */,
