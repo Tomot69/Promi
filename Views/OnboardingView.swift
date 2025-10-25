@@ -2,7 +2,7 @@
 //  OnboardingView.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -30,56 +30,61 @@ struct OnboardingView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Header avec Skip
+                    // Header avec Skip (ultra-discret)
                     HStack {
                         Spacer()
                         
-                        Button(action: skipToPreview) {
+                        Button(action: skipToLast) {
                             Text("Skip")
-                                .font(Typography.callout)
-                                .foregroundColor(Brand.textSecondary)
-                                .padding(.horizontal, Spacing.md)
-                                .padding(.vertical, Spacing.xs)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.gray.opacity(0.1))
-                                )
+                                .font(Typography.caption)
+                                .foregroundColor(Brand.textSecondary.opacity(0.5))
                         }
-                        .padding(.trailing, Spacing.lg)
-                        .padding(.top, Spacing.lg)
+                        .padding(.trailing, Spacing.xl)
+                        .padding(.top, Spacing.xl)
                     }
                     
                     // Slides
                     TabView(selection: $currentPage) {
                         ForEach(0..<slides.count, id: \.self) { index in
-                            OnboardingSlideView(slide: slides[index])
+                            MinimalOnboardingSlideView(slide: slides[index])
                                 .tag(index)
                         }
                     }
-                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-                    .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                     
-                    // Bottom Button
+                    // Custom page indicators (ultra-minimalistes)
+                    HStack(spacing: Spacing.xs) {
+                        ForEach(0..<slides.count, id: \.self) { index in
+                            Circle()
+                                .fill(currentPage == index ? Brand.textPrimary.opacity(0.6) : Brand.textPrimary.opacity(0.15))
+                                .frame(width: 6, height: 6)
+                        }
+                    }
+                    .padding(.bottom, Spacing.md)
+                    
+                    // Bottom Button (ultra-minimal)
                     Button(action: handleNextButton) {
                         Text(getButtonText())
-                            .font(Typography.bodyEmphasis)
-                            .foregroundColor(.white)
+                            .font(Typography.callout)
+                            .foregroundColor(Brand.textPrimary)
                             .frame(maxWidth: .infinity)
-                            .padding(Spacing.md)
-                            .background(Brand.orange)
-                            .cornerRadius(CornerRadius.sm)
+                            .padding(.vertical, Spacing.md)
+                            .background(
+                                RoundedRectangle(cornerRadius: CornerRadius.xs)
+                                    .stroke(Brand.textPrimary.opacity(0.2), lineWidth: 0.5)
+                            )
                     }
                     .padding(.horizontal, Spacing.xl)
-                    .padding(.bottom, Spacing.xl)
+                    .padding(.bottom, Spacing.xxl)
                 }
             }
         }
     }
     
-    private func skipToPreview() {
+    private func skipToLast() {
         Haptics.shared.lightTap()
         withAnimation(AnimationPreset.spring) {
-            currentPage = slides.count - 2 // Slide Premium
+            currentPage = slides.count - 1
         }
     }
     
@@ -91,7 +96,6 @@ struct OnboardingView: View {
                 currentPage += 1
             }
         } else {
-            // Dernier slide (Account) → Animation Pinky Promise
             withAnimation(AnimationPreset.easeOut) {
                 showPinkyAnimation = true
             }
@@ -100,9 +104,9 @@ struct OnboardingView: View {
     
     private func getButtonText() -> String {
         if currentPage < slides.count - 1 {
-            return "Suivant"
+            return userStore.selectedLanguage.starts(with: "en") ? "Next" : "Suivant"
         } else {
-            return "Commencer"
+            return userStore.selectedLanguage.starts(with: "en") ? "Let's start" : "C'est parti"
         }
     }
     
@@ -115,8 +119,8 @@ struct OnboardingView: View {
     }
 }
 
-// MARK: - Onboarding Slide View
-struct OnboardingSlideView: View {
+// MARK: - Minimal Onboarding Slide View
+struct MinimalOnboardingSlideView: View {
     let slide: OnboardingSlideData
     
     var body: some View {
@@ -124,54 +128,53 @@ struct OnboardingSlideView: View {
             VStack(spacing: Spacing.xl) {
                 Spacer()
                 
-                // Icon
+                // Icon (ultra-minimal)
                 Group {
                     switch slide.type {
                     case .concept:
                         Image("LogoPromi")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 100, height: 100)
+                            .frame(width: 80, height: 80)
                     case .karma:
                         Text("🏆")
-                            .font(.system(size: 80))
+                            .font(.system(size: 60))
                     case .premium:
                         Text("✨")
-                            .font(.system(size: 80))
+                            .font(.system(size: 60))
                     case .account:
                         Text("🤝")
-                            .font(.system(size: 80))
+                            .font(.system(size: 60))
                     }
                 }
-                .padding(.bottom, Spacing.md)
+                .padding(.bottom, Spacing.lg)
                 
                 // Title
                 Text(slide.title)
-                    .font(Typography.title2)
+                    .font(Typography.title3)
                     .foregroundColor(Brand.textPrimary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.xl)
+                    .padding(.horizontal, Spacing.xxl)
                 
                 // Body
                 Text(slide.body)
-                    .font(Typography.body)
-                    .foregroundColor(Brand.textSecondary)
+                    .font(Typography.callout)
+                    .foregroundColor(Brand.textSecondary.opacity(0.7))
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.xl)
+                    .padding(.horizontal, Spacing.xxl)
+                    .lineSpacing(4)
                 
-                // Examples (if any)
+                // Examples (ultra-épurés)
                 if let examples = slide.examples {
                     VStack(alignment: .leading, spacing: Spacing.sm) {
                         ForEach(examples, id: \.self) { example in
-                            HStack(alignment: .top, spacing: Spacing.xs) {
-                                Text(example)
-                                    .font(Typography.callout)
-                                    .foregroundColor(Brand.textSecondary)
-                                    .multilineTextAlignment(.leading)
-                            }
-                            .padding(.horizontal, Spacing.xl)
+                            Text(example)
+                                .font(Typography.caption)
+                                .foregroundColor(Brand.textSecondary.opacity(0.5))
+                                .multilineTextAlignment(.leading)
                         }
                     }
+                    .padding(.horizontal, Spacing.xxl)
                     .padding(.top, Spacing.md)
                 }
                 
@@ -180,12 +183,4 @@ struct OnboardingSlideView: View {
             .frame(maxWidth: .infinity)
         }
     }
-}
-
-// Deprecated struct (kept for compatibility but unused)
-struct OnboardingSlide {
-    let useCustomIcon: Bool
-    let emoji: String
-    let title: String
-    let body: String
 }

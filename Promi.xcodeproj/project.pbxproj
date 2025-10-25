@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		521AFCC12EAD39D5009D2334 /* PromiDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC02EAD39D5009D2334 /* PromiDraft.swift */; };
+		521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC22EAD39F7009D2334 /* DraftStore.swift */; };
+		521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */; };
 		529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */; };
 		529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */; };
 		529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */; };
 		529895A62EAC56BF000F57F8 /* PromiValidationAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A52EAC56BF000F57F8 /* PromiValidationAnimationView.swift */; };
-		529895A82EAC5746000F57F8 /* UrgencyIntensityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A72EAC5746000F57F8 /* UrgencyIntensityView.swift */; };
 		529895AA2EAC5797000F57F8 /* NewHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A92EAC5797000F57F8 /* NewHeaderView.swift */; };
 		529895AC2EAC57B7000F57F8 /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AB2EAC57B7000F57F8 /* IconButton.swift */; };
 		529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AD2EAC57E0000F57F8 /* KarmaView.swift */; };
@@ -51,11 +53,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		521AFCC02EAD39D5009D2334 /* PromiDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiDraft.swift; sourceTree = "<group>"; };
+		521AFCC22EAD39F7009D2334 /* DraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStore.swift; sourceTree = "<group>"; };
+		521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalIntensityGaugeView.swift; sourceTree = "<group>"; };
 		5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlideData.swift; sourceTree = "<group>"; };
 		529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseAnimationView.swift; sourceTree = "<group>"; };
 		529895A52EAC56BF000F57F8 /* PromiValidationAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiValidationAnimationView.swift; sourceTree = "<group>"; };
-		529895A72EAC5746000F57F8 /* UrgencyIntensityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgencyIntensityView.swift; sourceTree = "<group>"; };
 		529895A92EAC5797000F57F8 /* NewHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewHeaderView.swift; sourceTree = "<group>"; };
 		529895AB2EAC57B7000F57F8 /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
 		529895AD2EAC57E0000F57F8 /* KarmaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KarmaView.swift; sourceTree = "<group>"; };
@@ -172,7 +176,6 @@
 				52D3F0942EABFDB10048149B /* SettingsView.swift */,
 				529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */,
 				529895A52EAC56BF000F57F8 /* PromiValidationAnimationView.swift */,
-				529895A72EAC5746000F57F8 /* UrgencyIntensityView.swift */,
 				529895A92EAC5797000F57F8 /* NewHeaderView.swift */,
 				529895AB2EAC57B7000F57F8 /* IconButton.swift */,
 				529895AD2EAC57E0000F57F8 /* KarmaView.swift */,
@@ -183,6 +186,7 @@
 				52E1A2462EAD1541007EFAA8 /* MinimalSortTabsView.swift */,
 				52E1A2482EAD155F007EFAA8 /* MinimalPromiCardView.swift */,
 				52E1A24A2EAD1580007EFAA8 /* DraftsView.swift */,
+				521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -193,6 +197,7 @@
 				52D3F0742EABF8A60048149B /* UserStore.swift */,
 				52D3F0762EABF8CA0048149B /* PromiStore.swift */,
 				52D3F0782EABF9000048149B /* KarmaStore.swift */,
+				521AFCC22EAD39F7009D2334 /* DraftStore.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -205,6 +210,7 @@
 				52D3F0722EABF8870048149B /* KarmaState.swift */,
 				529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */,
 				529895AF2EAC6153000F57F8 /* TutorialStep.swift */,
+				521AFCC02EAD39D5009D2334 /* PromiDraft.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -307,6 +313,7 @@
 				52E1A24B2EAD1580007EFAA8 /* DraftsView.swift in Sources */,
 				52D3F0812EABFA8A0048149B /* ContentView.swift in Sources */,
 				52D3F06B2EABF6FF0048149B /* Haptics.swift in Sources */,
+				521AFCC12EAD39D5009D2334 /* PromiDraft.swift in Sources */,
 				52E1A2492EAD155F007EFAA8 /* MinimalPromiCardView.swift in Sources */,
 				52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */,
 				529895AC2EAC57B7000F57F8 /* IconButton.swift in Sources */,
@@ -318,11 +325,13 @@
 				529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */,
 				529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */,
 				529895AA2EAC5797000F57F8 /* NewHeaderView.swift in Sources */,
+				521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */,
 				52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */,
 				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
 				52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */,
 				52D3F06F2EABF83A0048149B /* PromiItem.swift in Sources */,
 				529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */,
+				521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */,
 				52D3F0752EABF8A60048149B /* UserStore.swift in Sources */,
 				52D3F08F2EABFD4E0048149B /* HeartIntensityView.swift in Sources */,
 				52D3F0692EABF6320048149B /* Brand.swift in Sources */,
@@ -331,7 +340,6 @@
 				52D3F0852EABFADA0048149B /* SortTabsView.swift in Sources */,
 				52D3F0832EABFAA90048149B /* HeaderView.swift in Sources */,
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
-				529895A82EAC5746000F57F8 /* UrgencyIntensityView.swift in Sources */,
 				52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */,
 				52D3F0872EABFB0C0048149B /* PromiCardView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,

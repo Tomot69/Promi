@@ -2,7 +2,7 @@
 //  AddPromiView.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -11,159 +11,219 @@ struct AddPromiView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var promiStore: PromiStore
     @EnvironmentObject var userStore: UserStore
+    @EnvironmentObject var draftStore: DraftStore
     
     @State private var title = ""
     @State private var dueDate = Date()
-    @State private var importance: Importance = .normal
     @State private var assignee = ""
-    @State private var urgencyIntensity = 50 // Jauge unique 0-100
+    @State private var intensity = 50
     @State private var showValidationAnimation = false
+    @State private var showExitConfirmation = false
+    
+    private var titleText: String {
+        userStore.selectedLanguage.starts(with: "en") ? "Create your Promi" : "Crée ton Promi"
+    }
+    
+    private var placeholderText: String {
+        userStore.selectedLanguage.starts(with: "en") ? "Promi something..." : "Promets quelque chose..."
+    }
     
     private var buttonText: String {
         userStore.selectedLanguage.starts(with: "en") ? "Make it happen" : "Valider ce Promi"
     }
     
-    private var urgencyQuestion: String {
+    private var intensityQuestion: String {
         if userStore.selectedLanguage.starts(with: "en") {
             return "How badly do you want this Promi to happen?"
+        } else if userStore.selectedLanguage.starts(with: "es") {
+            return "¿Cuánto quieres cumplir este Promi?"
         } else {
             return "À quel point veux-tu tenir ce Promi ?"
         }
     }
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color.white.ignoresSafeArea()
+        ZStack {
+            // Background adaptatif
+            userStore.selectedPalette.backgroundColor
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Header ultra-minimal
+                HStack {
+                    Button(action: handleClose) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .ultraLight))
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                    }
+                    
+                    Spacer()
+                    
+                    // Title avec "Promi" en orange
+                    HStack(spacing: 4) {
+                        Text(titleText.replacingOccurrences(of: "Promi", with: ""))
+                            .font(Typography.callout)
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                        
+                        Text("Promi")
+                            .font(Typography.callout)
+                            .foregroundColor(Brand.orange)
+                    }
+                    
+                    Spacer()
+                    
+                    // Placeholder pour équilibre
+                    Color.clear
+                        .frame(width: 16, height: 16)
+                }
+                .padding(.horizontal, Spacing.xl)
+                .padding(.top, Spacing.xl)
+                .padding(.bottom, Spacing.lg)
                 
+                // Content scrollable
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.xl) {
-                        // Title
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("Titre *")
-                                .font(Typography.callout)
-                                .foregroundColor(Brand.textSecondary)
-                            
-                            TextField("Appeler Maman", text: $title)
-                                .font(Typography.body)
-                                .padding(Spacing.md)
-                                .background(
-                                    RoundedRectangle(cornerRadius: CornerRadius.sm)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                )
-                        }
+                        // Title field (ultra-minimal)
+                        TextField(placeholderText, text: $title)
+                            .font(Typography.body)
+                            .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                            .padding(.vertical, Spacing.md)
+                            .padding(.horizontal, 0)
+                            .overlay(
+                                Rectangle()
+                                    .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.1))
+                                    .frame(height: 0.5),
+                                alignment: .bottom
+                            )
                         
-                        // Date & Time
+                        // Date & Time (ultra-minimal)
                         VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("Date & Heure *")
-                                .font(Typography.callout)
-                                .foregroundColor(Brand.textSecondary)
+                            Text(userStore.selectedLanguage.starts(with: "en") ? "When" : "Quand")
+                                .font(Typography.caption)
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
                             
                             DatePicker("", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
+                                .accentColor(Brand.orange)
                         }
                         
-                        // Person
-                        VStack(alignment: .leading, spacing: Spacing.xs) {  // ✅ CORRIGÉ ICI
-                            Text("Personne")
-                                .font(Typography.callout)
-                                .foregroundColor(Brand.textSecondary)
+                        // Person (ultra-minimal)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(userStore.selectedLanguage.starts(with: "en") ? "For whom" : "Pour qui")
+                                .font(Typography.caption)
+                                .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.5))
                             
-                            TextField("Maman", text: $assignee)
+                            TextField(userStore.selectedLanguage.starts(with: "en") ? "Someone..." : "Quelqu'un...", text: $assignee)
                                 .font(Typography.body)
-                                .padding(Spacing.md)
-                                .background(
-                                    RoundedRectangle(cornerRadius: CornerRadius.sm)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                                .padding(.vertical, Spacing.md)
+                                .padding(.horizontal, 0)
+                                .overlay(
+                                    Rectangle()
+                                        .fill(userStore.selectedPalette.textPrimaryColor.opacity(0.1))
+                                        .frame(height: 0.5),
+                                    alignment: .bottom
                                 )
                         }
                         
-                        // Importance (simple selector)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("Importance *")
-                                .font(Typography.callout)
-                                .foregroundColor(Brand.textSecondary)
-                            
-                            HStack(spacing: Spacing.md) {
-                                ForEach(Importance.allCases, id: \.self) { level in
-                                    Button(action: {
-                                        importance = level
-                                        Haptics.shared.lightTap()
-                                    }) {
-                                        Text(level.rawValue.capitalized)
-                                            .font(Typography.callout)
-                                            .foregroundColor(importance == level ? .white : Brand.textPrimary)
-                                            .padding(.horizontal, Spacing.md)
-                                            .padding(.vertical, Spacing.xs)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: CornerRadius.xs)
-                                                    .fill(importance == level ? Brand.orange : Color.gray.opacity(0.2))
-                                            )
-                                    }
-                                }
+                        // Audio button (placeholder)
+                        Button(action: {
+                            Haptics.shared.lightTap()
+                            // TODO: Audio recording
+                        }) {
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "mic")
+                                    .font(.system(size: 14))
+                                Text(userStore.selectedLanguage.starts(with: "en") ? "Add audio" : "Ajouter audio")
+                                    .font(Typography.caption)
                             }
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor.opacity(0.6))
                         }
                         
-                        // Urgency Intensity (jauge unique avec cœur progressif)
-                        UrgencyIntensityView(
-                            intensity: $urgencyIntensity,
-                            question: urgencyQuestion
+                        // Intensity gauge (ultra-minimal avec animation)
+                        MinimalIntensityGaugeView(
+                            intensity: $intensity,
+                            question: intensityQuestion,
+                            textColor: userStore.selectedPalette.textSecondaryColor
                         )
                         
-                        Spacer(minLength: Spacing.xl)
+                        Spacer(minLength: 100)
                     }
-                    .padding(Spacing.lg)
+                    .padding(.horizontal, Spacing.xl)
                 }
                 
-                // Validation Animation Overlay
-                if showValidationAnimation {
-                    PromiValidationAnimationView(isPresented: $showValidationAnimation)
-                        .transition(.opacity)
+                Spacer()
+                
+                // Bottom button (centré, ultra-minimal)
+                Button(action: createPromi) {
+                    Text(buttonText)
+                        .font(Typography.bodyEmphasis)
+                        .foregroundColor(userStore.selectedPalette.textPrimaryColor)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.md)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.xs)
+                                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.2), lineWidth: 0.5)
+                        )
                 }
+                .disabled(title.isEmpty)
+                .opacity(title.isEmpty ? 0.3 : 1.0)
+                .padding(.horizontal, Spacing.xl)
+                .padding(.bottom, Spacing.xxl)
             }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Brand.textPrimary)
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: createPromi) {
-                        Text(buttonText)
-                            .font(Typography.bodyEmphasis)
-                            .foregroundColor(Brand.orange)
-                    }
-                    .disabled(title.isEmpty)
-                }
+            
+            // Validation Animation Overlay
+            if showValidationAnimation {
+                PromiValidationAnimationView(isPresented: $showValidationAnimation)
+                    .transition(.opacity)
             }
         }
+        .confirmationDialog("Sauvegarder en brouillon ?", isPresented: $showExitConfirmation) {
+            Button(userStore.selectedLanguage.starts(with: "en") ? "Save draft" : "Sauvegarder") {
+                saveDraft()
+                dismiss()
+            }
+            Button(userStore.selectedLanguage.starts(with: "en") ? "Discard" : "Supprimer", role: .destructive) {
+                dismiss()
+            }
+            Button(userStore.selectedLanguage.starts(with: "en") ? "Cancel" : "Annuler", role: .cancel) {}
+        }
+    }
+    
+    private func handleClose() {
+        if !title.isEmpty {
+            showExitConfirmation = true
+        } else {
+            dismiss()
+        }
+    }
+    
+    private func saveDraft() {
+        let draft = PromiDraft(
+            title: title,
+            dueDate: dueDate,
+            assignee: assignee.isEmpty ? nil : assignee,
+            intensity: intensity
+        )
+        draftStore.saveDraft(draft)
     }
     
     private func createPromi() {
         let newPromi = PromiItem(
             title: title,
             dueDate: dueDate,
-            importance: importance,
+            importance: intensity > 70 ? .urgent : (intensity > 40 ? .normal : .low),
             assignee: assignee.isEmpty ? nil : assignee,
-            intensity: urgencyIntensity
+            intensity: intensity
         )
         
         promiStore.addPromi(newPromi)
         
-        // Animation de validation
         withAnimation(AnimationPreset.easeOut) {
             showValidationAnimation = true
         }
         
-        // Fermeture après animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             dismiss()
         }

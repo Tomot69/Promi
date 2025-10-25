@@ -2,7 +2,7 @@
 //  PromiApp.swift
 //  Promi
 //
-//  Created on 24/10/2025.
+//  Created on 25/10/2025.
 //
 
 import SwiftUI
@@ -12,6 +12,7 @@ struct PromiApp: App {
     @StateObject private var userStore = UserStore()
     @StateObject private var promiStore = PromiStore()
     @StateObject private var karmaStore = KarmaStore()
+    @StateObject private var draftStore = DraftStore()
     
     var body: some Scene {
         WindowGroup {
@@ -20,11 +21,13 @@ struct PromiApp: App {
                     .environmentObject(userStore)
                     .environmentObject(promiStore)
                     .environmentObject(karmaStore)
+                    .environmentObject(draftStore)
             } else {
                 SplashScreenView()
                     .environmentObject(userStore)
                     .environmentObject(promiStore)
                     .environmentObject(karmaStore)
+                    .environmentObject(draftStore)
             }
         }
     }
