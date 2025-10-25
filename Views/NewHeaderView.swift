@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct NewHeaderView: View {
+    let textColor: Color
     let onAddTap: () -> Void
     
     var body: some View {
@@ -18,21 +19,21 @@ struct NewHeaderView: View {
                 .scaledToFit()
                 .frame(width: 32, height: 32)
             
-            // Texte "Promi" (non personnalisable, toujours orange)
+            // Texte "Promi" (toujours orange, non personnalisable)
             Text("Promi")
                 .font(Typography.title1)
                 .foregroundColor(Brand.orange)
             
             Spacer()
             
-            // Bouton + noir (sans cercle)
+            // Bouton + (couleur adaptative)
             Button(action: {
                 Haptics.shared.lightTap()
                 onAddTap()
             }) {
                 Image(systemName: "plus")
                     .font(.system(size: 28, weight: .light))
-                    .foregroundColor(Brand.textPrimary)
+                    .foregroundColor(textColor)
             }
         }
     }

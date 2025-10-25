@@ -20,15 +20,19 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            // Background
+            // Background (avec animation de changement)
             userStore.selectedPalette.backgroundColor
                 .ignoresSafeArea()
+                .animation(AnimationPreset.easeOut, value: userStore.selectedPalette)
             
             VStack(spacing: 0) {
                 // Header (logo + Promi + bouton +)
-                NewHeaderView(onAddTap: { showAddPromi = true })
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.top, Spacing.lg)
+                NewHeaderView(
+                    textColor: userStore.selectedPalette.textPrimaryColor,
+                    onAddTap: { showAddPromi = true }
+                )
+                .padding(.horizontal, Spacing.lg)
+                .padding(.top, Spacing.lg)
                 
                 // Roast Strip (Karma)
                 Button(action: { showKarma = true }) {
@@ -39,30 +43,34 @@ struct ContentView: View {
                         
                         Text(karmaStore.getRoast(language: userStore.selectedLanguage))
                             .font(Typography.callout)
-                            .foregroundColor(Brand.textSecondary)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                             .lineLimit(1)
                         
                         Spacer()
                         
                         Text("\(karmaStore.karmaState.percentage)%")
                             .font(Typography.caption)
-                            .foregroundColor(Brand.textSecondary)
+                            .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                     }
                 }
                 .padding(.horizontal, Spacing.lg)
                 .padding(.vertical, Spacing.sm)
                 
                 // Sort Tabs
-                SortTabsView(selectedSort: $selectedSort)
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.vertical, Spacing.md)
+                SortTabsView(
+                    selectedSort: $selectedSort,
+                    textColor: userStore.selectedPalette.textSecondaryColor,
+                    accentColor: userStore.selectedPalette.accentColor
+                )
+                .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.md)
                 
                 // Promi List
                 if sortedPromis.isEmpty {
                     Spacer()
                     Text("Aucun Promi pour le moment")
                         .font(Typography.body)
-                        .foregroundColor(Brand.textSecondary)
+                        .foregroundColor(userStore.selectedPalette.textSecondaryColor)
                     Spacer()
                 } else {
                     ScrollView {
@@ -94,7 +102,7 @@ struct ContentView: View {
                     }
                     
                     // Settings
-                    IconButton(icon: "gearshape.fill", color: Brand.textSecondary) {
+                    IconButton(icon: "gearshape.fill", color: userStore.selectedPalette.textSecondaryColor) {
                         showSettings = true
                     }
                     

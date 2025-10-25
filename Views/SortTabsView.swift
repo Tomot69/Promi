@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SortTabsView: View {
     @Binding var selectedSort: SortOption
+    let textColor: Color
+    let accentColor: Color
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -20,12 +22,12 @@ struct SortTabsView: View {
                     }) {
                         Text(option.rawValue)
                             .font(Typography.callout)
-                            .foregroundColor(selectedSort == option ? .white : Brand.textSecondary)
+                            .foregroundColor(selectedSort == option ? .white : textColor)
                             .padding(.horizontal, Spacing.md)
                             .padding(.vertical, Spacing.xs)
                             .background(
                                 Capsule()
-                                    .fill(selectedSort == option ? Brand.orange : Color.gray.opacity(0.2))
+                                    .fill(selectedSort == option ? accentColor : Color.gray.opacity(0.2))
                             )
                     }
                 }
