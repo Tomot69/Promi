@@ -12,6 +12,22 @@
 		521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */; };
 		521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC62EAD3E49009D2334 /* EditPromiView.swift */; };
 		521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */; };
+		5251C9DF2EF9E989000C59CB /* BravoKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9DE2EF9E989000C59CB /* BravoKey.swift */; };
+		5251C9E12EF9E99E000C59CB /* SocialRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9E02EF9E99E000C59CB /* SocialRules.swift */; };
+		5251C9EE2EF9F2CC000C59CB /* UseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9EC2EF9F2B9000C59CB /* UseCase.swift */; };
+		5251C9F02EF9F2F2000C59CB /* UseCaseResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9EF2EF9F2F2000C59CB /* UseCaseResult.swift */; };
+		5251C9F32EF9F32D000C59CB /* NoopUseCases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9F22EF9F32D000C59CB /* NoopUseCases.swift */; };
+		5251C9F82EF9F756000C59CB /* ReactionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9F72EF9F756000C59CB /* ReactionType.swift */; };
+		5251C9FB2EF9F76C000C59CB /* ReactionRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9FA2EF9F76C000C59CB /* ReactionRules.swift */; };
+		5251CA002EF9FC07000C59CB /* UseCaseIDs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9FF2EF9FC07000C59CB /* UseCaseIDs.swift */; };
+		5251CA022EF9FC1A000C59CB /* UseCaseInputsOutputs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA012EF9FC1A000C59CB /* UseCaseInputsOutputs.swift */; };
+		5251CA042EF9FC36000C59CB /* CreatePromiUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA032EF9FC36000C59CB /* CreatePromiUseCase.swift */; };
+		5251CA062EF9FC47000C59CB /* EditPromiUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA052EF9FC47000C59CB /* EditPromiUseCase.swift */; };
+		5251CA082EF9FC59000C59CB /* DeletePromiUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA072EF9FC59000C59CB /* DeletePromiUseCase.swift */; };
+		5251CA0A2EF9FC6E000C59CB /* MarkDoneUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA092EF9FC6E000C59CB /* MarkDoneUseCase.swift */; };
+		5251CA0C2EF9FC83000C59CB /* ReopenPromiUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA0B2EF9FC83000C59CB /* ReopenPromiUseCase.swift */; };
+		5251CA0E2EF9FC99000C59CB /* AddBravoUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA0D2EF9FC99000C59CB /* AddBravoUseCase.swift */; };
+		5251CA102EF9FCA9000C59CB /* AddCommentUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA0F2EF9FCA9000C59CB /* AddCommentUseCase.swift */; };
 		529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */; };
 		529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */; };
 		529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */; };
@@ -47,7 +63,23 @@
 		52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A2462EAD1541007EFAA8 /* MinimalSortTabsView.swift */; };
 		52E1A2492EAD155F007EFAA8 /* MinimalPromiCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A2482EAD155F007EFAA8 /* MinimalPromiCardView.swift */; };
 		52E1A24B2EAD1580007EFAA8 /* DraftsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E1A24A2EAD1580007EFAA8 /* DraftsView.swift */; };
+		52F524192EF9B103007B30D5 /* PromiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F524182EF9B103007B30D5 /* PromiError.swift */; };
+		52F5241B2EF9B119007B30D5 /* ValidationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F5241A2EF9B119007B30D5 /* ValidationError.swift */; };
+		52F5241D2EF9B13C007B30D5 /* PersistenceError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F5241C2EF9B13C007B30D5 /* PersistenceError.swift */; };
+		52F5242F2EF9BA19007B30D5 /* DomainTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F5242E2EF9BA19007B30D5 /* DomainTokens.swift */; };
+		52F524322EF9BA2F007B30D5 /* PromiTitle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F524312EF9BA2F007B30D5 /* PromiTitle.swift */; };
+		52F524352EF9BA45007B30D5 /* CommentText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F524342EF9BA45007B30D5 /* CommentText.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		52F524262EF9B29E007B30D5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 52D3F0432EABF4630048149B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 52D3F04A2EABF4630048149B;
+			remoteInfo = Promi;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		521AFCC02EAD39D5009D2334 /* PromiDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiDraft.swift; sourceTree = "<group>"; };
@@ -55,6 +87,22 @@
 		521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalIntensityGaugeView.swift; sourceTree = "<group>"; };
 		521AFCC62EAD3E49009D2334 /* EditPromiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPromiView.swift; sourceTree = "<group>"; };
 		521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseSlightSlapView.swift; sourceTree = "<group>"; };
+		5251C9DE2EF9E989000C59CB /* BravoKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BravoKey.swift; sourceTree = "<group>"; };
+		5251C9E02EF9E99E000C59CB /* SocialRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialRules.swift; sourceTree = "<group>"; };
+		5251C9EC2EF9F2B9000C59CB /* UseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseCase.swift; sourceTree = "<group>"; };
+		5251C9EF2EF9F2F2000C59CB /* UseCaseResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseCaseResult.swift; sourceTree = "<group>"; };
+		5251C9F22EF9F32D000C59CB /* NoopUseCases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoopUseCases.swift; sourceTree = "<group>"; };
+		5251C9F72EF9F756000C59CB /* ReactionType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionType.swift; sourceTree = "<group>"; };
+		5251C9FA2EF9F76C000C59CB /* ReactionRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactionRules.swift; sourceTree = "<group>"; };
+		5251C9FF2EF9FC07000C59CB /* UseCaseIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseCaseIDs.swift; sourceTree = "<group>"; };
+		5251CA012EF9FC1A000C59CB /* UseCaseInputsOutputs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseCaseInputsOutputs.swift; sourceTree = "<group>"; };
+		5251CA032EF9FC36000C59CB /* CreatePromiUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePromiUseCase.swift; sourceTree = "<group>"; };
+		5251CA052EF9FC47000C59CB /* EditPromiUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPromiUseCase.swift; sourceTree = "<group>"; };
+		5251CA072EF9FC59000C59CB /* DeletePromiUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletePromiUseCase.swift; sourceTree = "<group>"; };
+		5251CA092EF9FC6E000C59CB /* MarkDoneUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkDoneUseCase.swift; sourceTree = "<group>"; };
+		5251CA0B2EF9FC83000C59CB /* ReopenPromiUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReopenPromiUseCase.swift; sourceTree = "<group>"; };
+		5251CA0D2EF9FC99000C59CB /* AddBravoUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddBravoUseCase.swift; sourceTree = "<group>"; };
+		5251CA0F2EF9FCA9000C59CB /* AddCommentUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCommentUseCase.swift; sourceTree = "<group>"; };
 		5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlideData.swift; sourceTree = "<group>"; };
 		529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseAnimationView.swift; sourceTree = "<group>"; };
@@ -91,12 +139,24 @@
 		52E1A2462EAD1541007EFAA8 /* MinimalSortTabsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalSortTabsView.swift; sourceTree = "<group>"; };
 		52E1A2482EAD155F007EFAA8 /* MinimalPromiCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalPromiCardView.swift; sourceTree = "<group>"; };
 		52E1A24A2EAD1580007EFAA8 /* DraftsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftsView.swift; sourceTree = "<group>"; };
+		52F524182EF9B103007B30D5 /* PromiError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiError.swift; sourceTree = "<group>"; };
+		52F5241A2EF9B119007B30D5 /* ValidationError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationError.swift; sourceTree = "<group>"; };
+		52F5241C2EF9B13C007B30D5 /* PersistenceError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceError.swift; sourceTree = "<group>"; };
+		52F524222EF9B29E007B30D5 /* PromiTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PromiTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		52F5242E2EF9BA19007B30D5 /* DomainTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainTokens.swift; sourceTree = "<group>"; };
+		52F524312EF9BA2F007B30D5 /* PromiTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiTitle.swift; sourceTree = "<group>"; };
+		52F524342EF9BA45007B30D5 /* CommentText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentText.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		52D3F04D2EABF4630048149B /* Promi */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Promi;
+			sourceTree = "<group>";
+		};
+		52F524232EF9B29E007B30D5 /* PromiTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PromiTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -109,12 +169,67 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		52F5241F2EF9B29E007B30D5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5251C9DD2EF9E94E000C59CB /* Social */ = {
+			isa = PBXGroup;
+			children = (
+				5251C9DE2EF9E989000C59CB /* BravoKey.swift */,
+				5251C9E02EF9E99E000C59CB /* SocialRules.swift */,
+			);
+			path = Social;
+			sourceTree = "<group>";
+		};
+		5251C9EA2EF9F22F000C59CB /* UseCases */ = {
+			isa = PBXGroup;
+			children = (
+				5251C9F22EF9F32D000C59CB /* NoopUseCases.swift */,
+				5251CA032EF9FC36000C59CB /* CreatePromiUseCase.swift */,
+				5251CA052EF9FC47000C59CB /* EditPromiUseCase.swift */,
+				5251CA072EF9FC59000C59CB /* DeletePromiUseCase.swift */,
+				5251CA092EF9FC6E000C59CB /* MarkDoneUseCase.swift */,
+				5251CA0B2EF9FC83000C59CB /* ReopenPromiUseCase.swift */,
+				5251CA0D2EF9FC99000C59CB /* AddBravoUseCase.swift */,
+				5251CA0F2EF9FCA9000C59CB /* AddCommentUseCase.swift */,
+			);
+			path = UseCases;
+			sourceTree = "<group>";
+		};
+		5251C9EB2EF9F240000C59CB /* Types */ = {
+			isa = PBXGroup;
+			children = (
+				5251C9EC2EF9F2B9000C59CB /* UseCase.swift */,
+				5251C9EF2EF9F2F2000C59CB /* UseCaseResult.swift */,
+				5251C9FF2EF9FC07000C59CB /* UseCaseIDs.swift */,
+				5251CA012EF9FC1A000C59CB /* UseCaseInputsOutputs.swift */,
+			);
+			path = Types;
+			sourceTree = "<group>";
+		};
+		5251C9F62EF9F707000C59CB /* Reaction */ = {
+			isa = PBXGroup;
+			children = (
+				5251C9F72EF9F756000C59CB /* ReactionType.swift */,
+				5251C9FA2EF9F76C000C59CB /* ReactionRules.swift */,
+			);
+			path = Reaction;
+			sourceTree = "<group>";
+		};
 		52D3F0422EABF4630048149B = {
 			isa = PBXGroup;
 			children = (
+				52F524162EF9A716007B30D5 /* Presentation */,
+				52F524152EF9A6CA007B30D5 /* Infrastructure */,
+				52F524142EF9A695007B30D5 /* Application */,
+				52F524132EF9A666007B30D5 /* Domain */,
 				52D3F0672EABF5AD0048149B /* App */,
 				52D3F0662EABF59A0048149B /* Core */,
 				52D3F0652EABF5900048149B /* Models */,
@@ -123,6 +238,7 @@
 				52D3F0622EABF56C0048149B /* Utilities */,
 				52D3F0612EABF55C0048149B /* Ressources */,
 				52D3F04D2EABF4630048149B /* Promi */,
+				52F524232EF9B29E007B30D5 /* PromiTests */,
 				52D3F04C2EABF4630048149B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -131,6 +247,7 @@
 			isa = PBXGroup;
 			children = (
 				52D3F04B2EABF4630048149B /* Promi.app */,
+				52F524222EF9B29E007B30D5 /* PromiTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -224,6 +341,60 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		52F524132EF9A666007B30D5 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				5251C9F62EF9F707000C59CB /* Reaction */,
+				5251C9DD2EF9E94E000C59CB /* Social */,
+				52F5242D2EF9B9B8007B30D5 /* ValueObjects */,
+				52F524172EF9B0BC007B30D5 /* Errors */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		52F524142EF9A695007B30D5 /* Application */ = {
+			isa = PBXGroup;
+			children = (
+				5251C9EB2EF9F240000C59CB /* Types */,
+				5251C9EA2EF9F22F000C59CB /* UseCases */,
+			);
+			path = Application;
+			sourceTree = "<group>";
+		};
+		52F524152EF9A6CA007B30D5 /* Infrastructure */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Infrastructure;
+			sourceTree = "<group>";
+		};
+		52F524162EF9A716007B30D5 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		52F524172EF9B0BC007B30D5 /* Errors */ = {
+			isa = PBXGroup;
+			children = (
+				52F524182EF9B103007B30D5 /* PromiError.swift */,
+				52F5241A2EF9B119007B30D5 /* ValidationError.swift */,
+				52F5241C2EF9B13C007B30D5 /* PersistenceError.swift */,
+			);
+			path = Errors;
+			sourceTree = "<group>";
+		};
+		52F5242D2EF9B9B8007B30D5 /* ValueObjects */ = {
+			isa = PBXGroup;
+			children = (
+				52F5242E2EF9BA19007B30D5 /* DomainTokens.swift */,
+				52F524312EF9BA2F007B30D5 /* PromiTitle.swift */,
+				52F524342EF9BA45007B30D5 /* CommentText.swift */,
+			);
+			path = ValueObjects;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -249,6 +420,29 @@
 			productReference = 52D3F04B2EABF4630048149B /* Promi.app */;
 			productType = "com.apple.product-type.application";
 		};
+		52F524212EF9B29E007B30D5 /* PromiTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 52F524282EF9B29E007B30D5 /* Build configuration list for PBXNativeTarget "PromiTests" */;
+			buildPhases = (
+				52F5241E2EF9B29E007B30D5 /* Sources */,
+				52F5241F2EF9B29E007B30D5 /* Frameworks */,
+				52F524202EF9B29E007B30D5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				52F524272EF9B29E007B30D5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				52F524232EF9B29E007B30D5 /* PromiTests */,
+			);
+			name = PromiTests;
+			packageProductDependencies = (
+			);
+			productName = PromiTests;
+			productReference = 52F524222EF9B29E007B30D5 /* PromiTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -256,11 +450,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
+				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					52D3F04A2EABF4630048149B = {
 						CreatedOnToolsVersion = 26.0.1;
+					};
+					52F524212EF9B29E007B30D5 = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = 52D3F04A2EABF4630048149B;
 					};
 				};
 			};
@@ -279,6 +477,7 @@
 			projectRoot = "";
 			targets = (
 				52D3F04A2EABF4630048149B /* Promi */,
+				52F524212EF9B29E007B30D5 /* PromiTests */,
 			);
 		};
 /* End PBXProject section */
@@ -292,6 +491,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		52F524202EF9B29E007B30D5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -301,32 +507,53 @@
 			files = (
 				52D3F0732EABF8870048149B /* KarmaState.swift in Sources */,
 				52D3F06D2EABF80C0048149B /* Appearance.swift in Sources */,
+				5251CA0C2EF9FC83000C59CB /* ReopenPromiUseCase.swift in Sources */,
 				52E1A24B2EAD1580007EFAA8 /* DraftsView.swift in Sources */,
+				5251C9E12EF9E99E000C59CB /* SocialRules.swift in Sources */,
 				52D3F0812EABFA8A0048149B /* ContentView.swift in Sources */,
 				52D3F06B2EABF6FF0048149B /* Haptics.swift in Sources */,
 				521AFCC12EAD39D5009D2334 /* PromiDraft.swift in Sources */,
+				5251CA022EF9FC1A000C59CB /* UseCaseInputsOutputs.swift in Sources */,
 				52E1A2492EAD155F007EFAA8 /* MinimalPromiCardView.swift in Sources */,
+				5251CA102EF9FCA9000C59CB /* AddCommentUseCase.swift in Sources */,
 				52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */,
+				52F5242F2EF9BA19007B30D5 /* DomainTokens.swift in Sources */,
+				5251CA042EF9FC36000C59CB /* CreatePromiUseCase.swift in Sources */,
+				5251CA082EF9FC59000C59CB /* DeletePromiUseCase.swift in Sources */,
 				529895AC2EAC57B7000F57F8 /* IconButton.swift in Sources */,
 				529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */,
 				52D3F0772EABF8CA0048149B /* PromiStore.swift in Sources */,
 				52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */,
 				52D3F0712EABF8620048149B /* Reaction.swift in Sources */,
+				5251CA0A2EF9FC6E000C59CB /* MarkDoneUseCase.swift in Sources */,
 				52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */,
 				529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */,
 				529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */,
+				52F5241D2EF9B13C007B30D5 /* PersistenceError.swift in Sources */,
+				5251C9DF2EF9E989000C59CB /* BravoKey.swift in Sources */,
 				521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */,
 				521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */,
+				5251C9FB2EF9F76C000C59CB /* ReactionRules.swift in Sources */,
+				52F524352EF9BA45007B30D5 /* CommentText.swift in Sources */,
 				52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */,
 				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
+				5251C9F82EF9F756000C59CB /* ReactionType.swift in Sources */,
+				5251CA002EF9FC07000C59CB /* UseCaseIDs.swift in Sources */,
+				5251C9F32EF9F32D000C59CB /* NoopUseCases.swift in Sources */,
+				5251CA062EF9FC47000C59CB /* EditPromiUseCase.swift in Sources */,
 				52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */,
 				52D3F06F2EABF83A0048149B /* PromiItem.swift in Sources */,
+				5251C9F02EF9F2F2000C59CB /* UseCaseResult.swift in Sources */,
 				529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */,
 				521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */,
 				52D3F0752EABF8A60048149B /* UserStore.swift in Sources */,
 				52D3F0692EABF6320048149B /* Brand.swift in Sources */,
+				52F524322EF9BA2F007B30D5 /* PromiTitle.swift in Sources */,
 				529895A62EAC56BF000F57F8 /* PromiValidationAnimationView.swift in Sources */,
+				5251CA0E2EF9FC99000C59CB /* AddBravoUseCase.swift in Sources */,
+				5251C9EE2EF9F2CC000C59CB /* UseCase.swift in Sources */,
 				529895B02EAC6153000F57F8 /* TutorialStep.swift in Sources */,
+				52F524192EF9B103007B30D5 /* PromiError.swift in Sources */,
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
 				52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
@@ -338,10 +565,26 @@
 				52D3F0892EABFB780048149B /* BravoButton.swift in Sources */,
 				52D3F07F2EABFA2A0048149B /* OnboardingView.swift in Sources */,
 				52D3F0932EABFD940048149B /* PaletteView.swift in Sources */,
+				52F5241B2EF9B119007B30D5 /* ValidationError.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		52F5241E2EF9B29E007B30D5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		52F524272EF9B29E007B30D5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 52D3F04A2EABF4630048149B /* Promi */;
+			targetProxy = 52F524262EF9B29E007B30D5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		52D3F0542EABF4650048149B /* Debug */ = {
@@ -533,6 +776,50 @@
 			};
 			name = Release;
 		};
+		52F524292EF9B29E007B30D5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = B77VBMD9BF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tom.fairly.Fairly.PromiTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Promi.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Promi";
+			};
+			name = Debug;
+		};
+		52F5242A2EF9B29E007B30D5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = B77VBMD9BF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tom.fairly.Fairly.PromiTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Promi.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Promi";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -550,6 +837,15 @@
 			buildConfigurations = (
 				52D3F0572EABF4650048149B /* Debug */,
 				52D3F0582EABF4650048149B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		52F524282EF9B29E007B30D5 /* Build configuration list for PBXNativeTarget "PromiTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				52F524292EF9B29E007B30D5 /* Debug */,
+				52F5242A2EF9B29E007B30D5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
