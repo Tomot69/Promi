@@ -12,6 +12,23 @@
 		521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */; };
 		521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC62EAD3E49009D2334 /* EditPromiView.swift */; };
 		521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */; };
+		523F9FBD2EFACAEE0035CB3F /* ShadowWritePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FBC2EFACAEE0035CB3F /* ShadowWritePolicy.swift */; };
+		523F9FBF2EFACB020035CB3F /* ShadowPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FBE2EFACB020035CB3F /* ShadowPaths.swift */; };
+		523F9FC12EFACB1A0035CB3F /* ShadowStoreWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FC02EFACB1A0035CB3F /* ShadowStoreWriter.swift */; };
+		523F9FCF2EFAD4720035CB3F /* JSONStoreError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FCE2EFAD4720035CB3F /* JSONStoreError.swift */; };
+		523F9FD32EFAD4ED0035CB3F /* VersionedEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FD22EFAD4ED0035CB3F /* VersionedEnvelope.swift */; };
+		523F9FD52EFAD4FF0035CB3F /* JSONStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FD42EFAD4FF0035CB3F /* JSONStore.swift */; };
+		523F9FDD2EFADA670035CB3F /* CanonicalStoreWritePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FDC2EFADA670035CB3F /* CanonicalStoreWritePolicy.swift */; };
+		523F9FDF2EFADA7B0035CB3F /* CanonicalStoreWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FDE2EFADA7B0035CB3F /* CanonicalStoreWriter.swift */; };
+		523F9FE92EFAFAF80035CB3F /* LegacyUserDefaultsKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FE82EFAFAF80035CB3F /* LegacyUserDefaultsKeys.swift */; };
+		523F9FEB2EFAFB0B0035CB3F /* LegacyDraftsReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FEA2EFAFB0B0035CB3F /* LegacyDraftsReader.swift */; };
+		523F9FED2EFAFB200035CB3F /* LegacyPromiStoreReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FEC2EFAFB200035CB3F /* LegacyPromiStoreReader.swift */; };
+		523F9FF72EFB04870035CB3F /* DraftsPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FF62EFB04870035CB3F /* DraftsPaths.swift */; };
+		523F9FF92EFB049D0035CB3F /* DraftsMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FF82EFB049D0035CB3F /* DraftsMigrator.swift */; };
+		523FA0012EFB2FB80035CB3F /* PromiStoreSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA0002EFB2FB80035CB3F /* PromiStoreSnapshot.swift */; };
+		523FA0032EFB2FCD0035CB3F /* PromiStorePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA0022EFB2FCD0035CB3F /* PromiStorePaths.swift */; };
+		523FA0052EFB2FE30035CB3F /* PromiStoreMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA0042EFB2FE30035CB3F /* PromiStoreMigrator.swift */; };
+		523FA00D2EFB35E40035CB3F /* PromiStoreEquatableShims.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA00C2EFB35E40035CB3F /* PromiStoreEquatableShims.swift */; };
 		5251C9DF2EF9E989000C59CB /* BravoKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9DE2EF9E989000C59CB /* BravoKey.swift */; };
 		5251C9E12EF9E99E000C59CB /* SocialRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9E02EF9E99E000C59CB /* SocialRules.swift */; };
 		5251C9EE2EF9F2CC000C59CB /* UseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9EC2EF9F2B9000C59CB /* UseCase.swift */; };
@@ -95,6 +112,23 @@
 		521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalIntensityGaugeView.swift; sourceTree = "<group>"; };
 		521AFCC62EAD3E49009D2334 /* EditPromiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPromiView.swift; sourceTree = "<group>"; };
 		521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseSlightSlapView.swift; sourceTree = "<group>"; };
+		523F9FBC2EFACAEE0035CB3F /* ShadowWritePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowWritePolicy.swift; sourceTree = "<group>"; };
+		523F9FBE2EFACB020035CB3F /* ShadowPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowPaths.swift; sourceTree = "<group>"; };
+		523F9FC02EFACB1A0035CB3F /* ShadowStoreWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowStoreWriter.swift; sourceTree = "<group>"; };
+		523F9FCE2EFAD4720035CB3F /* JSONStoreError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONStoreError.swift; sourceTree = "<group>"; };
+		523F9FD22EFAD4ED0035CB3F /* VersionedEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionedEnvelope.swift; sourceTree = "<group>"; };
+		523F9FD42EFAD4FF0035CB3F /* JSONStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONStore.swift; sourceTree = "<group>"; };
+		523F9FDC2EFADA670035CB3F /* CanonicalStoreWritePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalStoreWritePolicy.swift; sourceTree = "<group>"; };
+		523F9FDE2EFADA7B0035CB3F /* CanonicalStoreWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanonicalStoreWriter.swift; sourceTree = "<group>"; };
+		523F9FE82EFAFAF80035CB3F /* LegacyUserDefaultsKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyUserDefaultsKeys.swift; sourceTree = "<group>"; };
+		523F9FEA2EFAFB0B0035CB3F /* LegacyDraftsReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyDraftsReader.swift; sourceTree = "<group>"; };
+		523F9FEC2EFAFB200035CB3F /* LegacyPromiStoreReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyPromiStoreReader.swift; sourceTree = "<group>"; };
+		523F9FF62EFB04870035CB3F /* DraftsPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftsPaths.swift; sourceTree = "<group>"; };
+		523F9FF82EFB049D0035CB3F /* DraftsMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftsMigrator.swift; sourceTree = "<group>"; };
+		523FA0002EFB2FB80035CB3F /* PromiStoreSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiStoreSnapshot.swift; sourceTree = "<group>"; };
+		523FA0022EFB2FCD0035CB3F /* PromiStorePaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiStorePaths.swift; sourceTree = "<group>"; };
+		523FA0042EFB2FE30035CB3F /* PromiStoreMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiStoreMigrator.swift; sourceTree = "<group>"; };
+		523FA00C2EFB35E40035CB3F /* PromiStoreEquatableShims.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiStoreEquatableShims.swift; sourceTree = "<group>"; };
 		5251C9DE2EF9E989000C59CB /* BravoKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BravoKey.swift; sourceTree = "<group>"; };
 		5251C9E02EF9E99E000C59CB /* SocialRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialRules.swift; sourceTree = "<group>"; };
 		5251C9EC2EF9F2B9000C59CB /* UseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseCase.swift; sourceTree = "<group>"; };
@@ -248,6 +282,23 @@
 				52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */,
 				52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */,
 				52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */,
+				523F9FBC2EFACAEE0035CB3F /* ShadowWritePolicy.swift */,
+				523F9FBE2EFACB020035CB3F /* ShadowPaths.swift */,
+				523F9FC02EFACB1A0035CB3F /* ShadowStoreWriter.swift */,
+				523F9FCE2EFAD4720035CB3F /* JSONStoreError.swift */,
+				523F9FD22EFAD4ED0035CB3F /* VersionedEnvelope.swift */,
+				523F9FD42EFAD4FF0035CB3F /* JSONStore.swift */,
+				523F9FDC2EFADA670035CB3F /* CanonicalStoreWritePolicy.swift */,
+				523F9FDE2EFADA7B0035CB3F /* CanonicalStoreWriter.swift */,
+				523F9FE82EFAFAF80035CB3F /* LegacyUserDefaultsKeys.swift */,
+				523F9FEA2EFAFB0B0035CB3F /* LegacyDraftsReader.swift */,
+				523F9FEC2EFAFB200035CB3F /* LegacyPromiStoreReader.swift */,
+				523F9FF62EFB04870035CB3F /* DraftsPaths.swift */,
+				523F9FF82EFB049D0035CB3F /* DraftsMigrator.swift */,
+				523FA0002EFB2FB80035CB3F /* PromiStoreSnapshot.swift */,
+				523FA0022EFB2FCD0035CB3F /* PromiStorePaths.swift */,
+				523FA0042EFB2FE30035CB3F /* PromiStoreMigrator.swift */,
+				523FA00C2EFB35E40035CB3F /* PromiStoreEquatableShims.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -548,18 +599,24 @@
 				52D3F0732EABF8870048149B /* KarmaState.swift in Sources */,
 				52D3F06D2EABF80C0048149B /* Appearance.swift in Sources */,
 				5251CA0C2EF9FC83000C59CB /* ReopenPromiUseCase.swift in Sources */,
+				523F9FE92EFAFAF80035CB3F /* LegacyUserDefaultsKeys.swift in Sources */,
 				52E1A24B2EAD1580007EFAA8 /* DraftsView.swift in Sources */,
 				5251C9E12EF9E99E000C59CB /* SocialRules.swift in Sources */,
 				52D3F0812EABFA8A0048149B /* ContentView.swift in Sources */,
 				52D3F06B2EABF6FF0048149B /* Haptics.swift in Sources */,
 				521AFCC12EAD39D5009D2334 /* PromiDraft.swift in Sources */,
+				523F9FDF2EFADA7B0035CB3F /* CanonicalStoreWriter.swift in Sources */,
 				5251CA022EF9FC1A000C59CB /* UseCaseInputsOutputs.swift in Sources */,
 				52E1A2492EAD155F007EFAA8 /* MinimalPromiCardView.swift in Sources */,
+				523F9FDD2EFADA670035CB3F /* CanonicalStoreWritePolicy.swift in Sources */,
 				5251CA102EF9FCA9000C59CB /* AddCommentUseCase.swift in Sources */,
 				52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */,
+				523F9FF72EFB04870035CB3F /* DraftsPaths.swift in Sources */,
+				523FA0052EFB2FE30035CB3F /* PromiStoreMigrator.swift in Sources */,
 				52F5242F2EF9BA19007B30D5 /* DomainTokens.swift in Sources */,
 				5251CA042EF9FC36000C59CB /* CreatePromiUseCase.swift in Sources */,
 				5251CA082EF9FC59000C59CB /* DeletePromiUseCase.swift in Sources */,
+				523F9FBD2EFACAEE0035CB3F /* ShadowWritePolicy.swift in Sources */,
 				529895AC2EAC57B7000F57F8 /* IconButton.swift in Sources */,
 				529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */,
 				52D3F0772EABF8CA0048149B /* PromiStore.swift in Sources */,
@@ -592,27 +649,38 @@
 				5251C9F02EF9F2F2000C59CB /* UseCaseResult.swift in Sources */,
 				5251CA242EFA1AE7000C59CB /* RecoveryReader.swift in Sources */,
 				529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */,
+				523F9FED2EFAFB200035CB3F /* LegacyPromiStoreReader.swift in Sources */,
 				521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */,
 				52D3F0752EABF8A60048149B /* UserStore.swift in Sources */,
+				523F9FC12EFACB1A0035CB3F /* ShadowStoreWriter.swift in Sources */,
 				52D3F0692EABF6320048149B /* Brand.swift in Sources */,
 				52F524322EF9BA2F007B30D5 /* PromiTitle.swift in Sources */,
 				529895A62EAC56BF000F57F8 /* PromiValidationAnimationView.swift in Sources */,
 				5251CA0E2EF9FC99000C59CB /* AddBravoUseCase.swift in Sources */,
+				523F9FF92EFB049D0035CB3F /* DraftsMigrator.swift in Sources */,
 				5251C9EE2EF9F2CC000C59CB /* UseCase.swift in Sources */,
+				523F9FEB2EFAFB0B0035CB3F /* LegacyDraftsReader.swift in Sources */,
 				529895B02EAC6153000F57F8 /* TutorialStep.swift in Sources */,
 				52F524192EF9B103007B30D5 /* PromiError.swift in Sources */,
 				52CF58AD2EFA3DA9004C87A0 /* DataRoot.swift in Sources */,
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
 				52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */,
+				523F9FBF2EFACB020035CB3F /* ShadowPaths.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
 				52E1A2432EAD14EF007EFAA8 /* BottomIconsBar.swift in Sources */,
 				52E1A2412EAD14D1007EFAA8 /* CustomIcons.swift in Sources */,
+				523FA00D2EFB35E40035CB3F /* PromiStoreEquatableShims.swift in Sources */,
+				523F9FD32EFAD4ED0035CB3F /* VersionedEnvelope.swift in Sources */,
 				521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */,
+				523F9FCF2EFAD4720035CB3F /* JSONStoreError.swift in Sources */,
 				529895B22EAC6181000F57F8 /* TutorialOverlayView.swift in Sources */,
 				52D3F07B2EABF9DF0048149B /* SplashScreenView.swift in Sources */,
 				52D3F0892EABFB780048149B /* BravoButton.swift in Sources */,
 				52D3F07F2EABFA2A0048149B /* OnboardingView.swift in Sources */,
 				52D3F0932EABFD940048149B /* PaletteView.swift in Sources */,
+				523FA0032EFB2FCD0035CB3F /* PromiStorePaths.swift in Sources */,
+				523FA0012EFB2FB80035CB3F /* PromiStoreSnapshot.swift in Sources */,
+				523F9FD52EFAD4FF0035CB3F /* JSONStore.swift in Sources */,
 				52F5241B2EF9B119007B30D5 /* ValidationError.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
