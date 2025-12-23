@@ -28,6 +28,11 @@
 		5251CA0C2EF9FC83000C59CB /* ReopenPromiUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA0B2EF9FC83000C59CB /* ReopenPromiUseCase.swift */; };
 		5251CA0E2EF9FC99000C59CB /* AddBravoUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA0D2EF9FC99000C59CB /* AddBravoUseCase.swift */; };
 		5251CA102EF9FCA9000C59CB /* AddCommentUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA0F2EF9FCA9000C59CB /* AddCommentUseCase.swift */; };
+		5251CA182EFA0F65000C59CB /* AppFilePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA172EFA0F65000C59CB /* AppFilePaths.swift */; };
+		5251CA1A2EFA0F79000C59CB /* AtomicFileWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA192EFA0F79000C59CB /* AtomicFileWriter.swift */; };
+		5251CA1C2EFA0F8D000C59CB /* AuditEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA1B2EFA0F8D000C59CB /* AuditEvent.swift */; };
+		5251CA1E2EFA0F9E000C59CB /* AuditLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA1D2EFA0F9E000C59CB /* AuditLogger.swift */; };
+		5251CA242EFA1AE7000C59CB /* RecoveryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA232EFA1AE7000C59CB /* RecoveryReader.swift */; };
 		529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */; };
 		529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */; };
 		529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */; };
@@ -36,6 +41,9 @@
 		529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AD2EAC57E0000F57F8 /* KarmaView.swift */; };
 		529895B02EAC6153000F57F8 /* TutorialStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895AF2EAC6153000F57F8 /* TutorialStep.swift */; };
 		529895B22EAC6181000F57F8 /* TutorialOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895B12EAC6181000F57F8 /* TutorialOverlayView.swift */; };
+		52CF58A12EFA2CD7004C87A0 /* RecoveryResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */; };
+		52CF58AD2EFA3DA9004C87A0 /* DataRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */; };
+		52CF58B12EFA42AD004C87A0 /* RawStoreDataReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */; };
 		52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F04E2EABF4630048149B /* PromiApp.swift */; };
 		52D3F0532EABF4650048149B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52D3F0522EABF4650048149B /* Assets.xcassets */; };
 		52D3F0692EABF6320048149B /* Brand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D3F0682EABF6320048149B /* Brand.swift */; };
@@ -103,6 +111,11 @@
 		5251CA0B2EF9FC83000C59CB /* ReopenPromiUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReopenPromiUseCase.swift; sourceTree = "<group>"; };
 		5251CA0D2EF9FC99000C59CB /* AddBravoUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddBravoUseCase.swift; sourceTree = "<group>"; };
 		5251CA0F2EF9FCA9000C59CB /* AddCommentUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCommentUseCase.swift; sourceTree = "<group>"; };
+		5251CA172EFA0F65000C59CB /* AppFilePaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFilePaths.swift; sourceTree = "<group>"; };
+		5251CA192EFA0F79000C59CB /* AtomicFileWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicFileWriter.swift; sourceTree = "<group>"; };
+		5251CA1B2EFA0F8D000C59CB /* AuditEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditEvent.swift; sourceTree = "<group>"; };
+		5251CA1D2EFA0F9E000C59CB /* AuditLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditLogger.swift; sourceTree = "<group>"; };
+		5251CA232EFA1AE7000C59CB /* RecoveryReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryReader.swift; sourceTree = "<group>"; };
 		5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlideData.swift; sourceTree = "<group>"; };
 		529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseAnimationView.swift; sourceTree = "<group>"; };
@@ -111,6 +124,9 @@
 		529895AD2EAC57E0000F57F8 /* KarmaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KarmaView.swift; sourceTree = "<group>"; };
 		529895AF2EAC6153000F57F8 /* TutorialStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialStep.swift; sourceTree = "<group>"; };
 		529895B12EAC6181000F57F8 /* TutorialOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialOverlayView.swift; sourceTree = "<group>"; };
+		52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryResult.swift; sourceTree = "<group>"; };
+		52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRoot.swift; sourceTree = "<group>"; };
+		52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawStoreDataReader.swift; sourceTree = "<group>"; };
 		52D3F04B2EABF4630048149B /* Promi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Promi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52D3F04E2EABF4630048149B /* PromiApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiApp.swift; sourceTree = "<group>"; };
 		52D3F0522EABF4650048149B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -221,6 +237,28 @@
 				5251C9FA2EF9F76C000C59CB /* ReactionRules.swift */,
 			);
 			path = Reaction;
+			sourceTree = "<group>";
+		};
+		5251CA152EFA0E18000C59CB /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				5251CA172EFA0F65000C59CB /* AppFilePaths.swift */,
+				5251CA192EFA0F79000C59CB /* AtomicFileWriter.swift */,
+				5251CA232EFA1AE7000C59CB /* RecoveryReader.swift */,
+				52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */,
+				52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */,
+				52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		5251CA162EFA0E29000C59CB /* Audit */ = {
+			isa = PBXGroup;
+			children = (
+				5251CA1B2EFA0F8D000C59CB /* AuditEvent.swift */,
+				5251CA1D2EFA0F9E000C59CB /* AuditLogger.swift */,
+			);
+			path = Audit;
 			sourceTree = "<group>";
 		};
 		52D3F0422EABF4630048149B = {
@@ -364,6 +402,8 @@
 		52F524152EF9A6CA007B30D5 /* Infrastructure */ = {
 			isa = PBXGroup;
 			children = (
+				5251CA162EFA0E29000C59CB /* Audit */,
+				5251CA152EFA0E18000C59CB /* Storage */,
 			);
 			path = Infrastructure;
 			sourceTree = "<group>";
@@ -527,6 +567,8 @@
 				52D3F0712EABF8620048149B /* Reaction.swift in Sources */,
 				5251CA0A2EF9FC6E000C59CB /* MarkDoneUseCase.swift in Sources */,
 				52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */,
+				52CF58B12EFA42AD004C87A0 /* RawStoreDataReader.swift in Sources */,
+				5251CA182EFA0F65000C59CB /* AppFilePaths.swift in Sources */,
 				529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */,
 				529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */,
 				52F5241D2EF9B13C007B30D5 /* PersistenceError.swift in Sources */,
@@ -535,15 +577,20 @@
 				521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */,
 				5251C9FB2EF9F76C000C59CB /* ReactionRules.swift in Sources */,
 				52F524352EF9BA45007B30D5 /* CommentText.swift in Sources */,
+				5251CA1A2EFA0F79000C59CB /* AtomicFileWriter.swift in Sources */,
+				5251CA1E2EFA0F9E000C59CB /* AuditLogger.swift in Sources */,
 				52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */,
+				52CF58A12EFA2CD7004C87A0 /* RecoveryResult.swift in Sources */,
 				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
 				5251C9F82EF9F756000C59CB /* ReactionType.swift in Sources */,
 				5251CA002EF9FC07000C59CB /* UseCaseIDs.swift in Sources */,
+				5251CA1C2EFA0F8D000C59CB /* AuditEvent.swift in Sources */,
 				5251C9F32EF9F32D000C59CB /* NoopUseCases.swift in Sources */,
 				5251CA062EF9FC47000C59CB /* EditPromiUseCase.swift in Sources */,
 				52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */,
 				52D3F06F2EABF83A0048149B /* PromiItem.swift in Sources */,
 				5251C9F02EF9F2F2000C59CB /* UseCaseResult.swift in Sources */,
+				5251CA242EFA1AE7000C59CB /* RecoveryReader.swift in Sources */,
 				529895AE2EAC57E0000F57F8 /* KarmaView.swift in Sources */,
 				521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */,
 				52D3F0752EABF8A60048149B /* UserStore.swift in Sources */,
@@ -554,6 +601,7 @@
 				5251C9EE2EF9F2CC000C59CB /* UseCase.swift in Sources */,
 				529895B02EAC6153000F57F8 /* TutorialStep.swift in Sources */,
 				52F524192EF9B103007B30D5 /* PromiError.swift in Sources */,
+				52CF58AD2EFA3DA9004C87A0 /* DataRoot.swift in Sources */,
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
 				52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,

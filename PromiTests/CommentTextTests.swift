@@ -1,13 +1,7 @@
-//
-//  CommentTextTests.swift
-//  PromiTests
-//
-//  Created by MACBOOKPRO on 22/12/2025.
-//
-
 import XCTest
 @testable import Promi
 
+@MainActor
 final class CommentTextTests: XCTestCase {
 
     func test_trimApplied() throws {
@@ -26,10 +20,7 @@ final class CommentTextTests: XCTestCase {
         XCTAssertThrowsError(try CommentText(raw)) { error in
             XCTAssertEqual(
                 error as? PromiError,
-                .validation(.tooLong(
-                    max: DomainTokens.commentMaxChars,
-                    got: DomainTokens.commentMaxChars + 1
-                ))
+                .validation(.tooLong(max: DomainTokens.commentMaxChars, got: DomainTokens.commentMaxChars + 1))
             )
         }
     }
