@@ -29,6 +29,11 @@
 		523FA0032EFB2FCD0035CB3F /* PromiStorePaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA0022EFB2FCD0035CB3F /* PromiStorePaths.swift */; };
 		523FA0052EFB2FE30035CB3F /* PromiStoreMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA0042EFB2FE30035CB3F /* PromiStoreMigrator.swift */; };
 		523FA00D2EFB35E40035CB3F /* PromiStoreEquatableShims.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA00C2EFB35E40035CB3F /* PromiStoreEquatableShims.swift */; };
+		523FA00F2EFB5A470035CB3F /* ReadModelSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA00E2EFB5A470035CB3F /* ReadModelSnapshot.swift */; };
+		523FA0112EFB5A680035CB3F /* MigratedFilesReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA0102EFB5A680035CB3F /* MigratedFilesReader.swift */; };
+		523FA0132EFB5A870035CB3F /* ReadPathRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA0122EFB5A870035CB3F /* ReadPathRouter.swift */; };
+		523FA01C2EFB76A00035CB3F /* ReadOnlyDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA01B2EFB76A00035CB3F /* ReadOnlyDraftStore.swift */; };
+		523FA0222EFB853F0035CB3F /* ReadOnlyPromiStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523FA0212EFB853F0035CB3F /* ReadOnlyPromiStore.swift */; };
 		5251C9DF2EF9E989000C59CB /* BravoKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9DE2EF9E989000C59CB /* BravoKey.swift */; };
 		5251C9E12EF9E99E000C59CB /* SocialRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9E02EF9E99E000C59CB /* SocialRules.swift */; };
 		5251C9EE2EF9F2CC000C59CB /* UseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251C9EC2EF9F2B9000C59CB /* UseCase.swift */; };
@@ -129,6 +134,11 @@
 		523FA0022EFB2FCD0035CB3F /* PromiStorePaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiStorePaths.swift; sourceTree = "<group>"; };
 		523FA0042EFB2FE30035CB3F /* PromiStoreMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiStoreMigrator.swift; sourceTree = "<group>"; };
 		523FA00C2EFB35E40035CB3F /* PromiStoreEquatableShims.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiStoreEquatableShims.swift; sourceTree = "<group>"; };
+		523FA00E2EFB5A470035CB3F /* ReadModelSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadModelSnapshot.swift; sourceTree = "<group>"; };
+		523FA0102EFB5A680035CB3F /* MigratedFilesReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MigratedFilesReader.swift; sourceTree = "<group>"; };
+		523FA0122EFB5A870035CB3F /* ReadPathRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadPathRouter.swift; sourceTree = "<group>"; };
+		523FA01B2EFB76A00035CB3F /* ReadOnlyDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadOnlyDraftStore.swift; sourceTree = "<group>"; };
+		523FA0212EFB853F0035CB3F /* ReadOnlyPromiStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadOnlyPromiStore.swift; sourceTree = "<group>"; };
 		5251C9DE2EF9E989000C59CB /* BravoKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BravoKey.swift; sourceTree = "<group>"; };
 		5251C9E02EF9E99E000C59CB /* SocialRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocialRules.swift; sourceTree = "<group>"; };
 		5251C9EC2EF9F2B9000C59CB /* UseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UseCase.swift; sourceTree = "<group>"; };
@@ -229,6 +239,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		523FA01A2EFB76820035CB3F /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				523FA01B2EFB76A00035CB3F /* ReadOnlyDraftStore.swift */,
+				523FA0212EFB853F0035CB3F /* ReadOnlyPromiStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
 		5251C9DD2EF9E94E000C59CB /* Social */ = {
 			isa = PBXGroup;
 			children = (
@@ -299,6 +318,9 @@
 				523FA0022EFB2FCD0035CB3F /* PromiStorePaths.swift */,
 				523FA0042EFB2FE30035CB3F /* PromiStoreMigrator.swift */,
 				523FA00C2EFB35E40035CB3F /* PromiStoreEquatableShims.swift */,
+				523FA00E2EFB5A470035CB3F /* ReadModelSnapshot.swift */,
+				523FA0102EFB5A680035CB3F /* MigratedFilesReader.swift */,
+				523FA0122EFB5A870035CB3F /* ReadPathRouter.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -462,6 +484,7 @@
 		52F524162EF9A716007B30D5 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				523FA01A2EFB76820035CB3F /* Stores */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -623,6 +646,7 @@
 				52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */,
 				52D3F0712EABF8620048149B /* Reaction.swift in Sources */,
 				5251CA0A2EF9FC6E000C59CB /* MarkDoneUseCase.swift in Sources */,
+				523FA0132EFB5A870035CB3F /* ReadPathRouter.swift in Sources */,
 				52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */,
 				52CF58B12EFA42AD004C87A0 /* RawStoreDataReader.swift in Sources */,
 				5251CA182EFA0F65000C59CB /* AppFilePaths.swift in Sources */,
@@ -635,6 +659,7 @@
 				5251C9FB2EF9F76C000C59CB /* ReactionRules.swift in Sources */,
 				52F524352EF9BA45007B30D5 /* CommentText.swift in Sources */,
 				5251CA1A2EFA0F79000C59CB /* AtomicFileWriter.swift in Sources */,
+				523FA0112EFB5A680035CB3F /* MigratedFilesReader.swift in Sources */,
 				5251CA1E2EFA0F9E000C59CB /* AuditLogger.swift in Sources */,
 				52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */,
 				52CF58A12EFA2CD7004C87A0 /* RecoveryResult.swift in Sources */,
@@ -643,6 +668,7 @@
 				5251CA002EF9FC07000C59CB /* UseCaseIDs.swift in Sources */,
 				5251CA1C2EFA0F8D000C59CB /* AuditEvent.swift in Sources */,
 				5251C9F32EF9F32D000C59CB /* NoopUseCases.swift in Sources */,
+				523FA00F2EFB5A470035CB3F /* ReadModelSnapshot.swift in Sources */,
 				5251CA062EF9FC47000C59CB /* EditPromiUseCase.swift in Sources */,
 				52D3F08D2EABFD260048149B /* AddPromiView.swift in Sources */,
 				52D3F06F2EABF83A0048149B /* PromiItem.swift in Sources */,
@@ -668,6 +694,8 @@
 				523F9FBF2EFACB020035CB3F /* ShadowPaths.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
 				52E1A2432EAD14EF007EFAA8 /* BottomIconsBar.swift in Sources */,
+				523FA01C2EFB76A00035CB3F /* ReadOnlyDraftStore.swift in Sources */,
+				523FA0222EFB853F0035CB3F /* ReadOnlyPromiStore.swift in Sources */,
 				52E1A2412EAD14D1007EFAA8 /* CustomIcons.swift in Sources */,
 				523FA00D2EFB35E40035CB3F /* PromiStoreEquatableShims.swift in Sources */,
 				523F9FD32EFAD4ED0035CB3F /* VersionedEnvelope.swift in Sources */,
