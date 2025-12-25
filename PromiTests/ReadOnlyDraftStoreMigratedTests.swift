@@ -4,40 +4,41 @@ import XCTest
 final class ReadOnlyDraftStoreMigratedTests: XCTestCase {
 
     func test_readsMigratedDraftsWhenPresent() throws {
-        let suite = "test.\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: suite)!
-        defer { defaults.removePersistentDomain(forName: suite) }
+        try MainActor.assumeIsolated {
+            let suite = "test.\(UUID().uuidString)"
+            let defaults = UserDefaults(suiteName: suite)!
+            defer { defaults.removePersistentDomain(forName: suite) }
 
-        // Legacy junk
-        defaults.set(Data("{not_json}".utf8), forKey: LegacyUserDefaultsKeys.draftsKey)
+            let testRoot = FileManager.default.temporaryDirectory
+                .appendingPathComponent("promi-tests-\(UUID().uuidString)", isDirectory: true)
 
-        // Ensure migrated dir exists and file is written (raw JSON, schema v1)
-        let url = try DraftsPaths.draftsFileURL()
-        try FileManager.default.createDirectory(
-            at: url.deletingLastPathComponent(),
-            withIntermediateDirectories: true
-        )
+            DraftsPaths.testOverrideRootURL = testRoot
+            defer { DraftsPaths.testOverrideRootURL = nil }
 
-        // We avoid VersionedEnvelope<T> because PromiDraft is not Equatable.
-        // So we write a minimal valid envelope as JSON.
-        let envelope: [String: Any] = [
-            "schemaVersion": 1,
-            "updatedAt": Date(timeIntervalSince1970: 0).timeIntervalSince1970
-        ]
+            defaults.set(Data("{not_json}".utf8), forKey: LegacyUserDefaultsKeys.draftsKey)
 
-        // Decode requires a "value" field containing an array of drafts.
-        // We can safely encode an empty array (valid for this invariant test).
-        let payload: [String: Any] = [
-            "schemaVersion": 1,
-            "updatedAt": Date(timeIntervalSince1970: 0).timeIntervalSince1970,
-            "value": []
-        ]
+            let payload: [String: Any] = [
+                "schemaVersion": 1,
+                "updatedAt": 0,
+                "value": []
+            ]
 
-        let data = try JSONSerialization.data(withJSONObject: payload, options: [])
-        try data.write(to: url, options: [.atomic])
+            let data = try JSONSerialization.data(withJSONObject: payload, options: [])
+            let url = try DraftsPaths.draftsFileURL()
 
-        let store = ReadOnlyDraftStore(defaults: defaults)
-        XCTAssertEqual(store.drafts.count, 0)
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.removeItem(at: url)
+            }
+            try data.write(to: url, options: [.atomic])
+
+            var store: ReadOnlyDraftStore? = ReadOnlyDraftStore(defaults: defaults)
+            XCTAssertEqual(store?.drafts.count, 0)
+            store = nil
+        }
     }
 }
 

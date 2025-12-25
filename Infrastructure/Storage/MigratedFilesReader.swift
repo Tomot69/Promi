@@ -9,13 +9,57 @@ enum MigratedFilesReader {
         let value: T
     }
 
+    // We MUST use a deterministic date decoding strategy, otherwise Date decoding will fail.
+    // Here we support:
+    // - ISO8601 strings (recommended)
+    // - Numeric seconds since 1970 (common legacy)
+    private static func makeDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+
+        decoder.dateDecodingStrategy = .custom { dec in
+            let container = try dec.singleValueContainer()
+
+            // 1) ISO8601 string
+            if let s = try? container.decode(String.self) {
+                let iso = ISO8601DateFormatter()
+                iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                if let d = iso.date(from: s) { return d }
+
+                // fallback without fractional seconds
+                let iso2 = ISO8601DateFormatter()
+                iso2.formatOptions = [.withInternetDateTime]
+                if let d = iso2.date(from: s) { return d }
+
+                throw DecodingError.dataCorruptedError(
+                    in: container,
+                    debugDescription: "Invalid ISO8601 date string: \(s)"
+                )
+            }
+
+            // 2) Numeric timestamp (seconds since 1970)
+            if let t = try? container.decode(Double.self) {
+                return Date(timeIntervalSince1970: t)
+            }
+            if let i = try? container.decode(Int.self) {
+                return Date(timeIntervalSince1970: TimeInterval(i))
+            }
+
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Unsupported date format"
+            )
+        }
+
+        return decoder
+    }
+
     static func readDrafts() throws -> RecoveryResult<[PromiDraft]> {
         let url = try DraftsPaths.draftsFileURL()
         let raw = try RecoveryReader.readOrRecover(from: url)
 
         func decode(_ data: Data) -> RecoveryResult<[PromiDraft]> {
             do {
-                let env = try JSONDecoder().decode(CodableEnvelope<[PromiDraft]>.self, from: data)
+                let env = try makeDecoder().decode(CodableEnvelope<[PromiDraft]>.self, from: data)
                 guard env.schemaVersion == 1 else {
                     return .corrupted(reason: "Schema mismatch")
                 }
@@ -29,7 +73,6 @@ enum MigratedFilesReader {
         case .ok(let data):
             return decode(data)
         case .recoveredFromBackup(let data):
-            // Keep the backup provenance
             switch decode(data) {
             case .ok(let v): return .recoveredFromBackup(v)
             case .recoveredFromBackup(let v): return .recoveredFromBackup(v)
@@ -46,7 +89,7 @@ enum MigratedFilesReader {
 
         func decode(_ data: Data) -> RecoveryResult<PromiStoreSnapshot> {
             do {
-                let env = try JSONDecoder().decode(CodableEnvelope<PromiStoreSnapshot>.self, from: data)
+                let env = try makeDecoder().decode(CodableEnvelope<PromiStoreSnapshot>.self, from: data)
                 guard env.schemaVersion == 1 else {
                     return .corrupted(reason: "Schema mismatch")
                 }

@@ -1,0 +1,92 @@
+{
+  "configurations" : [
+    {
+      "id" : "6BC15561-8E15-4D35-8B99-0771B7AA6C68",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Promi.xcodeproj",
+      "identifier" : "52D3F04A2EABF4630048149B",
+      "name" : "Promi"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "selectedTests" : [
+        "ApplicationContractsTests\/test_useCaseResultEquatable()",
+        "AtomicFileWriterTests\/test_writeAtomic_createsFinalAndBackup()",
+        "AuditLoggerTests\/test_append_isAppendOnly()",
+        "CanonicalStoreWriterAuditTests\/test_auditAppendsOnFailureAndSuccess()",
+        "CanonicalStoreWriterOffTests\/test_off_throwsAndDoesNotWriteStoreFile()",
+        "CanonicalStoreWriterOnTests\/test_on_writesAtomicallyAndCreatesBackupOnSecondWrite()",
+        "CommentTextTests\/test_240Accepted()",
+        "CommentTextTests\/test_emptyRejected()",
+        "CommentTextTests\/test_tooLongRejected()",
+        "CommentTextTests\/test_trimApplied()",
+        "DataRootTests\/test_pathsAreDeterministicAndCreatable()",
+        "DomainErrorsTests\/testPromiErrorEquatable_differentErrorsAreNotEqual()",
+        "DomainErrorsTests\/testPromiErrorEquatable_identicalErrorsAreEqual()",
+        "DraftsMigratorFailureTests\/test_migrate_corrupted_doesNotWriteFile()",
+        "DraftsMigratorFailureTests\/test_migrate_disabled_returnsCorrupted_andDoesNotWrite()",
+        "DraftsMigratorRoundTripTests\/test_roundTrip_readBackViaJSONStore()",
+        "DraftsMigratorSuccessTests\/test_migrate_success_writesFile()",
+        "FeatureFlagsDefaultTests\/test_flagDefaultIsOff()",
+        "JSONStoreRecoveryTests\/test_recoverFromBackup_whenMainUnreadable_bakValid()",
+        "JSONStoreRoundTripTests\/test_roundTrip_encodeDecodeEquality()",
+        "JSONStoreSchemaTests\/test_corrupted_whenUnsupportedSchemaVersion()",
+        "LegacyDraftsReaderTests\/test_lenient_readsFromExactKey_withEmptyArrayRoundTrip()",
+        "LegacyPromiStoreReaderTests\/test_lenient_readsAllCollectionsFromExactKeys_withEmptyArrays()",
+        "LegacyUserDefaultsInvalidDataTests\/test_invalidData_lenientReturnsEmpty_strictReturnsCorrupted()",
+        "PromiStoreMigratorDuplicateBravoTests\/test_migrate_duplicateBravo_doesNotWriteFile()",
+        "PromiStoreMigratorFailureTests\/test_migrate_corrupted_doesNotWriteFile()",
+        "PromiStoreMigratorFailureTests\/test_migrate_disabled_returnsCorrupted_andDoesNotWrite()",
+        "PromiStoreMigratorSuccessTests\/test_migrate_success_writesFile()",
+        "PromiTitleTests\/test_emptyRejected()",
+        "PromiTitleTests\/test_tooLongRejected()",
+        "PromiTitleTests\/test_trimApplied()",
+        "PromiTitleTests\/test_validAccepted()",
+        "RawStoreDataReaderBackupTests\/test_read_recoveredFromBackup_whenMainUnreadable_bakValid()",
+        "RawStoreDataReaderFailTests\/test_read_corrupted_whenMainAndBackupMissing()",
+        "RawStoreDataReaderFailTests\/test_read_corrupted_whenMainEmpty()",
+        "RawStoreDataReaderOKTests\/test_read_ok_whenMainValidNonEmpty()",
+        "ReactionRulesTests\/test_bravoAccepted()",
+        "ReadOnlyDraftStoreLegacyFallbackTests\/test_fallbacksToLegacyWhenMigratedMissing()",
+        "ReadOnlyDraftStoreMigratedTests\/test_readsMigratedDraftsWhenPresent()",
+        "ReadOnlyPromiStoreLegacyFallbackTests\/test_fallbacksToLegacyWhenMigratedMissing()",
+        "ReadOnlyPromiStoreMigratedTests\/test_readsMigratedPromiStoreWhenPresent()",
+        "ReadPathActivationGateAuditTests\/test_recordAttempt_appendsAuditLine()",
+        "ReadPathActivationGateMissingTests\/test_preflight_notEnableable_whenMigratedMissing()",
+        "ReadPathActivationGateSuccessTests\/test_preflight_enableable_whenPromiStoreMigratedDecodable()",
+        "ReadPathBootstrapperLegacyFallbackTests\/test_bootstrapperHydratesFromLegacyWhenMigratedMissing()",
+        "ReadPathBootstrapperMigratedTests\/test_bootstrapperHydratesFromMigratedWhenPresent()",
+        "ReadPathRouterFallbackLegacyTests\/test_fallbacksToLegacy_whenMigratedMissing()",
+        "ReadPathRouterNoWriteTests\/test_readSnapshot_doesNotCreateCanonicalStoreFile()",
+        "ReadPathRouterPrefersMigratedTests\/test_prefersMigrated_whenFilesPresent()",
+        "RecoveryReaderBackupTests\/test_recoveredFromBackup_when_main_corrupt()",
+        "RecoveryReaderFailTests\/test_corrupted_when_main_and_backup_unreadable()",
+        "RecoveryReaderOKTests\/test_ok_when_main_valid()",
+        "ShadowStoreWriterAuditTests\/test_on_appendsAuditLine()",
+        "ShadowStoreWriterOffTests\/test_off_doesNotWriteFile()",
+        "ShadowStoreWriterOnTests\/test_on_writesFile()",
+        "SocialBravoTests\/test_duplicateBravoRejected()",
+        "SocialBravoTests\/test_uniqueBravoAccepted()",
+        "SocialCommentTests\/test_commentValidatedViaCommentText()",
+        "UseCaseContractsCompilationTests\/test_canInstantiateAllUseCases()",
+        "UseCaseResultEquatableTests\/test_failureEquatable()"
+      ],
+      "target" : {
+        "containerPath" : "container:Promi.xcodeproj",
+        "identifier" : "52F524212EF9B29E007B30D5",
+        "name" : "PromiTests"
+      }
+    }
+  ],
+  "version" : 1
+}

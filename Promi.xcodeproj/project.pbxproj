@@ -55,6 +55,9 @@
 		5251CA1C2EFA0F8D000C59CB /* AuditEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA1B2EFA0F8D000C59CB /* AuditEvent.swift */; };
 		5251CA1E2EFA0F9E000C59CB /* AuditLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA1D2EFA0F9E000C59CB /* AuditLogger.swift */; };
 		5251CA242EFA1AE7000C59CB /* RecoveryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA232EFA1AE7000C59CB /* RecoveryReader.swift */; };
+		526C00FC2EFCB77800FA6D41 /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C00FB2EFCB77800FA6D41 /* FeatureFlags.swift */; };
+		526C00FF2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C00FE2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift */; };
+		526C01092EFCBB5500FA6D41 /* ReadPathActivationGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C01082EFCBB5500FA6D41 /* ReadPathActivationGate.swift */; };
 		529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */; };
 		529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */; };
 		529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */; };
@@ -160,6 +163,10 @@
 		5251CA1B2EFA0F8D000C59CB /* AuditEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditEvent.swift; sourceTree = "<group>"; };
 		5251CA1D2EFA0F9E000C59CB /* AuditLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditLogger.swift; sourceTree = "<group>"; };
 		5251CA232EFA1AE7000C59CB /* RecoveryReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryReader.swift; sourceTree = "<group>"; };
+		5269800E2EFD6FD2002A2AC9 /* Promi.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Promi.xctestplan; sourceTree = "<group>"; };
+		526C00FB2EFCB77800FA6D41 /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
+		526C00FE2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadPathBootstrapper.swift; sourceTree = "<group>"; };
+		526C01082EFCBB5500FA6D41 /* ReadPathActivationGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadPathActivationGate.swift; sourceTree = "<group>"; };
 		5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
 		529895A12EAC50F7000F57F8 /* OnboardingSlideData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSlideData.swift; sourceTree = "<group>"; };
 		529895A32EAC511B000F57F8 /* PinkyPromiseAnimationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseAnimationView.swift; sourceTree = "<group>"; };
@@ -334,9 +341,27 @@
 			path = Audit;
 			sourceTree = "<group>";
 		};
+		526C00FA2EFCB74A00FA6D41 /* FeatureFlags */ = {
+			isa = PBXGroup;
+			children = (
+				526C00FB2EFCB77800FA6D41 /* FeatureFlags.swift */,
+			);
+			path = FeatureFlags;
+			sourceTree = "<group>";
+		};
+		526C00FD2EFCB79400FA6D41 /* Bootstrap */ = {
+			isa = PBXGroup;
+			children = (
+				526C00FE2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift */,
+				526C01082EFCBB5500FA6D41 /* ReadPathActivationGate.swift */,
+			);
+			path = Bootstrap;
+			sourceTree = "<group>";
+		};
 		52D3F0422EABF4630048149B = {
 			isa = PBXGroup;
 			children = (
+				5269800E2EFD6FD2002A2AC9 /* Promi.xctestplan */,
 				52F524162EF9A716007B30D5 /* Presentation */,
 				52F524152EF9A6CA007B30D5 /* Infrastructure */,
 				52F524142EF9A695007B30D5 /* Application */,
@@ -466,6 +491,8 @@
 		52F524142EF9A695007B30D5 /* Application */ = {
 			isa = PBXGroup;
 			children = (
+				526C00FD2EFCB79400FA6D41 /* Bootstrap */,
+				526C00FA2EFCB74A00FA6D41 /* FeatureFlags */,
 				5251C9EB2EF9F240000C59CB /* Types */,
 				5251C9EA2EF9F22F000C59CB /* UseCases */,
 			);
@@ -652,6 +679,7 @@
 				5251CA182EFA0F65000C59CB /* AppFilePaths.swift in Sources */,
 				529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */,
 				529895A22EAC50F7000F57F8 /* OnboardingSlideData.swift in Sources */,
+				526C01092EFCBB5500FA6D41 /* ReadPathActivationGate.swift in Sources */,
 				52F5241D2EF9B13C007B30D5 /* PersistenceError.swift in Sources */,
 				5251C9DF2EF9E989000C59CB /* BravoKey.swift in Sources */,
 				521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */,
@@ -667,6 +695,7 @@
 				5251C9F82EF9F756000C59CB /* ReactionType.swift in Sources */,
 				5251CA002EF9FC07000C59CB /* UseCaseIDs.swift in Sources */,
 				5251CA1C2EFA0F8D000C59CB /* AuditEvent.swift in Sources */,
+				526C00FF2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift in Sources */,
 				5251C9F32EF9F32D000C59CB /* NoopUseCases.swift in Sources */,
 				523FA00F2EFB5A470035CB3F /* ReadModelSnapshot.swift in Sources */,
 				5251CA062EF9FC47000C59CB /* EditPromiUseCase.swift in Sources */,
@@ -701,6 +730,7 @@
 				523F9FD32EFAD4ED0035CB3F /* VersionedEnvelope.swift in Sources */,
 				521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */,
 				523F9FCF2EFAD4720035CB3F /* JSONStoreError.swift in Sources */,
+				526C00FC2EFCB77800FA6D41 /* FeatureFlags.swift in Sources */,
 				529895B22EAC6181000F57F8 /* TutorialOverlayView.swift in Sources */,
 				52D3F07B2EABF9DF0048149B /* SplashScreenView.swift in Sources */,
 				52D3F0892EABFB780048149B /* BravoButton.swift in Sources */,

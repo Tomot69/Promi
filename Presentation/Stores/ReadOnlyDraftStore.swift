@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+@MainActor
 final class ReadOnlyDraftStore: ObservableObject {
 
     @Published private(set) var drafts: [PromiDraft] = []
@@ -20,3 +21,4 @@ final class ReadOnlyDraftStore: ObservableObject {
         }
     }
 }
+
