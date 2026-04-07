@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		520E36BB2F83BA4F0057DD70 /* PromiFieldVisuals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520E36BA2F83BA4F0057DD70 /* PromiFieldVisuals.swift */; };
+		520E36BD2F8517DD0057DD70 /* PromiListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520E36BC2F8517DD0057DD70 /* PromiListView.swift */; };
+		520E36BF2F85180E0057DD70 /* PromiCompositionShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520E36BE2F85180E0057DD70 /* PromiCompositionShareView.swift */; };
 		521AFCC12EAD39D5009D2334 /* PromiDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC02EAD39D5009D2334 /* PromiDraft.swift */; };
 		521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC22EAD39F7009D2334 /* DraftStore.swift */; };
 		521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */; };
@@ -115,6 +118,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		520E36BA2F83BA4F0057DD70 /* PromiFieldVisuals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiFieldVisuals.swift; sourceTree = "<group>"; };
+		520E36BC2F8517DD0057DD70 /* PromiListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiListView.swift; sourceTree = "<group>"; };
+		520E36BE2F85180E0057DD70 /* PromiCompositionShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiCompositionShareView.swift; sourceTree = "<group>"; };
 		521AFCC02EAD39D5009D2334 /* PromiDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiDraft.swift; sourceTree = "<group>"; };
 		521AFCC22EAD39F7009D2334 /* DraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStore.swift; sourceTree = "<group>"; };
 		521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalIntensityGaugeView.swift; sourceTree = "<group>"; };
@@ -431,6 +437,9 @@
 				521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */,
 				521AFCC62EAD3E49009D2334 /* EditPromiView.swift */,
 				521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */,
+				520E36BA2F83BA4F0057DD70 /* PromiFieldVisuals.swift */,
+				520E36BC2F8517DD0057DD70 /* PromiListView.swift */,
+				520E36BE2F85180E0057DD70 /* PromiCompositionShareView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -590,7 +599,7 @@
 		52D3F0432EABF4630048149B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = 1;
+				BuildIndependentTargetsInParallel = NO;
 				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
@@ -660,6 +669,7 @@
 				52E1A2492EAD155F007EFAA8 /* MinimalPromiCardView.swift in Sources */,
 				523F9FDD2EFADA670035CB3F /* CanonicalStoreWritePolicy.swift in Sources */,
 				5251CA102EF9FCA9000C59CB /* AddCommentUseCase.swift in Sources */,
+				520E36BF2F85180E0057DD70 /* PromiCompositionShareView.swift in Sources */,
 				52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */,
 				523F9FF72EFB04870035CB3F /* DraftsPaths.swift in Sources */,
 				523FA0052EFB2FE30035CB3F /* PromiStoreMigrator.swift in Sources */,
@@ -690,6 +700,7 @@
 				523FA0112EFB5A680035CB3F /* MigratedFilesReader.swift in Sources */,
 				5251CA1E2EFA0F9E000C59CB /* AuditLogger.swift in Sources */,
 				52E1A2452EAD150C007EFAA8 /* MinimalHeaderView.swift in Sources */,
+				520E36BB2F83BA4F0057DD70 /* PromiFieldVisuals.swift in Sources */,
 				52CF58A12EFA2CD7004C87A0 /* RecoveryResult.swift in Sources */,
 				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
 				5251C9F82EF9F756000C59CB /* ReactionType.swift in Sources */,
@@ -721,6 +732,7 @@
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
 				52E1A2472EAD1541007EFAA8 /* MinimalSortTabsView.swift in Sources */,
 				523F9FBF2EFACB020035CB3F /* ShadowPaths.swift in Sources */,
+				520E36BD2F8517DD0057DD70 /* PromiListView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
 				52E1A2432EAD14EF007EFAA8 /* BottomIconsBar.swift in Sources */,
 				523FA01C2EFB76A00035CB3F /* ReadOnlyDraftStore.swift in Sources */,

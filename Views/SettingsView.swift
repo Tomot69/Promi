@@ -1,10 +1,3 @@
-//
-//  SettingsView.swift
-//  Promi
-//
-//  Created on 25/10/2025.
-//
-
 import SwiftUI
 
 struct SettingsView: View {
@@ -12,116 +5,90 @@ struct SettingsView: View {
     @EnvironmentObject var userStore: UserStore
     
     @State private var showLanguagePicker = false
+    @State private var showStudio = false
     
     var body: some View {
         NavigationView {
             ZStack {
-                userStore.selectedPalette.backgroundColor
+                Color(red: 0.96, green: 0.955, blue: 0.94)
                     .ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 32) {
-                        // Header
-                        VStack(spacing: 8) {
-                            Text("Réglages")
-                                .font(.system(size: 24, weight: .regular))
-                                .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.9))
-                        }
-                        .padding(.top, 24)
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 22) {
+                        Text("Réglages")
+                            .font(.system(size: 28, weight: .light))
+                            .foregroundColor(.black.opacity(0.86))
+                            .padding(.top, 12)
                         
-                        // Settings list
-                        VStack(spacing: 24) {
-                            // Language
-                            Button(action: { showLanguagePicker = true }) {
-                                SettingsRow(
-                                    icon: "globe",
-                                    label: "Langue",
-                                    value: userStore.selectedLanguage.uppercased()
-                                )
-                            }
-                            
-                            // Premium
-                            Button(action: {}) {
-                                SettingsRow(
-                                    icon: "star",
-                                    label: "Premium",
-                                    value: "Bientôt"
-                                )
-                            }
-                            .disabled(true)
-                            .opacity(0.4)
-                            
-                            // Notifications
-                            Button(action: {}) {
-                                SettingsRow(
-                                    icon: "bell",
-                                    label: "Notifications",
-                                    value: "Bientôt"
-                                )
-                            }
-                            .disabled(true)
-                            .opacity(0.4)
-                            
-                            // About
-                            Button(action: {}) {
-                                SettingsRow(
-                                    icon: "info.circle",
-                                    label: "À propos",
-                                    value: "v1.0"
-                                )
-                            }
+                        settingRow(title: "Langue", value: userStore.selectedLanguage.uppercased()) {
+                            showLanguagePicker = true
                         }
-                        .padding(.horizontal, 32)
+                        
+                        settingRow(title: "Le Studio", value: "Visuels") {
+                            showStudio = true
+                        }
+                        
+                        settingRow(title: "Palette", value: userStore.selectedPalette.rawValue) {
+                            showStudio = true
+                        }
+                        
+                        settingRow(title: "Notifications", value: "Bientôt") {
+                        }
+                        .opacity(0.50)
+                        
+                        settingRow(title: "Premium", value: "Bientôt") {
+                        }
+                        .opacity(0.50)
                     }
+                    .padding(.horizontal, 22)
+                    .padding(.bottom, 28)
                 }
             }
-            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Fermer") {
                         dismiss()
                     }
-                    .foregroundColor(Brand.orange.opacity(0.85))
-                    .font(.system(size: 15, weight: .regular))
+                    .foregroundColor(Color.orange.opacity(0.92))
                 }
             }
         }
         .sheet(isPresented: $showLanguagePicker) {
             LanguageSelectionView()
         }
-    }
-}
-
-// MARK: - Settings Row
-struct SettingsRow: View {
-    @EnvironmentObject var userStore: UserStore
-    let icon: String
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 18, weight: .ultraLight))
-                .foregroundColor(userStore.selectedPalette.textSecondaryColor)
-                .frame(width: 24)
-            
-            Text(label)
-                .font(.system(size: 15, weight: .regular))
-                .foregroundColor(userStore.selectedPalette.textPrimaryColor.opacity(0.8))
-            
-            Spacer()
-            
-            Text(value)
-                .font(.system(size: 12, weight: .regular))
-                .foregroundColor(userStore.selectedPalette.textSecondaryColor)
+        .sheet(isPresented: $showStudio) {
+            PaletteView()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 4)
-                .stroke(userStore.selectedPalette.textPrimaryColor.opacity(0.06), lineWidth: 0.2)
-        )
+    }
+    
+    private func settingRow(title: String, value: String, action: @escaping () -> Void) -> some View {
+        Button(action: {
+            Haptics.shared.lightTap()
+            action()
+        }) {
+            HStack {
+                Text(title)
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(.black.opacity(0.84))
+                
+                Spacer()
+                
+                Text(value)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.black.opacity(0.52))
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 18)
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color.white.opacity(0.44))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(Color.black.opacity(0.08), lineWidth: 0.8)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }

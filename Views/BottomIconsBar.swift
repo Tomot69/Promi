@@ -18,45 +18,37 @@ struct BottomIconsBar: View {
         VStack {
             Spacer()
             
-            HStack(spacing: 32) {
-                // Draft
-                Button(action: {
-                    Haptics.shared.lightTap()
-                    onDraftTap()
-                }) {
-                    DraftIcon(color: textColor, orangeDot: true)
-                        .frame(width: 32, height: 32)
-                }
+            HStack(spacing: 28) {
                 
-                // Palette
-                Button(action: {
-                    Haptics.shared.lightTap()
-                    onPaletteTap()
-                }) {
-                    PaletteIcon(color: textColor, orangeDot: true)
-                        .frame(width: 32, height: 32)
-                }
-                
-                // Karma
-                Button(action: {
-                    Haptics.shared.lightTap()
-                    onKarmaTap()
-                }) {
-                    KarmaIcon(color: textColor, orangeDot: true)
-                        .frame(width: 32, height: 32)
-                }
-                
-                // Settings
-                Button(action: {
-                    Haptics.shared.lightTap()
-                    onSettingsTap()
-                }) {
-                    SettingsIcon(color: textColor, orangeDot: true)
-                        .frame(width: 32, height: 32)
-                }
+                floatingIcon("tray", action: onDraftTap)
+                floatingIcon("circle.lefthalf.filled", action: onPaletteTap)
+                floatingIcon("flame", action: onKarmaTap)
+                floatingIcon("gearshape", action: onSettingsTap)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.bottom, 48)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 24)
+            .background(
+                Capsule()
+                    .fill(Color.white.opacity(0.03))
+                    .blur(radius: 10)
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Brand.hairline, lineWidth: 0.5)
+            )
+            .padding(.bottom, 34)
+        }
+    }
+    
+    private func floatingIcon(_ name: String, action: @escaping () -> Void) -> some View {
+        Button(action: {
+            Haptics.shared.lightTap()
+            action()
+        }) {
+            Image(systemName: name)
+                .font(.system(size: 18, weight: .light))
+                .foregroundColor(Brand.textSecondary)
+                .frame(width: 32, height: 32)
         }
     }
 }

@@ -1,18 +1,11 @@
-//
-//  UserStore.swift
-//  Promi
-//
-//  Created on 25/10/2025.
-//
-
 import Foundation
 import Combine
 
-// MARK: - User Store
-class UserStore: ObservableObject {
+final class UserStore: ObservableObject {
     @Published var localUserId: String
     @Published var selectedLanguage: String
     @Published var selectedPalette: ColorPalette
+    @Published var hasChosenLanguage: Bool
     @Published var hasCompletedOnboarding: Bool
     @Published var hasCompletedTutorial: Bool
     @Published var isPremium: Bool
@@ -22,12 +15,12 @@ class UserStore: ObservableObject {
     private let userIdKey = "localUserId"
     private let languageKey = "selectedLanguage"
     private let paletteKey = "selectedPalette"
+    private let languageChosenKey = "hasChosenLanguage"
     private let onboardingKey = "hasCompletedOnboarding"
     private let tutorialKey = "hasCompletedTutorial"
     private let premiumKey = "isPremium"
     
     init() {
-        // Load or generate user ID
         if let savedUserId = userDefaults.string(forKey: userIdKey) {
             self.localUserId = savedUserId
         } else {
@@ -36,10 +29,8 @@ class UserStore: ObservableObject {
             self.localUserId = newUserId
         }
         
-        // Load language
         self.selectedLanguage = userDefaults.string(forKey: languageKey) ?? "fr"
         
-        // Load palette
         if let paletteRawValue = userDefaults.string(forKey: paletteKey),
            let palette = ColorPalette(rawValue: paletteRawValue) {
             self.selectedPalette = palette
@@ -47,43 +38,48 @@ class UserStore: ObservableObject {
             self.selectedPalette = .pureWhite
         }
         
-        // Load onboarding status
+        self.hasChosenLanguage = userDefaults.bool(forKey: languageChosenKey)
         self.hasCompletedOnboarding = userDefaults.bool(forKey: onboardingKey)
-        
-        // Load tutorial status
         self.hasCompletedTutorial = userDefaults.bool(forKey: tutorialKey)
-        
-        // Load premium status
         self.isPremium = userDefaults.bool(forKey: premiumKey)
+    }
+    
+    func chooseLanguage(_ language: String) {
+        selectedLanguage = language
+        hasChosenLanguage = true
+        userDefaults.set(language, forKey: languageKey)
+        userDefaults.set(true, forKey: languageChosenKey)
     }
     
     func updateLanguage(_ language: String) {
         selectedLanguage = language
         userDefaults.set(language, forKey: languageKey)
-        objectWillChange.send()
     }
     
     func updatePalette(_ palette: ColorPalette) {
         selectedPalette = palette
         userDefaults.set(palette.rawValue, forKey: paletteKey)
-        objectWillChange.send()
     }
     
     func completeOnboarding() {
         hasCompletedOnboarding = true
         userDefaults.set(true, forKey: onboardingKey)
-        objectWillChange.send()
     }
     
     func completeTutorial() {
         hasCompletedTutorial = true
         userDefaults.set(true, forKey: tutorialKey)
-        objectWillChange.send()
     }
     
     func setPremium(_ isPremium: Bool) {
         self.isPremium = isPremium
         userDefaults.set(isPremium, forKey: premiumKey)
-        objectWillChange.send()
+    }
+    
+    func resetEntryFlowForDebug() {
+        hasChosenLanguage = false
+        hasCompletedOnboarding = false
+        userDefaults.set(false, forKey: languageChosenKey)
+        userDefaults.set(false, forKey: onboardingKey)
     }
 }

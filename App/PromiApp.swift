@@ -1,10 +1,3 @@
-//
-//  PromiApp.swift
-//  Promi
-//
-//  Created on 25/10/2025.
-//
-
 import SwiftUI
 
 @main
@@ -14,36 +7,42 @@ struct PromiApp: App {
     @StateObject private var karmaStore = KarmaStore()
     @StateObject private var draftStore = DraftStore()
 
+    @State private var isShowingSplash = true
+
     var body: some Scene {
         WindowGroup {
-            if userStore.hasCompletedOnboarding {
-                ContentView()
-                    .environmentObject(userStore)
-                    .environmentObject(promiStore)
-                    .environmentObject(karmaStore)
-                    .environmentObject(draftStore)
-                    .onAppear {
-                        ReadPathBootstrapper.applyIfEnabled(
-                            defaults: .standard,
-                            promiStore: promiStore,
-                            draftStore: draftStore
-                        )
+            rootView
+                .environmentObject(userStore)
+                .environmentObject(promiStore)
+                .environmentObject(karmaStore)
+                .environmentObject(draftStore)
+                .onAppear {
+                    ReadPathBootstrapper.applyIfEnabled(
+                        defaults: .standard,
+                        promiStore: promiStore,
+                        draftStore: draftStore
+                    )
+
+                    guard isShowingSplash else { return }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.15) {
+                        withAnimation(.easeOut(duration: 0.28)) {
+                            isShowingSplash = false
+                        }
                     }
-            } else {
-                SplashScreenView()
-                    .environmentObject(userStore)
-                    .environmentObject(promiStore)
-                    .environmentObject(karmaStore)
-                    .environmentObject(draftStore)
-                    .onAppear {
-                        ReadPathBootstrapper.applyIfEnabled(
-                            defaults: .standard,
-                            promiStore: promiStore,
-                            draftStore: draftStore
-                        )
-                    }
-            }
+                }
+        }
+    }
+
+    @ViewBuilder
+    private var rootView: some View {
+        if isShowingSplash {
+            SplashScreenView()
+        } else if !userStore.hasChosenLanguage {
+            LanguageSelectionView()
+        } else if !userStore.hasCompletedOnboarding {
+            OnboardingView()
+        } else {
+            ContentView()
         }
     }
 }
-

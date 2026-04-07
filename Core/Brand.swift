@@ -1,21 +1,23 @@
-//
-//  Brand.swift
-//  Promi
-//
-//  Created on 25/10/2025.
-//
-
 import SwiftUI
 
 struct Brand {
-    // Orange signature (plus invitant)
-    static let orange = Color(red: 1.0, green: 0.45, blue: 0.0) // #FF7300
     
-    // Textes (opacités augmentées pour lisibilité)
-    static let textPrimary = Color.black
-    static let textSecondary = Color.black.opacity(0.55) // Avant: 0.4 → Maintenant: 0.55
+    // MARK: - Core Color (vivant, profond, non-flat)
+    static let orange = Color(red: 1.0, green: 0.42, blue: 0.0)
     
-    // Karma colors
+    // MARK: - Dynamic Layers
+    static let orangeGlow = Color(red: 1.0, green: 0.5, blue: 0.1).opacity(0.25)
+    static let softHalo = Color.white.opacity(0.04)
+    
+    // MARK: - Text
+    static let textPrimary = Color.primary
+    static let textSecondary = Color.primary.opacity(0.5)
+    
+    // MARK: - Surfaces
+    static let ultraThin = Color.white.opacity(0.02)
+    static let hairline = Color.white.opacity(0.06)
+    
+    // MARK: - Karma
     static let karmaExcellent = Color.green
     static let karmaGood = Color.blue
     static let karmaAverage = Color.orange
