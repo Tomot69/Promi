@@ -1,5 +1,80 @@
 import SwiftUI
 import UIKit
+import Combine
+
+// MARK: - Public: Full-page chrome backdrop
+//
+// Used by all full-screen pages that overlay the home field (Mes Promi,
+// Brouillons, Karma, Créer un Promi, Réglages, etc.) so they inherit the
+// EXACT same visual feel as the tri/+ dropdown menus — live Voronoi below,
+// subtle blur on top, dark tint at the CompactMenuSurface level.
+//
+// IMPORTANT: uses .blur(radius:) explicitly instead of .ultraThinMaterial
+// because SwiftUI's material backdrop filter does NOT blur content behind
+// the view when it lives in a sheet / modal presentation context (the
+// render pass is separate). The menus use material correctly because they
+// sit inside the home ContentView's ZStack, not in a sheet. For pages
+// presented as sheets, an explicit .blur() is the only way to get a
+// predictable, identical visual result.
+
+struct PromiChromePageBackground: View {
+    let pack: PromiVisualPack
+    let mood: PromiColorMood
+    let promis: [PromiItem]
+    let languageCode: String
+
+    init(
+        pack: PromiVisualPack,
+        mood: PromiColorMood,
+        promis: [PromiItem] = [],
+        languageCode: String = "fr_FR"
+    ) {
+        self.pack = pack
+        self.mood = mood
+        self.promis = promis
+        self.languageCode = languageCode
+    }
+
+    var body: some View {
+        ZStack {
+            // Layer 1: live Voronoi backdrop rasterized into its OWN Metal
+            // layer via .drawingGroup(). This is CRITICAL — without it,
+            // the .ultraThinMaterial layer on top cannot backdrop-sample
+            // a sibling SwiftUI view inside the same ZStack when the page
+            // is presented as a sheet, and you get a washed-out uniform
+            // blur instead of the distinct abstract color patches visible
+            // through the tri/+ dropdown menus. drawingGroup forces the
+            // Voronoi to become a Metal bitmap source that material can
+            // correctly sample and blur on top of.
+            GeometryReader { geo in
+                PromiFieldPreviewView(
+                    pack: pack,
+                    mood: mood,
+                    size: geo.size,
+                    promis: promis,
+                    languageCode: languageCode,
+                    sortOption: .inspiration
+                )
+            }
+            .drawingGroup()
+
+            // Layer 2: ultraThinMaterial — IDENTICAL recipe to the
+            // CompactMenuSurface used by the tri and + dropdown menus.
+            // Same material tier, same amount of frosted-glass blur.
+            Rectangle()
+                .fill(.ultraThinMaterial)
+
+            // Layer 3: dark tint — IDENTICAL opacity to CompactMenuSurface
+            // (0.18 for dark-field moods, 0.10 for light-field moods).
+            // No more, no less. Exactly the same darkening level as the
+            // dropdown menus, so pages inherit the same tonal weight.
+            Rectangle()
+                .fill(Color.black.opacity(mood.prefersDarkChrome ? 0.18 : 0.10))
+        }
+        .allowsHitTesting(false)
+        .ignoresSafeArea()
+    }
+}
 
 // MARK: - Public: Live zoomable field
 
@@ -11,11 +86,32 @@ struct PromiFieldRootView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
 
+    /// Vertical space reserved at the bottom of the field for the floating
+    /// dock (tri / œil / karma / studio / share). Keeps the content rect
+    /// above the dock even at minimum zoom (0.6), so when the user pinches
+    /// all the way out the Voronoi rectangle no longer collides with the
+    /// dock buttons. Valid for all packs of the Studio.
+    private let dockReservedBottom: CGFloat = 96
+
     var body: some View {
         GeometryReader { geo in
-            ZoomablePromiViewport {
-                packContent(size: geo.size)
-                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+            let fieldHeight = max(geo.size.height - dockReservedBottom, 1)
+            let fieldSize = CGSize(width: geo.size.width, height: fieldHeight)
+
+            VStack(spacing: 0) {
+                ZoomablePromiViewport {
+                    packContent(size: fieldSize)
+                        .frame(width: fieldSize.width, height: fieldSize.height, alignment: .topLeading)
+                }
+                .frame(height: fieldHeight)
+
+                // Reserved transparent strip for the dock. Nothing is drawn
+                // here — the dock lives in ContentView as an overlay on
+                // top of everything else. This just pushes the zoomable
+                // field up, so pinch-to-min never places cells under the
+                // dock.
+                Color.clear
+                    .frame(height: dockReservedBottom)
             }
         }
         .ignoresSafeArea()
@@ -191,12 +287,60 @@ private final class ZoomHostScrollView: UIScrollView {
         centerContentIfNeeded()
     }
 
+    /// Reserved safe area at the top of the screen above which no Voronoi
+    /// content should settle at dezoom (status bar + "Promi" header).
+    private let topReservedAtDezoom: CGFloat = 92
+
+    /// Reserved safe area at the bottom of the screen above which no
+    /// Voronoi content should settle at dezoom (dock icons + home indicator).
+    /// This prevents the cell rectangle from being overlapped by the dock
+    /// buttons when the user pinches to min zoom and releases.
+    private let bottomReservedAtDezoom: CGFloat = 118
+
     func centerContentIfNeeded() {
-        guard let hosted = hostedView else { return }
-        var frame = hosted.frame
-        frame.origin.x = frame.width < bounds.width ? (bounds.width - frame.width) / 2 : 0
-        frame.origin.y = frame.height < bounds.height ? (bounds.height - frame.height) / 2 : 0
-        hosted.frame = frame
+        guard hostedView != nil else { return }
+
+        // Zoom-aware centering via contentInset. At zoom = 1 the inset is
+        // zero so the field fills the viewport edge-to-edge (as before).
+        // At dezoom, we center the scaled content in a "safe area" that
+        // excludes the top header and the bottom dock, so the cells settle
+        // above the dock buttons — matching the reference screenshots.
+        let scaledW = contentSize.width * zoomScale
+        let scaledH = contentSize.height * zoomScale
+
+        let horizontalInset: CGFloat = scaledW < bounds.width
+            ? (bounds.width - scaledW) / 2
+            : 0
+
+        let availableHeight = bounds.height - topReservedAtDezoom - bottomReservedAtDezoom
+
+        var topInset: CGFloat = 0
+        var bottomInset: CGFloat = 0
+
+        if scaledH <= availableHeight && scaledH < bounds.height {
+            // Content fits inside the safe area → center it there with the
+            // top/bottom reservations fully applied.
+            let extraSpace = availableHeight - scaledH
+            topInset = topReservedAtDezoom + extraSpace / 2
+            bottomInset = bottomReservedAtDezoom + extraSpace / 2
+        } else if scaledH < bounds.height {
+            // Content taller than the safe area but shorter than bounds.
+            // Taper the reservations linearly so at exactly bounds.height
+            // the insets are zero (dock overlap becomes unavoidable close
+            // to zoom 1, which is the existing intended behavior).
+            let overflow = scaledH - availableHeight
+            let reservedSpan = bounds.height - availableHeight
+            let factor = max(0, 1 - overflow / reservedSpan)
+            topInset = topReservedAtDezoom * factor
+            bottomInset = bottomReservedAtDezoom * factor
+        }
+
+        contentInset = UIEdgeInsets(
+            top: topInset,
+            left: horizontalInset,
+            bottom: bottomInset,
+            right: horizontalInset
+        )
     }
 }
 
@@ -416,6 +560,72 @@ struct CristalPromiFieldView: View {
 
 // MARK: - Shared field
 
+/// Class-based cache for PromiFieldLayout. Using a reference type wrapped in
+/// @StateObject guarantees that async writes from background queues always
+/// land in the correct storage, even if the parent View is recreated due to
+/// sheet open/close cycles or AppStorage propagation. The previous @State-based
+/// approach silently dropped writes when the view was re-instantiated.
+fileprivate final class PromiFieldLayoutCache: ObservableObject {
+    @Published var layout: PromiFieldLayout = PromiFieldLayout(
+        cells: [],
+        cristalMediumCells: nil,
+        nestedSubCells: nil,
+        bounds: .zero,
+        fieldScale: 1,
+        offsetX: 0,
+        offsetY: 0
+    )
+    @Published var key: String = ""
+    private var generation: Int = 0
+
+    func regenerateIfNeeded(
+        theme: PromiFieldTheme,
+        mood: PromiColorMood,
+        size: CGSize,
+        promis: [PromiItem],
+        sortOption: PromiFieldSortOption,
+        renderKey: String
+    ) {
+        guard renderKey != key else { return }
+
+        // Fast sync path for non-Cristal themes (compute < 20ms).
+        if theme != .cristal {
+            let fresh = PromiFieldLayoutFactory.make(
+                theme: theme,
+                mood: mood,
+                size: size,
+                promis: promis,
+                sortOption: sortOption
+            )
+            layout = fresh
+            key = renderKey
+            return
+        }
+
+        // Async path for Cristal — three-tier compute is fast enough now
+        // (~50-200ms) but still off main to keep UI buttery. Generation
+        // counter discards stale results from rapid mood-switches.
+        generation += 1
+        let myGeneration = generation
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let fresh = PromiFieldLayoutFactory.make(
+                theme: theme,
+                mood: mood,
+                size: size,
+                promis: promis,
+                sortOption: sortOption
+            )
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                guard self.generation == myGeneration else { return }
+                self.layout = fresh
+                self.key = renderKey
+            }
+        }
+    }
+}
+
 fileprivate struct CommonPromiFieldView: View {
     let theme: PromiFieldTheme
     let mood: PromiColorMood
@@ -425,15 +635,7 @@ fileprivate struct CommonPromiFieldView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
 
-    @State private var cachedLayout: PromiFieldLayout = PromiFieldLayout(
-        cells: [],
-        nestedSubCells: nil,
-        fieldScale: 1,
-        offsetX: 0,
-        offsetY: 0
-    )
-    @State private var cachedKey: String = ""
-    @State private var dispatchGeneration: Int = 0
+    @StateObject private var cache = PromiFieldLayoutCache()
 
     /// Composite key that invalidates the cache whenever any input that
     /// affects the layout changes. The Promi list is hashed by id+intensity
@@ -447,80 +649,70 @@ fileprivate struct CommonPromiFieldView: View {
     }
 
     var body: some View {
+        let layout = cache.layout
+
         ZStack(alignment: .topLeading) {
-            if let subCells = cachedLayout.nestedSubCells {
-                CristalNestedUnderlay(
-                    subCells: subCells,
-                    size: size
-                )
+            // Cristal: fine sub-cells layer. Rendered INLINE in this ZStack
+            // (not wrapped in a sub-view with .drawingGroup) so their Shape
+            // paths render in the same unclipped coordinate space as the
+            // outer cells of every theme — matching exactly how galets,
+            // alvéoles, mosaic and spectrum handle overscan.
+            if let subCells = layout.nestedSubCells {
+                ForEach(0..<subCells.count, id: \.self) { idx in
+                    let cell = subCells[idx]
+                    PromiFieldPolygonShape(points: cell.points, softness: 0)
+                        .fill(cell.color)
+                    PromiFieldPolygonShape(points: cell.points, softness: 0)
+                        .stroke(Color.black.opacity(0.40), lineWidth: 0.5)
+                }
             }
 
-            ForEach(cachedLayout.cells) { cell in
+            // Cristal: medium-cell layer. Every medium cell (promoted or
+            // not) contributes ONLY its bold stroke to visually group its
+            // sub-cells into a single "moyenne alvéole". Promoted media no
+            // longer get a solid fill — their sub-cell mosaic remains
+            // visible underneath, preserving the cristal design coherence.
+            // The interactive label for promoted media is rendered in the
+            // overlay pass below.
+            if let mediumCells = layout.cristalMediumCells {
+                ForEach(0..<mediumCells.count, id: \.self) { idx in
+                    let medium = mediumCells[idx]
+                    PromiFieldPolygonShape(points: medium.points, softness: 0)
+                        .stroke(Color.black.opacity(0.88), lineWidth: 1.9)
+                }
+            }
+
+            // Outer cells (all themes). For Cristal these are stroke-only frames.
+            ForEach(layout.cells) { cell in
                 cellView(for: cell)
+            }
+
+            // Cristal: interactive label overlay for promoted medium cells.
+            // Each promoted medium gets a transparent tappable shape with
+            // the Promi label centered on its centroid.
+            if let medium = layout.cristalMediumCells {
+                ForEach(medium.filter { $0.promotedPromi != nil }) { mediumCell in
+                    cristalMediumPromoButton(for: mediumCell)
+                }
             }
         }
         .frame(width: max(size.width, 1), height: max(size.height, 1), alignment: .topLeading)
-        .scaleEffect(cachedLayout.fieldScale, anchor: .center)
-        .offset(x: cachedLayout.offsetX, y: cachedLayout.offsetY)
-        .animation(.spring(response: 0.44, dampingFraction: 0.86), value: cachedKey)
-        .onAppear { regenerateLayoutIfNeeded() }
-        .onChange(of: renderKey) { _ in regenerateLayoutIfNeeded() }
+        .scaleEffect(layout.fieldScale, anchor: .center)
+        .offset(x: layout.offsetX, y: layout.offsetY)
+        .animation(.spring(response: 0.44, dampingFraction: 0.86), value: cache.key)
+        .onAppear { regenerate() }
+        .onChange(of: renderKey) { _, _ in regenerate() }
     }
 
-    /// Recomputes the layout when the render key changes. Fast themes
-    /// (galets/alveoles/mosaic/spectrum) compute synchronously on the main
-    /// thread — they're cheap (<20ms) and sync avoids race conditions entirely.
-    /// Cristal computes on a background queue because the ~6000-cell sub-pavage
-    /// takes 1-3s; a generation counter protects against stale results landing
-    /// after the user has already switched to a different mood.
-    private func regenerateLayoutIfNeeded() {
-        let newKey = renderKey
-        guard newKey != cachedKey else { return }
-
-        // Fast sync path — non-cristal themes compute in < 20ms, main thread
-        // is fine. Direct, predictable, no race conditions.
-        if theme != .cristal {
-            let fresh = PromiFieldLayoutFactory.make(
-                theme: theme,
-                mood: mood,
-                size: size,
-                promis: promis,
-                sortOption: sortOption
-            )
-            cachedLayout = fresh
-            cachedKey = newKey
-            return
-        }
-
-        // Slow async path — cristal only. Generation counter discards stale
-        // results if the user switches mood while a compute is in flight.
-        dispatchGeneration += 1
-        let myGeneration = dispatchGeneration
-
-        let capturedTheme = theme
-        let capturedMood = mood
-        let capturedSize = size
-        let capturedPromis = promis
-        let capturedSortOption = sortOption
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            let fresh = PromiFieldLayoutFactory.make(
-                theme: capturedTheme,
-                mood: capturedMood,
-                size: capturedSize,
-                promis: capturedPromis,
-                sortOption: capturedSortOption
-            )
-            DispatchQueue.main.async {
-                // @State is read through live storage even when self is
-                // captured by value, so this correctly detects if a newer
-                // regeneration has happened in the meantime and discards
-                // this stale result.
-                guard self.dispatchGeneration == myGeneration else { return }
-                self.cachedLayout = fresh
-                self.cachedKey = newKey
-            }
-        }
+    private func regenerate() {
+        cache.regenerateIfNeeded(
+            theme: theme,
+            mood: mood,
+            size: size,
+            promis: promis,
+            sortOption: sortOption,
+            renderKey: renderKey
+        )
     }
 
     @ViewBuilder
@@ -554,45 +746,39 @@ fileprivate struct CommonPromiFieldView: View {
                 .overlay(shape.stroke(cell.strokeColor, style: cell.strokeStyle))
         }
     }
-}
 
-// MARK: - Cristal nested underlay (fine sub-pavage tiling the full plane)
+    /// Renders the tappable Promi label for a promoted medium cell in Cristal.
+    /// The sub-cell mosaic remains visible underneath — promoted media no
+    /// longer get a solid color fill, per user request to preserve the
+    /// cristal design. This layer provides only the interactive label
+    /// centered on the medium centroid.
+    @ViewBuilder
+    private func cristalMediumPromoButton(for medium: CristalMediumCell) -> some View {
+        if let promi = medium.promotedPromi {
+            let bbox = polygonBoundingBox(for: medium.points)
+            let viewport = CGRect(origin: .zero, size: size)
+            let visible = bbox.intersection(viewport)
+            let frame = visible.isNull ? bbox : visible
+            let textMode = PromiFieldThemeConfig.textMode(for: .cristal, mood: mood)
 
-fileprivate struct CristalNestedUnderlay: View {
-    let subCells: [CristalSubCell]
-    let size: CGSize
-
-    var body: some View {
-        Canvas { context, _ in
-            // Draw every sub-cell in one flat pass. No clipping — the sub-cells
-            // tile the plane continuously and the thick black borders of the
-            // outer compartments drawn above (in the main ZStack cells loop)
-            // visually separate the regions. This avoids the "orphan zones"
-            // bug caused by per-parent grouping where sub-cells whose centroids
-            // lie in compartment A but extend into B left gaps in B.
-            for subCell in subCells {
-                let path = makePath(points: subCell.points)
-                context.fill(path, with: .color(subCell.color))
-                context.stroke(
-                    path,
-                    with: .color(.black.opacity(0.38)),
-                    lineWidth: 0.5
-                )
+            Button(action: {
+                Haptics.shared.lightTap()
+                onTapPromi(promi)
+            }) {
+                PromiFieldPolygonShape(points: medium.points, softness: 0)
+                    .fill(Color.clear)
+                    .contentShape(PromiFieldPolygonShape(points: medium.points, softness: 0))
+                    .overlay(
+                        PromiCellCenteredLabelView(
+                            promi: promi,
+                            languageCode: languageCode,
+                            frame: frame,
+                            textMode: textMode
+                        )
+                    )
             }
+            .buttonStyle(.plain)
         }
-        .frame(width: max(size.width, 1), height: max(size.height, 1))
-        .allowsHitTesting(false)
-    }
-
-    private func makePath(points: [CGPoint]) -> Path {
-        var path = Path()
-        guard let first = points.first else { return path }
-        path.move(to: first)
-        for p in points.dropFirst() {
-            path.addLine(to: p)
-        }
-        path.closeSubpath()
-        return path
     }
 }
 
@@ -600,15 +786,31 @@ fileprivate struct CristalNestedUnderlay: View {
 
 fileprivate struct PromiFieldLayout {
     let cells: [PromiFieldCell]
+    let cristalMediumCells: [CristalMediumCell]?
     let nestedSubCells: [CristalSubCell]?
+    /// The full Voronoi bounds rect (viewport-relative, includes overscan).
+    /// Kept for potential future use; currently not consumed by the render
+    /// pipeline since sub-cells are rendered as inline Shapes in the main
+    /// ZStack and render freely beyond the parent viewport frame.
+    let bounds: CGRect
     let fieldScale: CGFloat
     let offsetX: CGFloat
     let offsetY: CGFloat
 }
 
+fileprivate struct CristalMediumCell: Identifiable {
+    let id: UUID
+    let points: [CGPoint]
+    let baseColor: Color
+    let parentOuterIndex: Int
+    let centroid: CGPoint
+    let promotedPromi: PromiItem?
+}
+
 fileprivate struct CristalSubCell {
     let points: [CGPoint]
     let color: Color
+    let parentMediumIdx: Int
 }
 
 fileprivate struct PromiFieldCell: Identifiable {
@@ -696,11 +898,10 @@ fileprivate enum PromiFieldThemeConfig {
         case .alveoles:
             return min(70, max(26, density + 14 + promiCount))
         case .cristal:
-            // Scale with area: ~14 outer compartments in Studio preview cards,
-            // ~38-44 in full-screen home. Keeps the Studio from freezing the
-            // main thread while preserving the density on the home view.
-            let scaled = Int(area / 15_000)
-            return min(44, max(14, scaled + 12 + promiCount / 2))
+            // Tier 1 outer compartments. Bumped per user "complexifie" request:
+            // ~18-28 on full home, ~8-12 on Studio preview cards.
+            let scaled = Int(area / 22_000)
+            return min(28, max(8, scaled + 8 + promiCount / 3))
         case .mosaic:
             return min(62, max(24, density + 12 + promiCount))
         case .spectrum:
@@ -869,19 +1070,19 @@ fileprivate enum PromiFieldLayoutFactory {
         }
 
         // Cristal pack: outer compartments become stroke-only frames (transparent
-        // fill) so the fine sub-pavage rendered underneath shows through. The
-        // nested sub-cells are computed once as a flat list — no per-compartment
-        // grouping, no clipping. Sub-cells tile the plane globally and the
-        // thick black borders of the outer compartments drawn above visually
-        // separate the regions.
-        var nestedSubCells: [CristalSubCell]? = nil
+        // fill). Inside each, a tier-2 medium-cell pavage is computed and clipped
+        // to the outer polygon. Inside each medium, a tier-3 fine sub-pavage is
+        // computed and clipped to the medium polygon. Promotion happens at the
+        // medium tier — Promis take the place of a medium alvéole.
+        var cristalMedium: [CristalMediumCell]? = nil
+        var cristalSub: [CristalSubCell]? = nil
         if theme == .cristal {
             cells = cells.map { cell in
                 PromiFieldCell(
                     id: cell.id,
                     points: cell.points,
                     visibleBounds: cell.visibleBounds,
-                    promotedPromi: cell.promotedPromi,
+                    promotedPromi: nil,
                     fillStyle: AnyShapeStyle(Color.clear),
                     strokeColor: cell.strokeColor,
                     strokeStyle: cell.strokeStyle,
@@ -889,25 +1090,89 @@ fileprivate enum PromiFieldLayoutFactory {
                 )
             }
 
-            nestedSubCells = computeCristalNested(
-                outerSites: weightedSites.map(\.point),
-                bounds: bounds,
+            let nested = computeCristalNested(
+                outerPolygons: polygons,
                 idleIndices: idleIndices,
                 mood: mood,
-                seed: seedBase(for: theme),
-                fineCount: Int(max(200, min(6000, safeSize.width * safeSize.height / 55)))
+                seed: seedBase(for: theme)
             )
+
+            // Assign Promis to medium cells closest to the sort target.
+            // Each promoted medium cell gets its promi label, no sub-cells
+            // are drawn inside it (they'll be filtered at render time via
+            // the medium's id matching).
+            var mediumWithPromotion = nested.medium
+            let target = preferredTarget(for: sortOption, size: safeSize)
+            let sortedPromis = sortPromis(promis, by: sortOption)
+            var usedMediumIndices: Set<Int> = []
+
+            for promi in sortedPromis {
+                var bestIdx: Int? = nil
+                var bestDist = CGFloat.greatestFiniteMagnitude
+                for (idx, medium) in mediumWithPromotion.enumerated() {
+                    if usedMediumIndices.contains(idx) { continue }
+                    let dx = medium.centroid.x - target.x
+                    let dy = medium.centroid.y - target.y
+                    let d = dx * dx + dy * dy
+                    if d < bestDist {
+                        bestDist = d
+                        bestIdx = idx
+                    }
+                }
+                if let idx = bestIdx {
+                    let m = mediumWithPromotion[idx]
+                    mediumWithPromotion[idx] = CristalMediumCell(
+                        id: m.id,
+                        points: m.points,
+                        baseColor: m.baseColor,
+                        parentOuterIndex: m.parentOuterIndex,
+                        centroid: m.centroid,
+                        promotedPromi: promi
+                    )
+                    usedMediumIndices.insert(idx)
+                }
+            }
+
+            // Keep ALL sub-cells visible — including those under promoted
+            // medium cells. Per user request, promoted Promi cells should
+            // NOT be filled with a solid color that breaks the cristal
+            // mosaic. Instead they retain their sub-cell pavage underneath,
+            // with only the thick medium border + centered Promi label
+            // marking them as promoted. This preserves visual coherence.
+            cristalMedium = mediumWithPromotion
+            cristalSub = nested.sub
         }
 
         // Smart dezoom: ensure every promoted cell is visible in viewport.
-        let (fieldScale, offsetX, offsetY) = computeFitTransform(
-            promotedPolygons: promotedMap.keys.sorted().compactMap { polygons.indices.contains($0) ? polygons[$0] : nil },
-            viewport: viewport
-        )
+        // For Cristal we hard-code (1, 0, 0) — promoted cells are tiny medium-tier
+        // alvéoles that are ALWAYS inside their parent outer compartment which
+        // is always inside the viewport. Smart dezoom would offset the layout
+        // to center on a tiny medium cell, shifting the rest off-screen.
+        let fieldScale: CGFloat
+        let offsetX: CGFloat
+        let offsetY: CGFloat
+        if theme == .cristal {
+            fieldScale = 1.0
+            offsetX = 0
+            offsetY = 0
+        } else {
+            let promotedPolygonsForFit = promotedMap.keys.sorted().compactMap {
+                polygons.indices.contains($0) ? polygons[$0] : nil
+            }
+            let transform = computeFitTransform(
+                promotedPolygons: promotedPolygonsForFit,
+                viewport: viewport
+            )
+            fieldScale = transform.scale
+            offsetX = transform.offsetX
+            offsetY = transform.offsetY
+        }
 
         return PromiFieldLayout(
             cells: cells,
-            nestedSubCells: nestedSubCells,
+            cristalMediumCells: cristalMedium,
+            nestedSubCells: cristalSub,
+            bounds: bounds,
             fieldScale: fieldScale,
             offsetX: offsetX,
             offsetY: offsetY
@@ -1498,86 +1763,299 @@ fileprivate enum PromiFieldLayoutFactory {
     // to produce the watercolor / stained-glass texture.
 
     private static func computeCristalNested(
-        outerSites: [CGPoint],
-        bounds: CGRect,
+        outerPolygons: [[CGPoint]],
         idleIndices: [Int],
         mood: PromiColorMood,
-        seed: UInt64,
-        fineCount: Int
-    ) -> [CristalSubCell] {
+        seed: UInt64
+    ) -> (medium: [CristalMediumCell], sub: [CristalSubCell]) {
         let palette = cristalThemedPalette(mood: mood)
-        guard !palette.isEmpty, !outerSites.isEmpty else { return [] }
+        guard !palette.isEmpty, !outerPolygons.isEmpty else { return ([], []) }
 
+        let mediumSeed = seed &+ 5_001
         let fineSeed = seed &+ 9_001
 
-        // Uniform random distribution, uniform weights. Voronoi cells from
-        // a uniform random point set naturally vary ±30% in size — enough
-        // organic feel without creating giant cells that leave gaps.
-        let fineSites: [WeightedSite] = (0..<fineCount).map { idx in
-            let x = randomUnit(seed: fineSeed, index: idx, stream: 137)
-            let y = randomUnit(seed: fineSeed, index: idx, stream: 211)
-            let point = CGPoint(
-                x: bounds.minX + CGFloat(x) * bounds.width,
-                y: bounds.minY + CGFloat(y) * bounds.height
-            )
-            return WeightedSite(point: point, weight: 22_000)
-        }
+        var allMedium: [CristalMediumCell] = []
+        var allSub: [CristalSubCell] = []
 
-        let finePolygons = fineSites.enumerated().map { index, _ in
-            VoronoiMath.weightedCellPolygon(
-                index: index,
-                sites: fineSites,
-                bounds: bounds
-            )
-        }
+        for (outerIdx, outerPoly) in outerPolygons.enumerated() {
+            guard outerPoly.count >= 3 else { continue }
 
-        // Flat list: each fine cell stores its polygon and the color derived
-        // from its closest outer compartment. No grouping, no clipping —
-        // sub-cells tile the plane globally, the thick black borders of the
-        // outer compartments drawn above will visually separate the regions.
-        var result: [CristalSubCell] = []
-        result.reserveCapacity(finePolygons.count)
+            let bbox = polygonBoundingBox(for: outerPoly)
+            guard bbox.width > 0, bbox.height > 0 else { continue }
+            let outerArea = polygonArea(for: outerPoly)
+            guard outerArea > 10 else { continue }
+            let outerCentroidPt = polygonCentroid(for: outerPoly)
 
-        for (fineIdx, finePolygon) in finePolygons.enumerated() {
-            guard !finePolygon.isEmpty else { continue }
-            let centroid = polygonCentroid(for: finePolygon)
-            guard centroid != .zero else { continue }
+            // Tier 2: medium cells. Bumped per user "complexifie" request.
+            let mediumCount = max(4, min(11, Int(outerArea / 5_500)))
 
-            var bestIdx = 0
-            var bestDist = CGFloat.greatestFiniteMagnitude
-            for (oIdx, oSite) in outerSites.enumerated() {
-                let dx = centroid.x - oSite.x
-                let dy = centroid.y - oSite.y
-                let d = dx * dx + dy * dy
-                if d < bestDist {
-                    bestDist = d
-                    bestIdx = oIdx
+            // DETERMINISTIC site placement.
+            //
+            // Theorem: for a convex polygon with vertices V_i and centroid C,
+            // the line segment [V_i → C] lies entirely inside the polygon.
+            // Therefore any point on this segment is GEOMETRICALLY guaranteed
+            // to be inside, no rejection sampling needed. Voronoi cells are
+            // always convex, so this works for every outer compartment, even
+            // edge ones with bounds-clipped vertices and weird shapes.
+            var mediumSites: [WeightedSite] = [
+                WeightedSite(point: outerCentroidPt, weight: 22_000)
+            ]
+
+            let pullVertex: CGFloat = 0.35
+            for vertex in outerPoly {
+                if mediumSites.count >= mediumCount { break }
+                let pulled = CGPoint(
+                    x: vertex.x + (outerCentroidPt.x - vertex.x) * pullVertex,
+                    y: vertex.y + (outerCentroidPt.y - vertex.y) * pullVertex
+                )
+                mediumSites.append(WeightedSite(point: pulled, weight: 22_000))
+            }
+
+            // If we still need more sites, use edge midpoints pulled toward
+            // the centroid (also guaranteed inside by convexity).
+            if mediumSites.count < mediumCount {
+                let pullEdge: CGFloat = 0.30
+                for i in 0..<outerPoly.count {
+                    if mediumSites.count >= mediumCount { break }
+                    let v0 = outerPoly[i]
+                    let v1 = outerPoly[(i + 1) % outerPoly.count]
+                    let mid = CGPoint(x: (v0.x + v1.x) / 2, y: (v0.y + v1.y) / 2)
+                    let pulled = CGPoint(
+                        x: mid.x + (outerCentroidPt.x - mid.x) * pullEdge,
+                        y: mid.y + (outerCentroidPt.y - mid.y) * pullEdge
+                    )
+                    mediumSites.append(WeightedSite(point: pulled, weight: 22_000))
                 }
             }
 
-            let paletteSlot: Int = {
-                if idleIndices.indices.contains(bestIdx) {
-                    return idleIndices[bestIdx]
+            // Optional: pad with random rejection sampling for organic variety.
+            // The localIdx fix from earlier ensures the PRNG advances every
+            // attempt — but even if every random point fails, we already have
+            // mediumCount deterministic sites guaranteed.
+            var mAttempts = 0
+            var mIdx = 0
+            while mediumSites.count < mediumCount && mAttempts < mediumCount * 60 {
+                let rx = randomUnit(seed: mediumSeed, index: outerIdx * 200 + mIdx, stream: 211)
+                let ry = randomUnit(seed: mediumSeed, index: outerIdx * 200 + mIdx, stream: 379)
+                let p = CGPoint(
+                    x: bbox.minX + CGFloat(rx) * bbox.width,
+                    y: bbox.minY + CGFloat(ry) * bbox.height
+                )
+                if pointInPolygon(p, polygon: outerPoly) {
+                    mediumSites.append(WeightedSite(point: p, weight: 22_000))
                 }
-                return bestIdx
-            }()
-            let safeSlot = ((paletteSlot % palette.count) + palette.count) % palette.count
-            let baseColor = palette[safeSlot]
+                mIdx += 1
+                mAttempts += 1
+            }
 
-            // Strong HSB variation for the watercolor texture: lightness ±27%,
-            // saturation ±18%. Each sub-cell has its own tonal identity within
-            // the compartment's color family.
-            let rawL = randomUnit(seed: fineSeed &+ 7_777, index: fineIdx, stream: 333)
-            let rawS = randomUnit(seed: fineSeed &+ 8_888, index: fineIdx, stream: 444)
-            let lightnessDelta = CGFloat(rawL - 0.5) * 0.54
-            let saturationDelta = CGFloat(rawS - 0.5) * 0.36
+            // Local Voronoi for the medium sites, with bounds slightly larger
+            // than the outer compartment bbox so border cells aren't truncated.
+            let localBounds = bbox.insetBy(dx: -bbox.width * 0.25, dy: -bbox.height * 0.25)
+            let mediumPolygons = mediumSites.enumerated().map { idx, _ in
+                VoronoiMath.weightedCellPolygon(
+                    index: idx,
+                    sites: mediumSites,
+                    bounds: localBounds
+                )
+            }
+
+            var mediumsAddedForThisOuter = 0
+            for (mIdx2, mediumRaw) in mediumPolygons.enumerated() {
+                // Clip the medium polygon to the outer compartment so it
+                // never extends past the thick black border.
+                let clippedMedium = PolygonClipper.clip(subject: mediumRaw, against: outerPoly)
+                guard clippedMedium.count >= 3 else { continue }
+                guard polygonArea(for: clippedMedium) > 30 else { continue }
+
+                // Each medium gets a distinct palette slot from its outer parent.
+                let baseSlot = idleIndices.indices.contains(outerIdx) ? idleIndices[outerIdx] : outerIdx
+                let safeSlot = ((baseSlot + mIdx2 * 2) % palette.count + palette.count) % palette.count
+                let mediumColor = palette[safeSlot]
+
+                let medium = CristalMediumCell(
+                    id: deterministicUUID(for: outerIdx * 1000 + mIdx2),
+                    points: clippedMedium,
+                    baseColor: mediumColor,
+                    parentOuterIndex: outerIdx,
+                    centroid: polygonCentroid(for: clippedMedium),
+                    promotedPromi: nil
+                )
+                allMedium.append(medium)
+                mediumsAddedForThisOuter += 1
+                let thisMediumIdx = allMedium.count - 1
+
+                // Tier 3: fine sub-cells inside this medium cell.
+                let subs = generateFineSubCells(
+                    parent: medium,
+                    parentMediumIdx: thisMediumIdx,
+                    seed: fineSeed,
+                    indexBase: outerIdx * 100_000 + mIdx2 * 1_000
+                )
+                allSub.append(contentsOf: subs)
+            }
+
+            // POST-CLIP FALLBACK: if every Voronoi cell got dropped during
+            // clipping (extreme polygon shapes, numerical edge cases, etc),
+            // we still must produce SOMETHING for this compartment otherwise
+            // the user sees an empty hole inside the outer borders. We fall
+            // back to "the whole compartment is one medium cell". This
+            // guarantees every outer compartment has color coverage.
+            if mediumsAddedForThisOuter == 0 {
+                let baseSlot = idleIndices.indices.contains(outerIdx) ? idleIndices[outerIdx] : outerIdx
+                let safeSlot = ((baseSlot % palette.count) + palette.count) % palette.count
+                let fallbackMedium = CristalMediumCell(
+                    id: deterministicUUID(for: outerIdx * 1000),
+                    points: outerPoly,
+                    baseColor: palette[safeSlot],
+                    parentOuterIndex: outerIdx,
+                    centroid: outerCentroidPt,
+                    promotedPromi: nil
+                )
+                allMedium.append(fallbackMedium)
+                let fallbackMediumIdx = allMedium.count - 1
+                let subs = generateFineSubCells(
+                    parent: fallbackMedium,
+                    parentMediumIdx: fallbackMediumIdx,
+                    seed: fineSeed,
+                    indexBase: outerIdx * 100_000
+                )
+                // Even the sub-cell generation has its own fallback (below);
+                // if it returns empty, append a single sub = whole compartment.
+                if subs.isEmpty {
+                    allSub.append(CristalSubCell(
+                        points: outerPoly,
+                        color: palette[safeSlot],
+                        parentMediumIdx: fallbackMediumIdx
+                    ))
+                } else {
+                    allSub.append(contentsOf: subs)
+                }
+            }
+        }
+
+        return (allMedium, allSub)
+    }
+
+    /// Generates fine sub-cells inside a medium parent. Uses deterministic
+    /// site placement (centroid + pulled vertices + edge midpoints) padded
+    /// with random rejection sampling for organicity. Each fine cell is
+    /// strictly clipped to the medium polygon via Sutherland-Hodgman.
+    private static func generateFineSubCells(
+        parent: CristalMediumCell,
+        parentMediumIdx: Int,
+        seed: UInt64,
+        indexBase: Int
+    ) -> [CristalSubCell] {
+        let mediumPoly = parent.points
+        guard mediumPoly.count >= 3 else { return [] }
+        let bbox = polygonBoundingBox(for: mediumPoly)
+        guard bbox.width > 0, bbox.height > 0 else { return [] }
+        let mediumArea = polygonArea(for: mediumPoly)
+        guard mediumArea > 15 else { return [] }
+        let mediumCentroidPt = polygonCentroid(for: mediumPoly)
+
+        // Density: reduced from the previous dense pattern to keep SwiftUI
+        // rendering fluid now that sub-cells are rendered as individual
+        // Shapes inline in the main ZStack (no .drawingGroup rasterization).
+        // Targets ~2500-3500 total sub-cells on a typical iPhone home vs.
+        // 5000-7000 before. Visual impact: slightly less "fractured glass"
+        // granularity but still clearly cristal-style.
+        let fineCount = max(8, min(40, Int(mediumArea / 130)))
+
+        // DETERMINISTIC base sites: centroid + pulled vertices + pulled edge
+        // midpoints. Same convexity theorem as the medium tier — guaranteed
+        // inside the polygon, no luck involved.
+        var fineSites: [WeightedSite] = [
+            WeightedSite(point: mediumCentroidPt, weight: 22_000)
+        ]
+
+        let pullVertex: CGFloat = 0.40
+        for vertex in mediumPoly {
+            if fineSites.count >= max(4, fineCount / 3) { break }
+            let pulled = CGPoint(
+                x: vertex.x + (mediumCentroidPt.x - vertex.x) * pullVertex,
+                y: vertex.y + (mediumCentroidPt.y - vertex.y) * pullVertex
+            )
+            fineSites.append(WeightedSite(point: pulled, weight: 22_000))
+        }
+
+        let pullEdge: CGFloat = 0.30
+        for i in 0..<mediumPoly.count {
+            if fineSites.count >= max(6, fineCount / 2) { break }
+            let v0 = mediumPoly[i]
+            let v1 = mediumPoly[(i + 1) % mediumPoly.count]
+            let mid = CGPoint(x: (v0.x + v1.x) / 2, y: (v0.y + v1.y) / 2)
+            let pulled = CGPoint(
+                x: mid.x + (mediumCentroidPt.x - mid.x) * pullEdge,
+                y: mid.y + (mediumCentroidPt.y - mid.y) * pullEdge
+            )
+            fineSites.append(WeightedSite(point: pulled, weight: 22_000))
+        }
+
+        // Pad with random rejection sampling for organic variety, with the
+        // localIdx-fixed PRNG. Even if every random point fails, the
+        // deterministic baseline above gives us enough sites to render.
+        var attempts = 0
+        var localIdx = 0
+        while fineSites.count < fineCount && attempts < fineCount * 60 {
+            let rx = randomUnit(seed: seed, index: indexBase + localIdx, stream: 137)
+            let ry = randomUnit(seed: seed, index: indexBase + localIdx, stream: 449)
+            let p = CGPoint(
+                x: bbox.minX + CGFloat(rx) * bbox.width,
+                y: bbox.minY + CGFloat(ry) * bbox.height
+            )
+            if pointInPolygon(p, polygon: mediumPoly) {
+                fineSites.append(WeightedSite(point: p, weight: 22_000))
+            }
+            localIdx += 1
+            attempts += 1
+        }
+
+        guard !fineSites.isEmpty else { return [] }
+
+        let localBounds = bbox.insetBy(dx: -bbox.width * 0.30, dy: -bbox.height * 0.30)
+        let finePolygons = fineSites.enumerated().map { idx, _ in
+            VoronoiMath.weightedCellPolygon(
+                index: idx,
+                sites: fineSites,
+                bounds: localBounds
+            )
+        }
+
+        var result: [CristalSubCell] = []
+        result.reserveCapacity(finePolygons.count)
+
+        for (idx, fineRaw) in finePolygons.enumerated() {
+            let clippedFine = PolygonClipper.clip(subject: fineRaw, against: mediumPoly)
+            guard clippedFine.count >= 3 else { continue }
+
+            let rawL = randomUnit(seed: seed &+ 7_777, index: indexBase + idx, stream: 333)
+            let rawS = randomUnit(seed: seed &+ 8_888, index: indexBase + idx, stream: 444)
+            let lightnessDelta = CGFloat(rawL - 0.5) * 0.42
+            let saturationDelta = CGFloat(rawS - 0.5) * 0.30
             let varied = adjustColor(
-                baseColor,
+                parent.baseColor,
                 lightness: lightnessDelta,
                 saturation: saturationDelta
             )
 
-            result.append(CristalSubCell(points: finePolygon, color: varied))
+            result.append(CristalSubCell(
+                points: clippedFine,
+                color: varied,
+                parentMediumIdx: parentMediumIdx
+            ))
+        }
+
+        // POST-CLIP FALLBACK: if every fine Voronoi cell got dropped during
+        // clipping, return a single sub-cell that IS the medium polygon. This
+        // guarantees every medium cell has at least one visible sub-cell so
+        // the user never sees a transparent hole inside a medium border.
+        if result.isEmpty {
+            result.append(CristalSubCell(
+                points: mediumPoly,
+                color: parent.baseColor,
+                parentMediumIdx: parentMediumIdx
+            ))
         }
 
         return result
@@ -2162,6 +2640,118 @@ fileprivate func polygonBoundingBox(for points: [CGPoint]) -> CGRect {
     }
 
     return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+}
+
+fileprivate func polygonArea(for points: [CGPoint]) -> CGFloat {
+    guard points.count >= 3 else { return 0 }
+    var sum: CGFloat = 0
+    for i in points.indices {
+        let p0 = points[i]
+        let p1 = points[(i + 1) % points.count]
+        sum += p0.x * p1.y - p1.x * p0.y
+    }
+    return abs(sum) * 0.5
+}
+
+fileprivate func pointInPolygon(_ point: CGPoint, polygon: [CGPoint]) -> Bool {
+    guard polygon.count >= 3 else { return false }
+    var inside = false
+    var j = polygon.count - 1
+    for i in polygon.indices {
+        let pi = polygon[i]
+        let pj = polygon[j]
+        if ((pi.y > point.y) != (pj.y > point.y)) {
+            let xCross = (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x
+            if point.x < xCross {
+                inside.toggle()
+            }
+        }
+        j = i
+    }
+    return inside
+}
+
+/// Sutherland-Hodgman polygon clipping. Clips a subject polygon against a
+/// convex clip polygon. Voronoi cells are always convex so this works for
+/// any compartment-against-compartment clipping in the Cristal three-tier
+/// pipeline. Returns the clipped polygon vertices, or empty if no overlap.
+fileprivate enum PolygonClipper {
+    /// Clips a subject polygon against a convex clip polygon. Works in any
+    /// coordinate system (Y-up or Y-down) and any winding order, because we
+    /// determine "inside" empirically per edge by testing the centroid of
+    /// the clip polygon — which is always inside a convex polygon. This
+    /// avoids all the orientation pitfalls of textbook Sutherland-Hodgman.
+    static func clip(subject: [CGPoint], against clipPoly: [CGPoint]) -> [CGPoint] {
+        guard clipPoly.count >= 3, subject.count >= 3 else { return [] }
+
+        // Centroid of the clip polygon — guaranteed inside since it's convex.
+        var cx: CGFloat = 0
+        var cy: CGFloat = 0
+        for p in clipPoly {
+            cx += p.x
+            cy += p.y
+        }
+        cx /= CGFloat(clipPoly.count)
+        cy /= CGFloat(clipPoly.count)
+        let center = CGPoint(x: cx, y: cy)
+
+        var output = subject
+
+        for i in 0..<clipPoly.count {
+            guard !output.isEmpty else { return [] }
+            let edgeA = clipPoly[i]
+            let edgeB = clipPoly[(i + 1) % clipPoly.count]
+
+            // Determine which sign of the cross-product corresponds to "inside"
+            // for this edge by testing the centroid.
+            let centerCross = sideOf(point: center, edgeA: edgeA, edgeB: edgeB)
+            let insideIsPositive = centerCross >= 0
+
+            let input = output
+            output.removeAll(keepingCapacity: true)
+
+            for j in 0..<input.count {
+                let current = input[j]
+                let prev = input[(j + input.count - 1) % input.count]
+
+                let currentCross = sideOf(point: current, edgeA: edgeA, edgeB: edgeB)
+                let prevCross = sideOf(point: prev, edgeA: edgeA, edgeB: edgeB)
+
+                let currentInside = insideIsPositive ? currentCross >= 0 : currentCross <= 0
+                let prevInside = insideIsPositive ? prevCross >= 0 : prevCross <= 0
+
+                if currentInside {
+                    if !prevInside, let intersect = lineIntersection(prev, current, edgeA, edgeB) {
+                        output.append(intersect)
+                    }
+                    output.append(current)
+                } else if prevInside, let intersect = lineIntersection(prev, current, edgeA, edgeB) {
+                    output.append(intersect)
+                }
+            }
+        }
+
+        return output
+    }
+
+    /// Z-component of the cross product (edgeB - edgeA) × (point - edgeA).
+    /// The sign tells which side of the directed edge the point is on; the
+    /// caller decides which sign means "inside".
+    private static func sideOf(point: CGPoint, edgeA: CGPoint, edgeB: CGPoint) -> CGFloat {
+        return (edgeB.x - edgeA.x) * (point.y - edgeA.y)
+             - (edgeB.y - edgeA.y) * (point.x - edgeA.x)
+    }
+
+    private static func lineIntersection(_ p1: CGPoint, _ p2: CGPoint, _ p3: CGPoint, _ p4: CGPoint) -> CGPoint? {
+        let denom = (p1.x - p2.x) * (p3.y - p4.y) - (p1.y - p2.y) * (p3.x - p4.x)
+        guard abs(denom) > 1e-10 else { return nil }
+
+        let t = ((p1.x - p3.x) * (p3.y - p4.y) - (p1.y - p3.y) * (p3.x - p4.x)) / denom
+        return CGPoint(
+            x: p1.x + t * (p2.x - p1.x),
+            y: p1.y + t * (p2.y - p1.y)
+        )
+    }
 }
 
 fileprivate func polygonCentroid(for points: [CGPoint]) -> CGPoint {

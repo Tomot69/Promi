@@ -237,18 +237,32 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
 struct PaletteView: View {
     @Environment(\.dismiss) var dismiss
 
+    // Persistence layer — read at init, written via onChange. Not consulted
+    // by the body during normal selection flow because @AppStorage updates
+    // from inside a Button action that observes the same @AppStorage have a
+    // 1-frame propagation lag in iOS 17+ which makes the visual selection
+    // feel like it requires a double-tap. We use @State for the live UI.
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
 
     @AppStorage("promi.visualMood")
     private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
 
-    private var currentPack: PromiVisualPack {
-        PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
-    }
+    // Live UI selection state. Updates instantly on tap, drives both the
+    // card highlights AND the full-screen live background preview.
+    @State private var liveSelectedPack: PromiVisualPack
+    @State private var liveSelectedMood: PromiColorMood
+    @State private var backgroundSize: CGSize = .zero
 
-    private var currentMood: PromiColorMood {
-        PromiColorMood(rawValue: visualMoodRawValue) ?? .terrePromi
+    init() {
+        let storedPackRaw = UserDefaults.standard.string(forKey: "promi.visualPack")
+            ?? PromiVisualPack.alveolesSignature.rawValue
+        let storedMoodRaw = UserDefaults.standard.string(forKey: "promi.visualMood")
+            ?? PromiColorMood.terrePromi.rawValue
+        let pack = PromiVisualPack(rawValue: storedPackRaw) ?? .alveolesSignature
+        let mood = PromiColorMood(rawValue: storedMoodRaw) ?? .terrePromi
+        _liveSelectedPack = State(initialValue: pack)
+        _liveSelectedMood = State(initialValue: mood)
     }
 
     private let sections: [(PromiVisualPack, [PromiColorMood])] = [
@@ -261,32 +275,70 @@ struct PaletteView: View {
 
     var body: some View {
         NavigationView {
-            ZStack {
-                Color(red: 0.965, green: 0.963, blue: 0.947)
+            GeometryReader { proxy in
+                ZStack {
+                    // Layer 1: live background — homeBackground color of the
+                    // currently selected mood. Full-bleed, instant on tap.
+                    liveSelectedMood.homeBackground
+                        .ignoresSafeArea()
+
+                    // Layer 2: live full-screen preview of the selected
+                    // pack × mood. Updates instantly when liveSelectedPack
+                    // or liveSelectedMood change. For Cristal this triggers
+                    // the async 3-tier compute behind the scenes.
+                    PromiFieldPreviewView(
+                        pack: liveSelectedPack,
+                        mood: liveSelectedMood,
+                        size: proxy.size,
+                        promis: [],
+                        languageCode: "fr_FR",
+                        sortOption: .inspiration
+                    )
+                    .frame(width: proxy.size.width, height: proxy.size.height)
                     .ignoresSafeArea()
+                    .allowsHitTesting(false)
 
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 32) {
-                        StudioHeader()
+                    // Layer 3: translucent readability veil. Light packs get
+                    // a white veil, dark packs a soft dark veil — keeps the
+                    // cards legible without hiding the live preview.
+                    (liveSelectedMood.prefersDarkChrome
+                        ? Color.black.opacity(0.55)
+                        : Color.white.opacity(0.62))
+                        .ignoresSafeArea()
+                        .allowsHitTesting(false)
 
-                        ForEach(sections, id: \.0.rawValue) { section in
-                            StudioPackSection(
-                                pack: section.0,
-                                moods: section.1,
-                                selectedPack: currentPack,
-                                selectedMood: currentMood
-                            ) { pack, mood in
-                                visualPackRawValue = pack.rawValue
-                                visualMoodRawValue = mood.rawValue
-                                Haptics.shared.tinyPop()
+                    // Layer 4: scrollable studio content.
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 32) {
+                            StudioHeader(prefersDarkChrome: liveSelectedMood.prefersDarkChrome)
+
+                            ForEach(sections, id: \.0.rawValue) { section in
+                                StudioPackSection(
+                                    pack: section.0,
+                                    moods: section.1,
+                                    selectedPack: liveSelectedPack,
+                                    selectedMood: liveSelectedMood,
+                                    prefersDarkChrome: liveSelectedMood.prefersDarkChrome
+                                ) { pack, mood in
+                                    // Instant local state update — no @AppStorage
+                                    // round-trip lag. The live background and the
+                                    // card border both update on the next frame.
+                                    liveSelectedPack = pack
+                                    liveSelectedMood = mood
+                                    Haptics.shared.tinyPop()
+                                }
                             }
-                        }
 
-                        ActiveMoodFooter(pack: currentPack, mood: currentMood)
+                            ActiveMoodFooter(
+                                pack: liveSelectedPack,
+                                mood: liveSelectedMood,
+                                prefersDarkChrome: liveSelectedMood.prefersDarkChrome
+                            )
                             .padding(.top, 8)
+                        }
+                        .padding(.horizontal, 22)
+                        .padding(.bottom, 36)
                     }
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 36)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -298,25 +350,41 @@ struct PaletteView: View {
                 }
             }
         }
+        // Sync live state → AppStorage so the home view picks up the change.
+        // onChange fires synchronously after the @State mutation, so the
+        // AppStorage write happens in the same runloop tick as the visual
+        // update. The home re-renders on the next frame.
+        .onChange(of: liveSelectedPack) { _, newValue in
+            visualPackRawValue = newValue.rawValue
+        }
+        .onChange(of: liveSelectedMood) { _, newValue in
+            visualMoodRawValue = newValue.rawValue
+        }
     }
 }
 
 // MARK: - Header
 
 private struct StudioHeader: View {
+    let prefersDarkChrome: Bool
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Promi · Le Studio")
-                .font(.system(size: 12, weight: .regular))
-                .foregroundColor(.black.opacity(0.46))
-                .tracking(0.6)
+                .font(.system(size: 28, weight: .light))
+                .foregroundColor(textPrimary.opacity(0.92))
+                .tracking(0.2)
 
             Text("Vertical pour la structure.\nHorizontal pour l’ambiance couleur.")
-                .font(.system(size: 24, weight: .light))
-                .foregroundColor(.black.opacity(0.84))
-                .lineSpacing(2)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(textPrimary.opacity(0.56))
+                .lineSpacing(3)
         }
         .padding(.top, 12)
+    }
+
+    private var textPrimary: Color {
+        prefersDarkChrome ? .white : .black
     }
 }
 
@@ -327,6 +395,7 @@ private struct StudioPackSection: View {
     let moods: [PromiColorMood]
     let selectedPack: PromiVisualPack
     let selectedMood: PromiColorMood
+    let prefersDarkChrome: Bool
     let onSelect: (PromiVisualPack, PromiColorMood) -> Void
 
     var body: some View {
@@ -334,7 +403,7 @@ private struct StudioPackSection: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(pack.studioTitle)
                     .font(.system(size: 19, weight: .medium))
-                    .foregroundColor(.black.opacity(0.86))
+                    .foregroundColor(textPrimary.opacity(0.92))
 
                 if selectedPack == pack {
                     Circle()
@@ -348,7 +417,7 @@ private struct StudioPackSection: View {
 
             Text(pack.studioSubtitle)
                 .font(.system(size: 13, weight: .regular))
-                .foregroundColor(.black.opacity(0.50))
+                .foregroundColor(textPrimary.opacity(0.55))
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 14) {
@@ -356,7 +425,8 @@ private struct StudioPackSection: View {
                         StudioMoodCard(
                             pack: pack,
                             mood: mood,
-                            isSelected: selectedPack == pack && selectedMood == mood
+                            isSelected: selectedPack == pack && selectedMood == mood,
+                            prefersDarkChrome: prefersDarkChrome
                         ) {
                             onSelect(pack, mood)
                         }
@@ -367,6 +437,10 @@ private struct StudioPackSection: View {
             }
         }
     }
+
+    private var textPrimary: Color {
+        prefersDarkChrome ? .white : .black
+    }
 }
 
 // MARK: - Mood card (live preview via PromiFieldPreviewView)
@@ -375,6 +449,7 @@ private struct StudioMoodCard: View {
     let pack: PromiVisualPack
     let mood: PromiColorMood
     let isSelected: Bool
+    let prefersDarkChrome: Bool
     let action: () -> Void
 
     private static let previewSize = CGSize(width: 294, height: 168)
@@ -395,7 +470,7 @@ private struct StudioMoodCard: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .stroke(
-                            isSelected ? Color.orange.opacity(0.92) : Color.black.opacity(0.06),
+                            isSelected ? Color.orange.opacity(0.92) : textPrimary.opacity(0.10),
                             lineWidth: isSelected ? 1.6 : 0.6
                         )
                 )
@@ -403,11 +478,11 @@ private struct StudioMoodCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(mood.title)
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.black.opacity(0.86))
+                        .foregroundColor(textPrimary.opacity(0.92))
 
                     Text(mood.subtitle)
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(.black.opacity(0.50))
+                        .foregroundColor(textPrimary.opacity(0.55))
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
@@ -420,6 +495,10 @@ private struct StudioMoodCard: View {
         }
         .buttonStyle(.plain)
     }
+
+    private var textPrimary: Color {
+        prefersDarkChrome ? .white : .black
+    }
 }
 
 // MARK: - Active mood footer (discreet pill)
@@ -427,6 +506,7 @@ private struct StudioMoodCard: View {
 private struct ActiveMoodFooter: View {
     let pack: PromiVisualPack
     let mood: PromiColorMood
+    let prefersDarkChrome: Bool
 
     var body: some View {
         HStack(spacing: 10) {
@@ -436,23 +516,23 @@ private struct ActiveMoodFooter: View {
 
             Text("Actif")
                 .font(.system(size: 12, weight: .regular))
-                .foregroundColor(.black.opacity(0.46))
+                .foregroundColor(textPrimary.opacity(0.50))
 
             Text("·")
                 .font(.system(size: 12, weight: .regular))
-                .foregroundColor(.black.opacity(0.30))
+                .foregroundColor(textPrimary.opacity(0.32))
 
             Text(pack.studioTitle)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.black.opacity(0.78))
+                .foregroundColor(textPrimary.opacity(0.84))
 
             Text("—")
                 .font(.system(size: 12, weight: .regular))
-                .foregroundColor(.black.opacity(0.30))
+                .foregroundColor(textPrimary.opacity(0.32))
 
             Text(mood.title)
                 .font(.system(size: 13, weight: .regular))
-                .foregroundColor(.black.opacity(0.58))
+                .foregroundColor(textPrimary.opacity(0.62))
 
             Spacer()
         }
@@ -460,11 +540,19 @@ private struct ActiveMoodFooter: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(0.42))
+                .fill(pillBackground)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.black.opacity(0.06), lineWidth: 0.6)
+                .stroke(textPrimary.opacity(0.10), lineWidth: 0.6)
         )
+    }
+
+    private var textPrimary: Color {
+        prefersDarkChrome ? .white : .black
+    }
+
+    private var pillBackground: Color {
+        prefersDarkChrome ? Color.white.opacity(0.10) : Color.white.opacity(0.50)
     }
 }

@@ -1,10 +1,23 @@
 import SwiftUI
 
+// MARK: - AddPromiView
+//
+// Page "Créer un Promi" accessible depuis le dropdown du bouton "+". Design
+// chrome cohérent avec les menus tri et "+", et les pages Mes/Mon Promi,
+// Brouillons, Karma : mood home background + ultraThinMaterial + dark tint.
+// Le mot "Promi" dans le champ et dans les accents est en orange.
+
 struct AddPromiView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var promiStore: PromiStore
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var draftStore: DraftStore
+
+    @AppStorage("promi.visualPack")
+    private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
+
+    @AppStorage("promi.visualMood")
+    private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
 
     @State private var titleSuffix = ""
     @State private var dueDate = Calendar.current.date(byAdding: .hour, value: 2, to: Date()) ?? Date()
@@ -13,6 +26,20 @@ struct AddPromiView: View {
     @State private var selectedKind: PromiKind = .precise
     @State private var showValidationAnimation = false
     @State private var showExitConfirmation = false
+
+    private var currentPack: PromiVisualPack {
+        PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
+    }
+
+    private var currentMood: PromiColorMood {
+        PromiColorMood(rawValue: visualMoodRawValue) ?? .terrePromi
+    }
+
+    private var isEnglish: Bool {
+        userStore.selectedLanguage.starts(with: "en")
+    }
+
+    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var cleanSuffix: String {
         titleSuffix.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -32,14 +59,18 @@ struct AddPromiView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.96, green: 0.955, blue: 0.94)
-                .ignoresSafeArea()
+            PromiChromePageBackground(
+                pack: currentPack,
+                mood: currentMood,
+                promis: promiStore.promis,
+                languageCode: userStore.selectedLanguage
+            )
 
             VStack(spacing: 0) {
                 header
 
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 22) {
                         titleField
                         kindSelector
 
@@ -54,8 +85,8 @@ struct AddPromiView: View {
 
                         Spacer(minLength: 120)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 8)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 6)
                     .padding(.bottom, 16)
                 }
 
@@ -79,78 +110,110 @@ struct AddPromiView: View {
         }
     }
 
+    // MARK: - Confirmation dialog labels
+
     private var dialogTitle: String {
-        userStore.selectedLanguage.starts(with: "en") ? "Save as draft?" : "Sauvegarder en brouillon ?"
+        isEnglish ? "Save as draft?" : "Sauvegarder en brouillon ?"
     }
 
     private var saveDraftButtonTitle: String {
-        userStore.selectedLanguage.starts(with: "en") ? "Save draft" : "Sauvegarder"
+        isEnglish ? "Save draft" : "Sauvegarder"
     }
 
     private var discardButtonTitle: String {
-        userStore.selectedLanguage.starts(with: "en") ? "Discard" : "Supprimer"
+        isEnglish ? "Discard" : "Supprimer"
     }
 
     private var cancelButtonTitle: String {
-        userStore.selectedLanguage.starts(with: "en") ? "Cancel" : "Annuler"
+        isEnglish ? "Cancel" : "Annuler"
     }
 
+    // MARK: - Header with orange "Promi" accent
+
     private var header: some View {
-        HStack {
-            Button(action: handleClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 18, weight: .light))
-                    .foregroundColor(.black.opacity(0.68))
-                    .frame(width: 32, height: 32)
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 4) {
+                titleAttributed
+                    .font(.system(size: 28, weight: .light))
+
+                Text(isEnglish ? "a clear promise, a set moment" : "une promesse claire, un moment fixé")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.52))
+                    .tracking(0.2)
             }
-            .buttonStyle(.plain)
 
             Spacer()
 
-            Text(userStore.selectedLanguage.starts(with: "en") ? "Create a Promi" : "Créer un Promi")
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.black.opacity(0.84))
-
-            Spacer()
-
-            Color.clear.frame(width: 32, height: 32)
+            closeButton
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 24)
+        .padding(.horizontal, 20)
+        .padding(.top, 18)
         .padding(.bottom, 18)
     }
 
+    /// Title: "Nouveau " in near-white + "Promi" in brand orange.
+    private var titleAttributed: Text {
+        let prefix = isEnglish ? "New " : "Nouveau "
+        var attributed = AttributedString(prefix + "Promi")
+        attributed.foregroundColor = Color.white.opacity(0.94)
+        if let range = attributed.range(of: "Promi") {
+            attributed[range].foregroundColor = brandOrange
+        }
+        return Text(attributed)
+    }
+
+    private var closeButton: some View {
+        Button(action: handleClose) {
+            HStack(spacing: 6) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.82))
+
+                Text(isEnglish ? "Close" : "Fermer")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.94))
+            }
+            .padding(.horizontal, 14)
+            .frame(height: 34)
+            .background(chromePill)
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var chromePill: some View {
+        ZStack {
+            Capsule(style: .continuous)
+                .fill(.ultraThinMaterial)
+
+            Capsule(style: .continuous)
+                .fill(Color.black.opacity(0.22))
+
+            Capsule(style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+        }
+    }
+
+    // MARK: - Title field (Promi + inline typing)
+
     private var titleField: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(userStore.selectedLanguage.starts(with: "en") ? "Promi" : "Promi")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(Color.orange.opacity(0.92))
-
-            Text(
-                userStore.selectedLanguage.starts(with: "en")
-                ? "Complete your sentence after “Promi …”"
-                : "Complète ta phrase après « Promi … »"
-            )
-            .font(.system(size: 12, weight: .medium))
-            .foregroundColor(.black.opacity(0.44))
+            sectionLabel(isEnglish ? "What do you promise" : "Ce que tu promets")
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("Promi")
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(Color.orange.opacity(0.88))
+                    .foregroundColor(brandOrange)
 
-                // ZStack: TextField avec placeholder vide (le curseur démarre
-                // exactement après "Promi") + Text placeholder personnalisé
-                // affiché tant que le buffer est vide.
                 ZStack(alignment: .topLeading) {
                     if titleSuffix.isEmpty {
                         Text(
-                            userStore.selectedLanguage.starts(with: "en")
-                            ? "I take you to the sea"
-                            : "je t’emmène à la mer"
+                            isEnglish
+                            ? "I take you to the sea sunday"
+                            : "je t’emmène à la mer dimanche"
                         )
-                        .font(.system(size: 22, weight: .medium))
-                        .foregroundColor(.black.opacity(0.32))
+                        .font(.system(size: 22, weight: .regular))
+                        .foregroundColor(Color.white.opacity(0.32))
                         .allowsHitTesting(false)
                     }
 
@@ -160,185 +223,213 @@ struct AddPromiView: View {
                         axis: .vertical
                     )
                     .textInputAutocapitalization(.sentences)
-                    .font(.system(size: 22, weight: .medium))
-                    .foregroundColor(.black.opacity(0.90))
+                    .font(.system(size: 22, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.94))
+                    .tint(brandOrange)
                     .lineLimit(1...4)
                 }
             }
-            .padding(.vertical, 14)
-            .padding(.horizontal, 20)
-            .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color.white.opacity(0.34))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
+            .padding(.vertical, 16)
+            .padding(.horizontal, 18)
+            .background(chromeCard(radius: 18))
         }
     }
 
-    private var kindSelector: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Mode")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.black.opacity(0.56))
+    // MARK: - Kind selector (Précis / En l'air)
 
-            HStack(spacing: 10) {
-                kindChip(kind: .precise, title: userStore.selectedLanguage.starts(with: "en") ? "Precise" : "Précis")
-                kindChip(kind: .floating, title: userStore.selectedLanguage.starts(with: "en") ? "In the air" : "En l’air")
+    private var kindSelector: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionLabel(isEnglish ? "Mode" : "Mode")
+
+            HStack(spacing: 8) {
+                kindChip(
+                    kind: .precise,
+                    title: isEnglish ? "Precise" : "Précis"
+                )
+                kindChip(
+                    kind: .floating,
+                    title: isEnglish ? "In the air" : "En l’air"
+                )
             }
         }
     }
 
     private func kindChip(kind: PromiKind, title: String) -> some View {
-        Button {
+        let isSelected = selectedKind == kind
+        return Button {
             selectedKind = kind
             Haptics.shared.lightTap()
         } label: {
-            Text(title)
-                .font(.system(size: 14, weight: selectedKind == kind ? .medium : .regular))
-                .foregroundColor(selectedKind == kind ? .black.opacity(0.88) : .black.opacity(0.56))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(
-                    Capsule()
-                        .fill(selectedKind == kind ? Color.orange.opacity(0.20) : Color.white.opacity(0.24))
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(selectedKind == kind ? Color.orange.opacity(0.40) : Color.black.opacity(0.07), lineWidth: 1)
-                )
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(isSelected ? Color.white.opacity(0.96) : Color.white.opacity(0.26))
+                    .frame(width: 6, height: 6)
+
+                Text(title)
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(Color.white.opacity(isSelected ? 0.96 : 0.68))
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 40)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.white.opacity(isSelected ? 0.10 : 0.00))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(
+                                Color.white.opacity(isSelected ? 0.18 : 0.08),
+                                lineWidth: 0.6
+                            )
+                    )
+            )
         }
         .buttonStyle(.plain)
     }
+
+    // MARK: - Date block (precise Promi)
 
     private var dateBlock: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(userStore.selectedLanguage.starts(with: "en") ? "When" : "Quand")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.black.opacity(0.56))
-
-            Text(
-                userStore.selectedLanguage.starts(with: "en")
-                ? "Set the moment clearly."
-                : "Précise le moment clairement."
-            )
-            .font(.system(size: 12, weight: .medium))
-            .foregroundColor(.black.opacity(0.42))
+            sectionLabel(isEnglish ? "When" : "Quand")
 
             HStack {
-                DatePicker("", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-                    .tint(.black.opacity(0.82))
+                DatePicker(
+                    "",
+                    selection: $dueDate,
+                    displayedComponents: [.date, .hourAndMinute]
+                )
+                .datePickerStyle(.compact)
+                .labelsHidden()
+                .tint(brandOrange)
+                .colorScheme(.dark)
 
                 Spacer()
             }
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 16)
             .padding(.vertical, 14)
-            .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Color.white.opacity(0.28))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
+            .background(chromeCard(radius: 16))
         }
     }
+
+    // MARK: - Floating block (non-precise Promi)
 
     private var floatingBlock: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Promi en l’air")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.black.opacity(0.86))
+        VStack(alignment: .leading, spacing: 8) {
+            Text(isEnglish ? "Promi in the air" : "Promi en l’air")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(Color.white.opacity(0.88))
 
             Text(
-                userStore.selectedLanguage.starts(with: "en")
-                ? "It stays open, light, and untied to a strict time."
-                : "Il reste ouvert, léger, et non attaché à un moment strict."
+                isEnglish
+                ? "It stays open, light, untied to a strict time."
+                : "Il reste ouvert, léger, non attaché à un moment strict."
             )
-            .font(.system(size: 13, weight: .regular))
-            .foregroundColor(.black.opacity(0.56))
-            .lineSpacing(3)
+            .font(.system(size: 12, weight: .regular))
+            .foregroundColor(Color.white.opacity(0.58))
+            .lineSpacing(2)
         }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.orange.opacity(0.10))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.orange.opacity(0.20), lineWidth: 1)
-        )
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(chromeCard(radius: 16))
     }
+
+    // MARK: - Recipient block
 
     private var recipientBlock: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(userStore.selectedLanguage.starts(with: "en") ? "For whom" : "Pour qui")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.black.opacity(0.56))
-
-            Text(
-                userStore.selectedLanguage.starts(with: "en")
-                ? "Add the person concerned."
-                : "Ajoute la personne concernée."
-            )
-            .font(.system(size: 12, weight: .medium))
-            .foregroundColor(.black.opacity(0.42))
+            sectionLabel(isEnglish ? "For whom" : "Pour qui")
 
             TextField(
-                userStore.selectedLanguage.starts(with: "en") ? "Someone..." : "Quelqu’un...",
-                text: $assignee
+                "",
+                text: $assignee,
+                prompt: Text(isEnglish ? "Someone…" : "Quelqu’un…")
+                    .foregroundColor(Color.white.opacity(0.36))
             )
-            .font(.system(size: 17, weight: .regular))
-            .foregroundColor(.black.opacity(0.84))
-            .padding(.vertical, 16)
-            .padding(.horizontal, 18)
-            .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Color.white.opacity(0.28))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            )
+            .textInputAutocapitalization(.words)
+            .font(.system(size: 16, weight: .regular))
+            .foregroundColor(Color.white.opacity(0.92))
+            .tint(brandOrange)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
+            .background(chromeCard(radius: 16))
         }
     }
 
+    // MARK: - Intensity block
+
     private var intensityBlock: some View {
-        MinimalIntensityGaugeView(
-            intensity: $intensity,
-            question: userStore.selectedLanguage.starts(with: "en")
-                ? "How much presence should it carry?"
-                : "Quelle présence doit-il porter ?",
-            textColor: .black.opacity(0.62)
-        )
+        VStack(alignment: .leading, spacing: 10) {
+            sectionLabel(isEnglish ? "Intensity" : "Intensité")
+
+            MinimalIntensityGaugeView(
+                intensity: $intensity,
+                question: isEnglish
+                    ? "How much presence should it carry?"
+                    : "Quelle présence doit-il porter ?",
+                textColor: Color.white.opacity(0.66)
+            )
+            .padding(16)
+            .background(chromeCard(radius: 16))
+        }
     }
+
+    // MARK: - Create button (orange accent, disabled when empty)
 
     private var createButton: some View {
         Button(action: createPromi) {
-            Text(userStore.selectedLanguage.starts(with: "en") ? "Create Promi" : "Créer ce Promi")
-                .font(.system(size: 17, weight: .medium))
-                .foregroundColor(cleanSuffix.isEmpty ? .black.opacity(0.28) : .black.opacity(0.86))
+            Text(isEnglish ? "Create Promi" : "Créer ce Promi")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(
+                    cleanSuffix.isEmpty
+                    ? Color.white.opacity(0.32)
+                    : Color.white.opacity(0.96)
+                )
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
-                .background(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .fill(cleanSuffix.isEmpty ? Color.white.opacity(0.20) : Color.orange.opacity(0.20))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(cleanSuffix.isEmpty ? Color.black.opacity(0.06) : Color.orange.opacity(0.42), lineWidth: 1)
-                )
+                .padding(.vertical, 16)
+                .background(createButtonBackground)
         }
         .buttonStyle(.plain)
         .disabled(cleanSuffix.isEmpty)
-        .padding(.horizontal, 24)
-        .padding(.top, 10)
-        .padding(.bottom, 28)
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+        .padding(.bottom, 24)
     }
+
+    @ViewBuilder
+    private var createButtonBackground: some View {
+        let enabled = !cleanSuffix.isEmpty
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(enabled ? brandOrange.opacity(0.86) : Color.white.opacity(0.06))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(
+                        enabled ? brandOrange.opacity(0.60) : Color.white.opacity(0.10),
+                        lineWidth: 0.6
+                    )
+            )
+    }
+
+    // MARK: - Shared chrome helpers
+
+    private func sectionLabel(_ text: String) -> some View {
+        Text(text.uppercased())
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundColor(Color.white.opacity(0.48))
+            .tracking(1.0)
+    }
+
+    @ViewBuilder
+    private func chromeCard(radius: CGFloat) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .fill(Color.white.opacity(0.05))
+
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
+        }
+    }
+
+    // MARK: - Actions
 
     private func handleClose() {
         if hasDraftableContent {

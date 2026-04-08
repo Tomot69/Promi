@@ -1,9 +1,25 @@
 import SwiftUI
 
+// MARK: - PromiListView
+//
+// Page Mes/Mon Promi (bouton œil). Design chrome cohérent avec les dropdown
+// menus (tri, +) : mood home background + ultraThinMaterial + dark tint. Le
+// mot "Promi" dans le titre est coloré en orange comme accent de marque.
+// Trois segments : En cours, Brouillons, Accomplis. Le titre devient "Mon
+// Promi" uniquement s'il existe exactement un Promi (actif ou accompli) ;
+// sinon "Mes Promi".
+
 struct PromiListView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var promiStore: PromiStore
+    @EnvironmentObject var draftStore: DraftStore
+
+    @AppStorage("promi.visualPack")
+    private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
+
+    @AppStorage("promi.visualMood")
+    private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
 
     @Binding var sortOption: PromiFieldSortOption
     @Binding var selectedPromi: PromiItem?
@@ -11,22 +27,43 @@ struct PromiListView: View {
     @State private var selectedSegment: PromiListSegment = .active
     @State private var query: String = ""
 
+    private var currentPack: PromiVisualPack {
+        PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
+    }
+
+    private var currentMood: PromiColorMood {
+        PromiColorMood(rawValue: visualMoodRawValue) ?? .terrePromi
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
-                listBackground
-                    .ignoresSafeArea()
+                // Same chrome as the tri/+ dropdown menus: live Voronoi
+                // backdrop + ultraThinMaterial + dark tint at the exact
+                // CompactMenuSurface opacity (0.18/0.10) so the mood's
+                // abstract color patches breathe through identically.
+                PromiChromePageBackground(
+                    pack: currentPack,
+                    mood: currentMood,
+                    promis: promiStore.promis,
+                    languageCode: userStore.selectedLanguage
+                )
 
                 VStack(spacing: 0) {
                     topHeader
+                    searchBar
                     segmentBar
-                    sortBar
-                    contentList
+                    if selectedSegment != .drafts {
+                        sortBar
+                    }
+                    contentArea
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
         }
     }
+
+    // MARK: - Data
 
     private var activePromis: [PromiItem] {
         promiStore.promis.filter { $0.status != .done }
@@ -36,31 +73,25 @@ struct PromiListView: View {
         promiStore.promis.filter { $0.status == .done }
     }
 
+    private var drafts: [PromiDraft] {
+        draftStore.drafts
+    }
+
+    private var useSingular: Bool {
+        promiStore.promis.count == 1
+    }
+
     private var displayedPromis: [PromiItem] {
         let source = selectedSegment == .active ? activePromis : donePromis
         let searched = filteredPromis(source)
         return sortedPromis(searched, by: sortOption, doneSegment: selectedSegment == .done)
     }
 
-    private var emptyTitle: String {
-        switch selectedSegment {
-        case .active:
-            return trimmedQuery.isEmpty ? "Aucun Promi en cours" : "Aucun résultat"
-        case .done:
-            return trimmedQuery.isEmpty ? "Aucun Promi accompli" : "Aucun résultat"
-        }
-    }
-
-    private var emptySubtitle: String {
-        switch selectedSegment {
-        case .active:
-            return trimmedQuery.isEmpty
-                ? "Vos promesses actives apparaîtront ici, dans une vue simple et rapide."
-                : "Ajustez la recherche ou le tri pour retrouver votre Promi."
-        case .done:
-            return trimmedQuery.isEmpty
-                ? "Votre historique des promesses tenues apparaîtra ici."
-                : "Ajustez la recherche ou le tri pour retrouver une promesse accomplie."
+    private var displayedDrafts: [PromiDraft] {
+        guard !trimmedQuery.isEmpty else { return drafts }
+        let needle = trimmedQuery.localizedLowercase
+        return drafts.filter { draft in
+            draft.title.localizedLowercase.contains(needle)
         }
     }
 
@@ -68,123 +99,138 @@ struct PromiListView: View {
         query.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
 
-    @ViewBuilder
-    private var listBackground: some View {
-        LinearGradient(
-            colors: [
-                Color(red: 0.95, green: 0.93, blue: 0.90),
-                Color(red: 0.90, green: 0.88, blue: 0.84)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
+    // MARK: - Top header with orange "Promi" accent
 
     @ViewBuilder
     private var topHeader: some View {
-        VStack(spacing: 14) {
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Mon Promi")
-                        .font(.system(size: 32, weight: .light))
-                        .foregroundColor(Color.black.opacity(0.86))
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                titleAttributed
+                    .font(.system(size: 32, weight: .light))
 
-                    Text("vue claire, complète, pilotable")
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundColor(Color.black.opacity(0.46))
-                }
-
-                Spacer()
-
-                Button(action: {
-                    Haptics.shared.lightTap()
-                    dismiss()
-                }) {
-                    Text("Fermer")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(red: 0.94, green: 0.47, blue: 0.18))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .background(
-                            Capsule(style: .continuous)
-                                .fill(Color.white.opacity(0.72))
-                                .overlay(
-                                    Capsule(style: .continuous)
-                                        .stroke(Color.white.opacity(0.72), lineWidth: 1)
-                                )
-                        )
-                }
-                .buttonStyle(.plain)
+                Text("vue claire, complète, pilotable")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.52))
+                    .tracking(0.2)
             }
 
-            HStack(spacing: 12) {
-                searchField
+            Spacer()
 
+            closeButton
+                .padding(.top, 4)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 18)
+        .padding(.bottom, 16)
+    }
+
+    /// "Mes " (or "Mon ") in near-white + "Promi" in the brand orange.
+    /// Built as a single AttributedString — the iOS 26+ idiomatic way to
+    /// style parts of a Text (Text + concatenation is deprecated).
+    private var titleAttributed: Text {
+        let prefix = useSingular ? "Mon " : "Mes "
+        var attributed = AttributedString(prefix + "Promi")
+        attributed.foregroundColor = Color.white.opacity(0.94)
+        if let range = attributed.range(of: "Promi") {
+            attributed[range].foregroundColor = Color(red: 0.98, green: 0.56, blue: 0.22)
+        }
+        return Text(attributed)
+    }
+
+    @ViewBuilder
+    private var closeButton: some View {
+        Button(action: {
+            Haptics.shared.lightTap()
+            dismiss()
+        }) {
+            HStack(spacing: 6) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.82))
+
+                Text("Fermer")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.94))
+            }
+            .padding(.horizontal, 14)
+            .frame(height: 34)
+            .background(chromePill)
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var chromePill: some View {
+        ZStack {
+            Capsule(style: .continuous)
+                .fill(.ultraThinMaterial)
+
+            Capsule(style: .continuous)
+                .fill(Color.black.opacity(0.22))
+
+            Capsule(style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+        }
+    }
+
+    // MARK: - Search bar
+
+    @ViewBuilder
+    private var searchBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color.white.opacity(0.56))
+
+            TextField(
+                "",
+                text: $query,
+                prompt: Text("Rechercher un Promi ou une personne…")
+                    .foregroundColor(Color.white.opacity(0.40))
+            )
+            .textInputAutocapitalization(.sentences)
+            .disableAutocorrection(true)
+            .font(.system(size: 14, weight: .regular))
+            .foregroundColor(Color.white.opacity(0.94))
+
+            if !trimmedQuery.isEmpty {
                 Button(action: {
                     Haptics.shared.lightTap()
                     query = ""
                 }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white.opacity(0.64))
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white.opacity(0.72), lineWidth: 1)
-                            )
-
-                        Image(systemName: "xmark")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(Color.black.opacity(0.66))
-                    }
-                    .frame(width: 40, height: 40)
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundColor(Color.white.opacity(0.54))
                 }
                 .buttonStyle(.plain)
-                .opacity(trimmedQuery.isEmpty ? 0.35 : 1)
-                .disabled(trimmedQuery.isEmpty)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 20)
-        .padding(.bottom, 18)
-    }
-
-    @ViewBuilder
-    private var searchField: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Color.black.opacity(0.42))
-
-            TextField("Rechercher un Promi ou une personne…", text: $query)
-                .textInputAutocapitalization(.sentences)
-                .disableAutocorrection(true)
-                .font(.system(size: 15, weight: .regular))
-                .foregroundColor(Color.black.opacity(0.84))
-        }
         .padding(.horizontal, 14)
-        .frame(height: 44)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white.opacity(0.62))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(Color.white.opacity(0.74), lineWidth: 1)
-                )
-        )
+        .frame(height: 42)
+        .background(chromeRoundedRect(radius: 14))
+        .padding(.horizontal, 20)
+        .padding(.bottom, 14)
     }
+
+    // MARK: - Segment bar (3 segments: active / drafts / done)
 
     @ViewBuilder
     private var segmentBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             segmentButton(.active, title: "En cours", count: activePromis.count)
+            segmentButton(.drafts, title: "Brouillons", count: drafts.count)
             segmentButton(.done, title: "Accomplis", count: donePromis.count)
         }
         .padding(.horizontal, 20)
-        .padding(.bottom, 12)
+        .padding(.bottom, 10)
     }
 
     @ViewBuilder
-    private func segmentButton(_ segment: PromiListSegment, title: String, count: Int) -> some View {
+    private func segmentButton(
+        _ segment: PromiListSegment,
+        title: String,
+        count: Int
+    ) -> some View {
         let isSelected = selectedSegment == segment
 
         Button(action: {
@@ -193,49 +239,57 @@ struct PromiListView: View {
                 selectedSegment = segment
             }
         }) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(isSelected ? Color.white.opacity(0.96) : Color.white.opacity(0.26))
+                    .frame(width: 6, height: 6)
+
                 Text(title)
-                    .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                    .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(Color.white.opacity(isSelected ? 0.96 : 0.68))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
 
                 Text("\(count)")
-                    .font(.system(size: 12, weight: .semibold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(isSelected ? 0.82 : 0.50))
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
                     .background(
                         Capsule(style: .continuous)
-                            .fill(isSelected ? Color.white.opacity(0.22) : Color.black.opacity(0.06))
+                            .fill(Color.white.opacity(isSelected ? 0.16 : 0.08))
                     )
             }
-            .foregroundColor(isSelected ? .white : Color.black.opacity(0.64))
             .frame(maxWidth: .infinity)
-            .frame(height: 44)
+            .frame(height: 40)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(
-                        isSelected
-                        ? Color(red: 0.21, green: 0.30, blue: 0.44)
-                        : Color.white.opacity(0.48)
-                    )
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.white.opacity(isSelected ? 0.10 : 0.00))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(Color.white.opacity(0.72), lineWidth: isSelected ? 0 : 1)
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(
+                                Color.white.opacity(isSelected ? 0.18 : 0.08),
+                                lineWidth: 0.6
+                            )
                     )
             )
         }
         .buttonStyle(.plain)
     }
 
+    // MARK: - Sort chips (hidden in drafts segment)
+
     @ViewBuilder
     private var sortBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 ForEach(PromiFieldSortOption.allCases, id: \.self) { option in
                     sortChip(option)
                 }
             }
             .padding(.horizontal, 20)
         }
-        .padding(.bottom, 8)
+        .padding(.bottom, 10)
     }
 
     @ViewBuilder
@@ -249,81 +303,169 @@ struct PromiListView: View {
             }
         }) {
             Text(option.rawValue)
-                .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                .foregroundColor(isSelected ? .white : Color.black.opacity(0.66))
+                .font(.system(size: 11, weight: isSelected ? .semibold : .regular))
+                .foregroundColor(Color.white.opacity(isSelected ? 0.96 : 0.66))
                 .padding(.horizontal, 14)
-                .frame(height: 34)
+                .frame(height: 30)
                 .background(
                     Capsule(style: .continuous)
-                        .fill(
-                            isSelected
-                            ? Color(red: 0.96, green: 0.39, blue: 0.28)
-                            : Color.white.opacity(0.54)
-                        )
+                        .fill(Color.white.opacity(isSelected ? 0.12 : 0.00))
                         .overlay(
                             Capsule(style: .continuous)
-                                .stroke(Color.white.opacity(isSelected ? 0 : 0.76), lineWidth: 1)
+                                .stroke(
+                                    Color.white.opacity(isSelected ? 0.20 : 0.10),
+                                    lineWidth: 0.6
+                                )
                         )
                 )
         }
         .buttonStyle(.plain)
     }
 
+    // MARK: - Content area (promis or drafts depending on segment)
+
     @ViewBuilder
-    private var contentList: some View {
-        if displayedPromis.isEmpty {
+    private var contentArea: some View {
+        switch selectedSegment {
+        case .active, .done:
+            if displayedPromis.isEmpty {
+                emptyState
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(displayedPromis) { promi in
+                            PromiListRowCard(
+                                promi: promi,
+                                languageCode: userStore.selectedLanguage,
+                                onOpen: {
+                                    Haptics.shared.lightTap()
+                                    dismiss()
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                                        selectedPromi = promi
+                                    }
+                                },
+                                onToggleDone: {
+                                    Haptics.shared.tinyPop()
+                                    togglePromiDone(promi)
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 28)
+                }
+            }
+
+        case .drafts:
+            if displayedDrafts.isEmpty {
+                emptyState
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 10) {
+                        ForEach(displayedDrafts) { draft in
+                            DraftListRowCard(
+                                draft: draft,
+                                languageCode: userStore.selectedLanguage
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 28)
+                }
+            }
+        }
+    }
+
+    // MARK: - Empty state
+
+    @ViewBuilder
+    private var emptyState: some View {
+        VStack {
             Spacer()
 
             VStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .fill(Color.white.opacity(0.58))
-                        .frame(width: 74, height: 74)
+                        .fill(Color.white.opacity(0.06))
+                        .frame(width: 76, height: 76)
 
-                    Image(systemName: selectedSegment == .active ? "sparkles" : "clock.arrow.circlepath")
-                        .font(.system(size: 26, weight: .light))
-                        .foregroundColor(Color.black.opacity(0.54))
+                    Circle()
+                        .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
+                        .frame(width: 76, height: 76)
+
+                    Image(systemName: emptyIcon)
+                        .font(.system(size: 24, weight: .light))
+                        .foregroundColor(Color.white.opacity(0.68))
                 }
 
                 Text(emptyTitle)
-                    .font(.system(size: 23, weight: .light))
-                    .foregroundColor(Color.black.opacity(0.82))
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundColor(Color.white.opacity(0.88))
 
                 Text(emptySubtitle)
-                    .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(Color.black.opacity(0.46))
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.52))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 36)
             }
 
             Spacer()
-        } else {
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(displayedPromis) { promi in
-                        PromiListRowCard(
-                            promi: promi,
-                            languageCode: userStore.selectedLanguage,
-                            onOpen: {
-                                Haptics.shared.lightTap()
-                                dismiss()
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
-                                    selectedPromi = promi
-                                }
-                            },
-                            onToggleDone: {
-                                Haptics.shared.tinyPop()
-                                togglePromiDone(promi)
-                            }
-                        )
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 28)
-            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var emptyIcon: String {
+        switch selectedSegment {
+        case .active: return "sparkles"
+        case .drafts: return "pencil.and.outline"
+        case .done:   return "checkmark.seal"
         }
     }
+
+    private var emptyTitle: String {
+        switch selectedSegment {
+        case .active:
+            return trimmedQuery.isEmpty ? "Aucun Promi en cours" : "Aucun résultat"
+        case .drafts:
+            return trimmedQuery.isEmpty ? "Aucun brouillon" : "Aucun résultat"
+        case .done:
+            return trimmedQuery.isEmpty ? "Aucun Promi accompli" : "Aucun résultat"
+        }
+    }
+
+    private var emptySubtitle: String {
+        switch selectedSegment {
+        case .active:
+            return trimmedQuery.isEmpty
+                ? "Vos promesses actives apparaîtront ici, dans une vue simple et rapide."
+                : "Ajustez la recherche ou le tri pour retrouver votre Promi."
+        case .drafts:
+            return trimmedQuery.isEmpty
+                ? "Les brouillons commencés sans validation sont conservés ici."
+                : "Ajustez la recherche pour retrouver votre brouillon."
+        case .done:
+            return trimmedQuery.isEmpty
+                ? "Votre historique des promesses tenues apparaîtra ici."
+                : "Ajustez la recherche ou le tri pour retrouver une promesse accomplie."
+        }
+    }
+
+    // MARK: - Chrome surface helper
+
+    @ViewBuilder
+    private func chromeRoundedRect(radius: CGFloat) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .fill(Color.white.opacity(0.06))
+
+            RoundedRectangle(cornerRadius: radius, style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+        }
+    }
+
+    // MARK: - Filtering & sorting
 
     private func filteredPromis(_ source: [PromiItem]) -> [PromiItem] {
         guard !trimmedQuery.isEmpty else { return source }
@@ -341,7 +483,11 @@ struct PromiListView: View {
         }
     }
 
-    private func sortedPromis(_ promis: [PromiItem], by option: PromiFieldSortOption, doneSegment: Bool) -> [PromiItem] {
+    private func sortedPromis(
+        _ promis: [PromiItem],
+        by option: PromiFieldSortOption,
+        doneSegment: Bool
+    ) -> [PromiItem] {
         switch option {
         case .date:
             if doneSegment {
@@ -403,10 +549,15 @@ struct PromiListView: View {
     }
 }
 
+// MARK: - Segment enum
+
 private enum PromiListSegment {
     case active
+    case drafts
     case done
 }
+
+// MARK: - Promi row card (chrome over mood background)
 
 private struct PromiListRowCard: View {
     let promi: PromiItem
@@ -416,12 +567,12 @@ private struct PromiListRowCard: View {
 
     var body: some View {
         Button(action: onOpen) {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 12) {
                 header
                 titleBlock
                 footer
             }
-            .padding(18)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(cardBackground)
         }
@@ -433,76 +584,90 @@ private struct PromiListRowCard: View {
         HStack(alignment: .center, spacing: 10) {
             statusDot
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(kindLabel)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color.black.opacity(0.54))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.80))
+                    .tracking(0.3)
 
                 if let assignee = promi.assignee, !assignee.isEmpty {
                     Text(assignee)
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(Color.black.opacity(0.42))
+                        .font(.system(size: 10, weight: .regular))
+                        .foregroundColor(Color.white.opacity(0.52))
                 }
             }
 
             Spacer()
 
-            Button(action: onToggleDone) {
-                HStack(spacing: 8) {
-                    Image(systemName: promi.status == .done ? "arrow.uturn.backward.circle.fill" : "checkmark.circle.fill")
-                        .font(.system(size: 16, weight: .medium))
-
-                    Text(promi.status == .done ? "Rouvrir" : "Valider")
-                        .font(.system(size: 12, weight: .semibold))
-                }
-                .foregroundColor(promi.status == .done ? Color.black.opacity(0.66) : .white)
-                .padding(.horizontal, 12)
-                .frame(height: 34)
-                .background(
-                    Capsule(style: .continuous)
-                        .fill(promi.status == .done ? Color.white.opacity(0.52) : Color(red: 0.21, green: 0.30, blue: 0.44))
-                )
-            }
-            .buttonStyle(.plain)
+            toggleDoneButton
         }
+    }
+
+    @ViewBuilder
+    private var toggleDoneButton: some View {
+        Button(action: onToggleDone) {
+            HStack(spacing: 6) {
+                Image(systemName: promi.status == .done ? "arrow.uturn.backward" : "checkmark")
+                    .font(.system(size: 10, weight: .semibold))
+
+                Text(promi.status == .done ? "Rouvrir" : "Valider")
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            .foregroundColor(Color.white.opacity(0.96))
+            .padding(.horizontal, 12)
+            .frame(height: 28)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(Color.white.opacity(promi.status == .done ? 0.08 : 0.18))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(
+                                Color.white.opacity(promi.status == .done ? 0.14 : 0.28),
+                                lineWidth: 0.6
+                            )
+                    )
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
     private var statusDot: some View {
         Circle()
             .fill(statusColor)
-            .frame(width: 11, height: 11)
+            .frame(width: 9, height: 9)
             .overlay(
                 Circle()
-                    .stroke(Color.white.opacity(0.74), lineWidth: 1.2)
+                    .stroke(Color.white.opacity(0.24), lineWidth: 0.8)
             )
     }
 
     @ViewBuilder
     private var titleBlock: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(fullPromiTitle)
-                .font(.system(size: 24, weight: .light))
-                .foregroundColor(Color.black.opacity(0.84))
+                .font(.system(size: 22, weight: .light))
+                .foregroundColor(Color.white.opacity(0.94))
                 .multilineTextAlignment(.leading)
 
             Text(importanceLabel)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color.black.opacity(0.46))
+                .font(.system(size: 11, weight: .regular))
+                .foregroundColor(Color.white.opacity(0.56))
         }
     }
 
     @ViewBuilder
     private var footer: some View {
         HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(secondaryDateLabelTitle)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(Color.black.opacity(0.40))
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.42))
+                    .tracking(0.5)
 
                 Text(formattedDate(secondaryDate))
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(Color.black.opacity(0.66))
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.76))
             }
 
             Spacer()
@@ -513,28 +678,33 @@ private struct PromiListRowCard: View {
 
     @ViewBuilder
     private var intensityPill: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 4) {
             ForEach(0..<dotCount, id: \.self) { _ in
                 Circle()
-                    .fill(Color.black.opacity(0.66))
-                    .frame(width: 5, height: 5)
+                    .fill(Color.white.opacity(0.80))
+                    .frame(width: 4, height: 4)
             }
         }
-        .padding(.horizontal, 10)
-        .frame(height: 26)
+        .padding(.horizontal, 8)
+        .frame(height: 22)
         .background(
             Capsule(style: .continuous)
-                .fill(Color.white.opacity(0.54))
+                .fill(Color.white.opacity(0.08))
+                .overlay(
+                    Capsule(style: .continuous)
+                        .stroke(Color.white.opacity(0.14), lineWidth: 0.5)
+                )
         )
     }
 
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 26, style: .continuous)
-            .fill(Color.white.opacity(0.54))
-            .overlay(
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .stroke(Color.white.opacity(0.78), lineWidth: 1)
-            )
+        ZStack {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.06))
+
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+        }
     }
 
     private var fullPromiTitle: String {
@@ -548,28 +718,22 @@ private struct PromiListRowCard: View {
 
     private var kindLabel: String {
         switch promi.kind {
-        case .precise:
-            return "Précis"
-        case .floating:
-            return "En l’air"
-        case .emotional:
-            return "Émotionnel"
+        case .precise:   return "Précis"
+        case .floating:  return "En l’air"
+        case .emotional: return "Émotionnel"
         }
     }
 
     private var importanceLabel: String {
         switch promi.importance {
-        case .low:
-            return "Importance douce"
-        case .normal:
-            return "Importance normale"
-        case .urgent:
-            return "Importance forte"
+        case .low:    return "Importance douce"
+        case .normal: return "Importance normale"
+        case .urgent: return "Importance forte"
         }
     }
 
     private var secondaryDateLabelTitle: String {
-        promi.status == .done ? "Accompli" : "Échéance"
+        promi.status == .done ? "ACCOMPLI" : "ÉCHÉANCE"
     }
 
     private var secondaryDate: Date {
@@ -581,15 +745,15 @@ private struct PromiListRowCard: View {
 
     private var statusColor: Color {
         if promi.status == .done {
-            return Color(red: 0.28, green: 0.72, blue: 0.52)
+            return Color(red: 0.34, green: 0.80, blue: 0.60)
         }
 
         if promi.intensity >= 70 {
-            return Color(red: 0.98, green: 0.37, blue: 0.27)
+            return Color(red: 0.98, green: 0.44, blue: 0.34)
         } else if promi.intensity >= 40 {
-            return Color(red: 0.27, green: 0.78, blue: 0.77)
+            return Color(red: 0.34, green: 0.84, blue: 0.82)
         } else {
-            return Color(red: 0.23, green: 0.31, blue: 0.48)
+            return Color(red: 0.48, green: 0.58, blue: 0.92)
         }
     }
 
@@ -603,5 +767,62 @@ private struct PromiListRowCard: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Draft row card (chrome over mood background, compact)
+
+private struct DraftListRowCard: View {
+    let draft: PromiDraft
+    let languageCode: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(Color.white.opacity(0.30))
+                .frame(width: 8, height: 8)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.90))
+                    .lineLimit(2)
+
+                Text(subtitle)
+                    .font(.system(size: 10, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.52))
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "pencil.tip")
+                .font(.system(size: 12, weight: .light))
+                .foregroundColor(Color.white.opacity(0.50))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.white.opacity(0.05))
+
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
+            }
+        )
+    }
+
+    private var title: String {
+        let trimmed = draft.title.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        return trimmed.isEmpty ? "Brouillon sans titre" : trimmed
+    }
+
+    private var subtitle: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: languageCode.isEmpty ? "fr_FR" : languageCode)
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return "Créé le \(formatter.string(from: draft.createdAt))"
     }
 }
