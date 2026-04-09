@@ -73,6 +73,7 @@
 		52BF9BE42F88311000424F02 /* Mesnuéesview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9BE32F88311000424F02 /* Mesnuéesview.swift */; };
 		52BF9BE62F88312D00424F02 /* Createnuéeview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9BE52F88312D00424F02 /* Createnuéeview.swift */; };
 		52BF9BE82F88315B00424F02 /* Nuéedetailview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9BE72F88315B00424F02 /* Nuéedetailview.swift */; };
+		52BF9BEA2F884E5900424F02 /* Nuéepalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9BE92F884E5900424F02 /* Nuéepalette.swift */; };
 		52CF58A12EFA2CD7004C87A0 /* RecoveryResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */; };
 		52CF58AD2EFA3DA9004C87A0 /* DataRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */; };
 		52CF58B12EFA42AD004C87A0 /* RawStoreDataReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */; };
@@ -184,6 +185,7 @@
 		52BF9BE32F88311000424F02 /* Mesnuéesview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Mesnuéesview.swift"; sourceTree = "<group>"; };
 		52BF9BE52F88312D00424F02 /* Createnuéeview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Createnuéeview.swift"; sourceTree = "<group>"; };
 		52BF9BE72F88315B00424F02 /* Nuéedetailview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Nuéedetailview.swift"; sourceTree = "<group>"; };
+		52BF9BE92F884E5900424F02 /* Nuéepalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Nuéepalette.swift"; sourceTree = "<group>"; };
 		52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryResult.swift; sourceTree = "<group>"; };
 		52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRoot.swift; sourceTree = "<group>"; };
 		52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawStoreDataReader.swift; sourceTree = "<group>"; };
@@ -462,6 +464,7 @@
 				529895AF2EAC6153000F57F8 /* TutorialStep.swift */,
 				521AFCC02EAD39D5009D2334 /* PromiDraft.swift */,
 				52BF9BDF2F882B4C00424F02 /* Nuée.swift */,
+				52BF9BE92F884E5900424F02 /* Nuéepalette.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -729,6 +732,7 @@
 				52D3F04F2EABF4630048149B /* PromiApp.swift in Sources */,
 				523F9FBF2EFACB020035CB3F /* ShadowPaths.swift in Sources */,
 				52BF9BE82F88315B00424F02 /* Nuéedetailview.swift in Sources */,
+				52BF9BEA2F884E5900424F02 /* Nuéepalette.swift in Sources */,
 				520E36BD2F8517DD0057DD70 /* PromiListView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
 				523FA01C2EFB76A00035CB3F /* ReadOnlyDraftStore.swift in Sources */,

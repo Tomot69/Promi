@@ -82,9 +82,11 @@ struct PromiFieldRootView: View {
     let pack: PromiVisualPack
     let mood: PromiColorMood
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
+    let onTapNuée: (Nuée) -> Void
 
     /// Vertical space reserved at the bottom of the field for the floating
     /// dock (tri / œil / karma / studio / share). Keeps the content rect
@@ -125,45 +127,55 @@ struct PromiFieldRootView: View {
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: onTapPromi
+                onTapPromi: onTapPromi,
+                onTapNuée: onTapNuée
             )
         case .alveolesSignature:
             AlveolesPromiFieldView(
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: onTapPromi
+                onTapPromi: onTapPromi,
+                onTapNuée: onTapNuée
             )
         case .mosaicFlat:
             MosaicFlatPromiFieldView(
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: onTapPromi
+                onTapPromi: onTapPromi,
+                onTapNuée: onTapNuée
             )
         case .spectrumSoft:
             SpectrumSoftPromiFieldView(
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: onTapPromi
+                onTapPromi: onTapPromi,
+                onTapNuée: onTapNuée
             )
         case .cristal:
             CristalPromiFieldView(
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: onTapPromi
+                onTapPromi: onTapPromi,
+                onTapNuée: onTapNuée
             )
         }
     }
@@ -176,6 +188,7 @@ struct PromiFieldPreviewView: View {
     let mood: PromiColorMood
     let size: CGSize
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
 
@@ -184,6 +197,7 @@ struct PromiFieldPreviewView: View {
         mood: PromiColorMood,
         size: CGSize,
         promis: [PromiItem] = [],
+        nuées: [Nuée] = [],
         languageCode: String = "fr_FR",
         sortOption: PromiFieldSortOption = .inspiration
     ) {
@@ -191,6 +205,7 @@ struct PromiFieldPreviewView: View {
         self.mood = mood
         self.size = size
         self.promis = promis
+        self.nuées = nuées
         self.languageCode = languageCode
         self.sortOption = sortOption
     }
@@ -216,9 +231,11 @@ struct PromiFieldPreviewView: View {
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: { _ in }
+                onTapPromi: { _ in },
+                onTapNuée: { _ in }
             )
         case .alveolesSignature:
             CommonPromiFieldView(
@@ -226,9 +243,11 @@ struct PromiFieldPreviewView: View {
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: { _ in }
+                onTapPromi: { _ in },
+                onTapNuée: { _ in }
             )
         case .mosaicFlat:
             CommonPromiFieldView(
@@ -236,9 +255,11 @@ struct PromiFieldPreviewView: View {
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: { _ in }
+                onTapPromi: { _ in },
+                onTapNuée: { _ in }
             )
         case .spectrumSoft:
             CommonPromiFieldView(
@@ -246,9 +267,11 @@ struct PromiFieldPreviewView: View {
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: { _ in }
+                onTapPromi: { _ in },
+                onTapNuée: { _ in }
             )
         case .cristal:
             CommonPromiFieldView(
@@ -256,9 +279,11 @@ struct PromiFieldPreviewView: View {
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 languageCode: languageCode,
                 sortOption: sortOption,
-                onTapPromi: { _ in }
+                onTapPromi: { _ in },
+                onTapNuée: { _ in }
             )
         }
     }
@@ -452,9 +477,11 @@ struct GaletsPromiFieldView: View {
     let mood: PromiColorMood
     let size: CGSize
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
+    let onTapNuée: (Nuée) -> Void
 
     var body: some View {
         CommonPromiFieldView(
@@ -462,9 +489,11 @@ struct GaletsPromiFieldView: View {
             mood: mood,
             size: size,
             promis: promis,
+            nuées: nuées,
             languageCode: languageCode,
             sortOption: sortOption,
-            onTapPromi: onTapPromi
+            onTapPromi: onTapPromi,
+            onTapNuée: onTapNuée
         )
         .background(mood.homeBackground)
     }
@@ -474,9 +503,11 @@ struct AlveolesPromiFieldView: View {
     let mood: PromiColorMood
     let size: CGSize
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
+    let onTapNuée: (Nuée) -> Void
 
     var body: some View {
         CommonPromiFieldView(
@@ -484,9 +515,11 @@ struct AlveolesPromiFieldView: View {
             mood: mood,
             size: size,
             promis: promis,
+            nuées: nuées,
             languageCode: languageCode,
             sortOption: sortOption,
-            onTapPromi: onTapPromi
+            onTapPromi: onTapPromi,
+            onTapNuée: onTapNuée
         )
         .background(mood.homeBackground)
     }
@@ -496,9 +529,11 @@ struct MosaicFlatPromiFieldView: View {
     let mood: PromiColorMood
     let size: CGSize
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
+    let onTapNuée: (Nuée) -> Void
 
     var body: some View {
         CommonPromiFieldView(
@@ -506,9 +541,11 @@ struct MosaicFlatPromiFieldView: View {
             mood: mood,
             size: size,
             promis: promis,
+            nuées: nuées,
             languageCode: languageCode,
             sortOption: sortOption,
-            onTapPromi: onTapPromi
+            onTapPromi: onTapPromi,
+            onTapNuée: onTapNuée
         )
         .background(mood.homeBackground)
     }
@@ -518,9 +555,11 @@ struct SpectrumSoftPromiFieldView: View {
     let mood: PromiColorMood
     let size: CGSize
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
+    let onTapNuée: (Nuée) -> Void
 
     var body: some View {
         CommonPromiFieldView(
@@ -528,9 +567,11 @@ struct SpectrumSoftPromiFieldView: View {
             mood: mood,
             size: size,
             promis: promis,
+            nuées: nuées,
             languageCode: languageCode,
             sortOption: sortOption,
-            onTapPromi: onTapPromi
+            onTapPromi: onTapPromi,
+            onTapNuée: onTapNuée
         )
         .background(mood.homeBackground)
     }
@@ -540,9 +581,11 @@ struct CristalPromiFieldView: View {
     let mood: PromiColorMood
     let size: CGSize
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
+    let onTapNuée: (Nuée) -> Void
 
     var body: some View {
         CommonPromiFieldView(
@@ -550,9 +593,11 @@ struct CristalPromiFieldView: View {
             mood: mood,
             size: size,
             promis: promis,
+            nuées: nuées,
             languageCode: languageCode,
             sortOption: sortOption,
-            onTapPromi: onTapPromi
+            onTapPromi: onTapPromi,
+            onTapNuée: onTapNuée
         )
         .background(mood.homeBackground)
     }
@@ -583,6 +628,7 @@ fileprivate final class PromiFieldLayoutCache: ObservableObject {
         mood: PromiColorMood,
         size: CGSize,
         promis: [PromiItem],
+        nuées: [Nuée],
         sortOption: PromiFieldSortOption,
         renderKey: String
     ) {
@@ -595,6 +641,7 @@ fileprivate final class PromiFieldLayoutCache: ObservableObject {
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 sortOption: sortOption
             )
             layout = fresh
@@ -614,6 +661,7 @@ fileprivate final class PromiFieldLayoutCache: ObservableObject {
                 mood: mood,
                 size: size,
                 promis: promis,
+                nuées: nuées,
                 sortOption: sortOption
             )
             DispatchQueue.main.async {
@@ -631,21 +679,34 @@ fileprivate struct CommonPromiFieldView: View {
     let mood: PromiColorMood
     let size: CGSize
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
+    let onTapNuée: (Nuée) -> Void
 
     @StateObject private var cache = PromiFieldLayoutCache()
+
+    /// O(1) lookup of a Nuée by its id, used during cell rendering to find
+    /// the swatch hex color of a Promi's parent Nuée (for the halo overlay)
+    /// or to resolve the icon glyph and swatch for a promoted Nuée cell.
+    private var nuéeLookup: [UUID: Nuée] {
+        Dictionary(uniqueKeysWithValues: nuées.map { ($0.id, $0) })
+    }
 
     /// Composite key that invalidates the cache whenever any input that
     /// affects the layout changes. The Promi list is hashed by id+intensity
     /// so that promotion/size changes trigger a refresh but cosmetic changes
-    /// (title, metadata) do not.
+    /// (title, metadata) do not. Nuées are hashed by id+kind so that adding
+    /// or removing a Nuée triggers a layout refresh.
     private var renderKey: String {
         let promiHash = promis
             .map { "\($0.id.uuidString):\($0.intensity)" }
             .joined(separator: ",")
-        return "\(Int(size.width))x\(Int(size.height))|\(theme.id)|\(mood.rawValue)|\(sortOption)|\(promiHash)"
+        let nuéeHash = nuées
+            .map { "\($0.id.uuidString):\($0.kind.rawValue)" }
+            .joined(separator: ",")
+        return "\(Int(size.width))x\(Int(size.height))|\(theme.id)|\(mood.rawValue)|\(sortOption)|\(promiHash)|N:\(nuéeHash)"
     }
 
     var body: some View {
@@ -710,6 +771,7 @@ fileprivate struct CommonPromiFieldView: View {
             mood: mood,
             size: size,
             promis: promis,
+            nuées: nuées,
             sortOption: sortOption,
             renderKey: renderKey
         )
@@ -722,7 +784,50 @@ fileprivate struct CommonPromiFieldView: View {
             softness: PromiFieldThemeConfig.polygonSoftness(for: theme)
         )
 
-        if let promi = cell.promotedPromi {
+        if let nuée = cell.promotedNuée {
+            // PROMOTED NUÉE CELL
+            // The Nuée occupies a Voronoï space exactly like a Promi does,
+            // but its visual treatment is distinct: the cell is filled with
+            // the Nuée's chosen swatch hex (the user picked it in the
+            // CreateNuéeView palette grid), bordered by the theme's normal
+            // stroke for cohesion with the rest of the field, and overlaid
+            // with the Nuée's icon glyph centered on the cell. Tap opens
+            // NuéeDetailView via onTapNuée.
+            let swatch = NuéePalette.color(fromHex: nuée.moodHintRawValue)
+                ?? Color(red: 0.65, green: 0.40, blue: 0.30)
+
+            Button(action: {
+                Haptics.shared.lightTap()
+                onTapNuée(nuée)
+            }) {
+                shape
+                    .fill(swatch)
+                    .overlay(shape.stroke(cell.strokeColor, style: cell.strokeStyle))
+                    .overlay(
+                        NuéeCellIconLabel(
+                            nuée: nuée,
+                            frame: cell.visibleBounds
+                        )
+                    )
+            }
+            .buttonStyle(.plain)
+
+        } else if let promi = cell.promotedPromi {
+            // PROMOTED PROMI CELL
+            // Standard Promi cell rendering — cell.fillStyle uses the same
+            // theme palette as idle cells (so promoted Promis blend visually
+            // into the field; only their size distinguishes them). If the
+            // Promi belongs to a Nuée, an additional colored halo stroke
+            // overlay marks the membership using the Nuée's swatch color.
+            // Halo is layered ON TOP of the regular theme stroke so it
+            // reads as a clear secondary signal without erasing the cell's
+            // native border.
+            let haloColor: Color? = {
+                guard let nuéeId = promi.nuéeId,
+                      let parentNuée = nuéeLookup[nuéeId] else { return nil }
+                return NuéePalette.color(fromHex: parentNuée.moodHintRawValue)
+            }()
+
             Button(action: {
                 Haptics.shared.lightTap()
                 onTapPromi(promi)
@@ -730,6 +835,21 @@ fileprivate struct CommonPromiFieldView: View {
                 shape
                     .fill(cell.fillStyle)
                     .overlay(shape.stroke(cell.strokeColor, style: cell.strokeStyle))
+                    .overlay(
+                        Group {
+                            if let halo = haloColor {
+                                shape
+                                    .stroke(
+                                        halo.opacity(0.86),
+                                        style: StrokeStyle(
+                                            lineWidth: 2.4,
+                                            lineCap: .round,
+                                            lineJoin: .round
+                                        )
+                                    )
+                            }
+                        }
+                    )
                     .overlay(
                         PromiCellCenteredLabelView(
                             promi: promi,
@@ -818,6 +938,7 @@ fileprivate struct PromiFieldCell: Identifiable {
     let points: [CGPoint]
     let visibleBounds: CGRect
     let promotedPromi: PromiItem?
+    let promotedNuée: Nuée?
     let fillStyle: AnyShapeStyle
     let strokeColor: Color
     let strokeStyle: StrokeStyle
@@ -928,13 +1049,18 @@ fileprivate enum PromiFieldLayoutFactory {
         mood: PromiColorMood,
         size: CGSize,
         promis: [PromiItem],
+        nuées: [Nuée],
         sortOption: PromiFieldSortOption
     ) -> PromiFieldLayout {
         let safeSize = CGSize(width: max(size.width, 1), height: max(size.height, 1))
+
+        // Both Promis and Nuées occupy a Voronoï cell, so the site count
+        // budget must account for the sum. Idle (non-promoted) cells fill
+        // the rest of the field as background pavage.
         let siteCount = PromiFieldThemeConfig.baseSiteCount(
             for: theme,
             size: safeSize,
-            promiCount: promis.count
+            promiCount: promis.count + nuées.count
         )
 
         let overscanX: CGFloat = theme == .spectrum ? 90 : 54
@@ -978,19 +1104,32 @@ fileprivate enum PromiFieldLayoutFactory {
 
         let adjacency = buildAdjacency(polygons: polygons)
 
+        // Nuées are assigned FIRST to the most central cells (they're the
+        // "anchor" entities — they get the prime visual real estate). Then
+        // Promis are assigned to the remaining cells per the sort logic,
+        // skipping any indices already claimed by a Nuée.
+        let promotedNuéeMap = assignNuéesToCells(
+            polygons: polygons,
+            size: safeSize,
+            nuées: nuées
+        )
+
         let promotedMap = assignPromisToCells(
             polygons: polygons,
             size: safeSize,
             promis: promis,
-            sortOption: sortOption
+            sortOption: sortOption,
+            excluding: Set(promotedNuéeMap.keys)
         )
+
+        let allPromotedSet = Set(promotedMap.keys).union(promotedNuéeMap.keys)
 
         let idleIndices = makeIdlePaletteIndices(
             theme: theme,
             adjacency: adjacency,
             polygons: polygons,
             size: safeSize,
-            promotedSet: Set(promotedMap.keys)
+            promotedSet: allPromotedSet
         )
 
         let idleStyles = makeIdleStyles(
@@ -1021,15 +1160,35 @@ fileprivate enum PromiFieldLayoutFactory {
 
         var cells = polygons.enumerated().map { index, polygon -> PromiFieldCell in
             let promoted = promotedMap[index]
-            let fill: AnyShapeStyle = promoted != nil
-                ? (promotedStyles[index] ?? AnyShapeStyle(Color.orange))
-                : idleStyles[index]
+            let promotedNuée = promotedNuéeMap[index]
+
+            // Fill style priority:
+            //   1. If this cell is a promoted Nuée → swatch hex from the
+            //      Nuée's moodHintRawValue (resolved at render time in
+            //      cellView; here we just store a placeholder so the data
+            //      pipeline stays uniform).
+            //   2. If this cell is a promoted Promi → use the theme palette
+            //      (the existing makePromotedStyles logic).
+            //   3. Otherwise idle → makeIdleStyles.
+            //
+            // For Nuée cells we set fillStyle to .clear here because the
+            // actual fill is applied in cellView via the swatch color. This
+            // keeps the factory free of view-layer color resolution.
+            let fill: AnyShapeStyle
+            if promotedNuée != nil {
+                fill = AnyShapeStyle(Color.clear)
+            } else if promoted != nil {
+                fill = promotedStyles[index] ?? AnyShapeStyle(Color.orange)
+            } else {
+                fill = idleStyles[index]
+            }
 
             return PromiFieldCell(
                 id: deterministicUUID(for: index),
                 points: polygon,
                 visibleBounds: visibleBoundingBox(for: polygon, viewport: viewport),
                 promotedPromi: promoted,
+                promotedNuée: promotedNuée,
                 fillStyle: fill,
                 strokeColor: strokeColor,
                 strokeStyle: strokeStyle,
@@ -1044,7 +1203,7 @@ fileprivate enum PromiFieldLayoutFactory {
             let center = CGPoint(x: viewport.midX, y: viewport.midY)
 
             let anchorIndex = cells.indices
-                .filter { cells[$0].promotedPromi == nil }
+                .filter { cells[$0].promotedPromi == nil && cells[$0].promotedNuée == nil }
                 .min(by: { lhs, rhs in
                     let lc = polygonCentroid(for: cells[lhs].points)
                     let rc = polygonCentroid(for: cells[rhs].points)
@@ -1061,6 +1220,7 @@ fileprivate enum PromiFieldLayoutFactory {
                     points: original.points,
                     visibleBounds: original.visibleBounds,
                     promotedPromi: nil,
+                    promotedNuée: nil,
                     fillStyle: AnyShapeStyle(anchor),
                     strokeColor: original.strokeColor,
                     strokeStyle: original.strokeStyle,
@@ -1074,6 +1234,14 @@ fileprivate enum PromiFieldLayoutFactory {
         // to the outer polygon. Inside each medium, a tier-3 fine sub-pavage is
         // computed and clipped to the medium polygon. Promotion happens at the
         // medium tier — Promis take the place of a medium alvéole.
+        //
+        // KNOWN LIMITATION: Cristal does NOT yet display Nuée cells. The
+        // promotion path here works at the medium-cell tier with a different
+        // assignment loop (see below) and does not currently handle Nuées.
+        // Nuée cells assigned by the outer-tier logic above are silently
+        // dropped here when the outer cells are rebuilt as transparent
+        // frames. Fixing this requires a parallel Nuée assignment at the
+        // medium tier — deferred to a follow-up tour.
         var cristalMedium: [CristalMediumCell]? = nil
         var cristalSub: [CristalSubCell]? = nil
         if theme == .cristal {
@@ -1083,6 +1251,7 @@ fileprivate enum PromiFieldLayoutFactory {
                     points: cell.points,
                     visibleBounds: cell.visibleBounds,
                     promotedPromi: nil,
+                    promotedNuée: nil,
                     fillStyle: AnyShapeStyle(Color.clear),
                     strokeColor: cell.strokeColor,
                     strokeStyle: cell.strokeStyle,
@@ -1418,7 +1587,8 @@ fileprivate enum PromiFieldLayoutFactory {
         polygons: [[CGPoint]],
         size: CGSize,
         promis: [PromiItem],
-        sortOption: PromiFieldSortOption
+        sortOption: PromiFieldSortOption,
+        excluding: Set<Int> = []
     ) -> [Int: PromiItem] {
         guard !promis.isEmpty else { return [:] }
 
@@ -1477,9 +1647,76 @@ fileprivate enum PromiFieldLayoutFactory {
                 .map(\.offset)
         }
 
+        // Filter out indices already promoted to a Nuée — Promis must not
+        // overwrite Nuée cells. The Promi assignment then walks the ranked
+        // list and picks the first available cells in order.
+        let availableCellIndices = rankedCellIndices.filter { !excluding.contains($0) }
+
         var result: [Int: PromiItem] = [:]
-        for (offset, promi) in sorted.enumerated() where offset < rankedCellIndices.count {
-            result[rankedCellIndices[offset]] = promi
+        for (offset, promi) in sorted.enumerated() where offset < availableCellIndices.count {
+            result[availableCellIndices[offset]] = promi
+        }
+        return result
+    }
+
+    // MARK: - Nuée attribution
+    //
+    // Nuées are placed BEFORE Promis on the field. Each Nuée takes the
+    // most central available cell — they're the anchor entities, the
+    // visual gravitational centers around which their member Promis
+    // orbit. The "central" priority is intentionally simpler than
+    // assignPromisToCells (which handles 5 sort options): a Nuée is
+    // about identity, not about temporal/intensity ranking, so it just
+    // picks the cells closest to the viewport center, biggest first.
+    //
+    // Nuées are assigned in `createdAt` order — the oldest Nuée gets
+    // the most central cell, newer Nuées radiate outward. This gives
+    // long-standing groups visual primacy on the home field.
+
+    private static func assignNuéesToCells(
+        polygons: [[CGPoint]],
+        size: CGSize,
+        nuées: [Nuée]
+    ) -> [Int: Nuée] {
+        guard !nuées.isEmpty else { return [:] }
+
+        let viewport = CGRect(origin: .zero, size: size)
+        let target = CGPoint(x: size.width * 0.50, y: size.height * 0.42)
+
+        // Rank cells by (visibility × area) – distance to center, same
+        // hybrid score as `rankedCellsForTarget` but slightly biased toward
+        // larger cells so Nuées land on substantial visual real estate
+        // rather than tiny edge slivers.
+        let rankedCellIndices = polygons.enumerated()
+            .sorted { lhs, rhs in
+                let l = visibleBoundingBox(for: lhs.element, viewport: viewport)
+                let r = visibleBoundingBox(for: rhs.element, viewport: viewport)
+
+                let areaL = max(l.width * l.height, 1)
+                let areaR = max(r.width * r.height, 1)
+
+                let visibleL = areaL * visibilityScore(for: l, viewport: viewport)
+                let visibleR = areaR * visibilityScore(for: r, viewport: viewport)
+
+                let dl = hypot(l.midX - target.x, l.midY - target.y)
+                let dr = hypot(r.midX - target.x, r.midY - target.y)
+
+                let scoreL = visibleL - dl * 120
+                let scoreR = visibleR - dr * 120
+
+                if abs(scoreL - scoreR) > 800 {
+                    return scoreL > scoreR
+                }
+                return dl < dr
+            }
+            .map(\.offset)
+
+        // Sort Nuées by createdAt: oldest first → most central position.
+        let sortedNuées = nuées.sorted { $0.createdAt < $1.createdAt }
+
+        var result: [Int: Nuée] = [:]
+        for (offset, nuée) in sortedNuées.enumerated() where offset < rankedCellIndices.count {
+            result[rankedCellIndices[offset]] = nuée
         }
         return result
     }
@@ -2569,6 +2806,75 @@ fileprivate struct PromiCellCenteredLabelView: View {
         case .lightCentered: return .white.opacity(0.80)
         case .darkCentered: return .black.opacity(0.58)
         }
+    }
+}
+
+// MARK: - Nuée cell label (icon + name centered on a promoted Nuée cell)
+//
+// Renders the Nuée's SF Symbol icon centered on the cell, with the Nuée's
+// name underneath. The icon size scales with the cell dimensions so a
+// large central Nuée gets a prominent badge while a smaller cell gets a
+// compact one. Both icon and name use white-with-shadow so they remain
+// legible against any swatch hex color (the cell's fill is the swatch).
+
+fileprivate struct NuéeCellIconLabel: View {
+    let nuée: Nuée
+    let frame: CGRect
+
+    var body: some View {
+        VStack(spacing: spacing) {
+            Image(systemName: nuée.displayIconGlyph)
+                .font(.system(size: iconSize, weight: .regular))
+                .foregroundColor(.white.opacity(0.96))
+                .shadow(color: .black.opacity(0.32), radius: 4, x: 0, y: 1)
+
+            if showName {
+                Text(nuée.name)
+                    .font(.system(size: nameSize, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.94))
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.6)
+                    .shadow(color: .black.opacity(0.32), radius: 3, x: 0, y: 1)
+            }
+        }
+        .padding(.horizontal, horizontalPadding)
+        .frame(width: textWidth, height: textHeight, alignment: .center)
+        .position(x: frame.midX, y: frame.midY)
+    }
+
+    // MARK: Sizing
+
+    /// Hide the name on tiny cells where it would be unreadable. The icon
+    /// alone still communicates "this is a Nuée" via its distinct visual.
+    private var showName: Bool {
+        frame.width > 70 && frame.height > 50
+    }
+
+    private var iconSize: CGFloat {
+        let candidate = min(frame.width * 0.30, frame.height * 0.36)
+        return max(16, min(candidate, 48))
+    }
+
+    private var nameSize: CGFloat {
+        let candidate = min(frame.width * 0.10, frame.height * 0.14)
+        return max(10, min(candidate, 16))
+    }
+
+    private var spacing: CGFloat {
+        showName ? max(4, frame.height * 0.04) : 0
+    }
+
+    private var horizontalPadding: CGFloat {
+        max(4, min(12, frame.width * 0.08))
+    }
+
+    private var textWidth: CGFloat {
+        max(36, min(frame.width * 0.84, frame.width - 8))
+    }
+
+    private var textHeight: CGFloat {
+        max(28, min(frame.height * 0.80, frame.height - 6))
     }
 }
 

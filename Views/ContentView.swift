@@ -76,6 +76,7 @@ struct ContentView: View {
     @EnvironmentObject var promiStore: PromiStore
     @EnvironmentObject var karmaStore: KarmaStore
     @EnvironmentObject var draftStore: DraftStore
+    @EnvironmentObject var nuéeStore: NuéeStore
 
     @State private var showAddPromi = false
     @State private var showSettings = false
@@ -83,9 +84,11 @@ struct ContentView: View {
     @State private var showKarma = false
     @State private var showDrafts = false
     @State private var showPromiList = false
+    @State private var showMesNuées = false
     @State private var showCompositionShare = false
     @State private var selectedSort: PromiFieldSortOption = .inspiration
     @State private var selectedPromi: PromiItem?
+    @State private var selectedNuée: Nuée?
     @State private var isSortMenuExpanded = false
     @State private var isAddMenuExpanded = false
 
@@ -163,6 +166,9 @@ struct ContentView: View {
             .environmentObject(userStore)
             .environmentObject(promiStore)
         }
+        .sheet(isPresented: $showMesNuées) {
+            MesNuéesView()
+        }
         .sheet(isPresented: $showCompositionShare) {
             PromiCompositionShareView(
                 pack: visualPack,
@@ -174,6 +180,9 @@ struct ContentView: View {
         }
         .sheet(item: $selectedPromi) { promi in
             EditPromiView(promi: promi)
+        }
+        .sheet(item: $selectedNuée) { nuée in
+            NuéeDetailView(nuéeId: nuée.id)
         }
         .onAppear {
             karmaStore.updateKarma(basedOn: promiStore.promis)
@@ -222,11 +231,16 @@ struct ContentView: View {
             pack: visualPack,
             mood: visualMood,
             promis: sortedPromis,
+            nuées: nuéeStore.activeNuées(for: userStore.localUserId),
             languageCode: userStore.selectedLanguage,
             sortOption: selectedSort,
             onTapPromi: { promi in
                 closeFloatingMenusIfNeeded()
                 selectedPromi = promi
+            },
+            onTapNuée: { nuée in
+                closeFloatingMenusIfNeeded()
+                selectedNuée = nuée
             }
         )
     }
@@ -319,8 +333,30 @@ struct ContentView: View {
 
     private func topRightAdd(topInset: CGFloat, isDarkField: Bool) -> some View {
         VStack {
-            HStack {
+            HStack(spacing: 10) {
                 Spacer()
+
+                // Mes Nuées — relocated from the bottom dock to live at
+                // the top, immediately to the left of the + button.
+                // Reads as a "top-right meta-navigation cluster":
+                //   • the + creates a Promi
+                //   • the Nuées browse the swarms
+                // Both actions are about WHAT exists / WHAT is created
+                // in the app, while the bottom dock holds tools to DO
+                // things (sort, browse, share, study, etc.).
+                IconOnlyCircleButton(
+                    isDarkField: isDarkField,
+                    size: 46,
+                    action: {
+                        closeFloatingMenusIfNeeded()
+                        Haptics.shared.lightTap()
+                        showMesNuées = true
+                    },
+                    glyph: {
+                        NuéeHexGlyph(isDarkField: isDarkField)
+                            .frame(width: 24, height: 24)
+                    }
+                )
 
                 AddActionControl(
                     isExpanded: $isAddMenuExpanded,
@@ -453,11 +489,33 @@ struct BottomDockRow: View {
     let onOpenStudio: () -> Void
     let onOpenComposition: () -> Void
 
+    /// Standard size for side dock buttons. The four bookend actions
+    /// (tri, karma, studio, share) all use this baseline diameter.
     private let baseSize: CGFloat = 46
+
+    /// Center button (Pinky Promise → Mes Promi) is slightly larger
+    /// than the side buttons. The +8pt diameter (≈17%) makes it read
+    /// as the visual hub of the dock without dominating, perfectly
+    /// balanced by the symmetry of the four side actions around it.
+    /// The user explicitly asked for "à peine plus grosse" — barely
+    /// bigger — so we keep the differential subtle.
     private let centerSize: CGFloat = 54
 
     var body: some View {
-        HStack(spacing: 0) {
+        // alignment: .center — every dock item is vertically centered
+        // on the same midline. The slightly larger center button (Pinky
+        // Promise) extends an equal amount above and below the side
+        // buttons' midline, reading as a symmetric hub. The four side
+        // buttons (tri, karma, studio, share) bracket it on both sides.
+        //
+        // Why .center and not .bottom: with .center the bigger button
+        // feels like a hub with the others orbiting around it. With
+        // .bottom, it would just look "taller", less balanced.
+        //
+        // The 4pt vertical extension below the side buttons' baseline
+        // is well within the safe-area padding (bottomInset includes
+        // a 14pt safety margin in ContentView).
+        HStack(alignment: .center, spacing: 0) {
             // Tri — leftmost bookend
             PromiFieldSortControl(
                 selectedSort: $selectedSort,
@@ -467,31 +525,47 @@ struct BottomDockRow: View {
 
             Spacer(minLength: 8)
 
+            // Karma — uses the eye glyph now (relocated from Mes Promi).
+            // Rationale: Karma is the user's relationship with their
+            // promises kept/broken — what they SEE about themselves.
+            // The eye is the perfect metaphor for that introspective
+            // gaze. The previous star icon was generic and detached
+            // from the Promi soul.
             IconOnlyCircleButton(
                 isDarkField: isDarkField,
                 size: baseSize,
                 action: onOpenKarma,
                 glyph: {
-                    KarmaGlyph(isDarkField: isDarkField)
+                    EyeGlyph(isDarkField: isDarkField)
                         .frame(width: 24, height: 24)
                 }
             )
 
             Spacer(minLength: 8)
 
-            // Œil — geometric center (position 3 of 5), slightly larger.
+            // Pinky Promise — the central hub of the dock.
+            // Opens Mes Promi (the personal list of one's own engagements).
+            // The two-hands-with-linked-pinkies glyph IS the brand:
+            // Promi is built around the universal childlike gesture of
+            // sincere commitment. Putting this gesture at the center of
+            // the dock makes it the visual signature of the home screen.
+            //
+            // Slightly larger (54pt vs 46pt baseline) to mark its
+            // primacy as the principal action: "show me my promises,
+            // the heart of the app".
             IconOnlyCircleButton(
                 isDarkField: isDarkField,
                 size: centerSize,
                 action: onOpenPromiList,
                 glyph: {
-                    EyeGlyph(isDarkField: isDarkField)
-                        .frame(width: 28, height: 28)
+                    PinkyPromiseGlyph(isDarkField: isDarkField)
+                        .frame(width: 30, height: 30)
                 }
             )
 
             Spacer(minLength: 8)
 
+            // Studio — visual identity / pack & mood selection
             IconOnlyCircleButton(
                 isDarkField: isDarkField,
                 size: baseSize,
@@ -1016,40 +1090,142 @@ struct EyeGlyph: View {
     }
 }
 
-struct KarmaGlyph: View {
+// MARK: - NuéeHexGlyph
+//
+// SF Symbol "circle.hexagongrid" wrapped in a styled View for consistency
+// with the other dock glyphs. The hexagonal grid icon visually echoes the
+// Voronoï tiling of the home field — a perfect identity match for the
+// Nuée concept (a swarm of cells, a small group sharing a territory).
+//
+// Same symbol is used in the empty state of MesNuéesView, so the user
+// experiences visual continuity: the icon they see when "no Nuées yet"
+// is the exact same icon as the dock button that opens MesNuéesView.
+
+struct NuéeHexGlyph: View {
+    let isDarkField: Bool
+
+    var body: some View {
+        Image(systemName: "circle.hexagongrid")
+            .font(.system(size: 22, weight: .regular))
+            .foregroundColor(Color.white.opacity(isDarkField ? 0.96 : 0.94))
+    }
+}
+
+// MARK: - PinkyPromiseGlyph
+//
+// Two pinky fingers, side by side, hooked together at the top — the
+// universal childlike gesture of sincere commitment.
+//
+// Drawing recipe:
+//   1. Two small rounded fists at the bottom (the closed hands)
+//   2. From the inner-top edge of each fist, a curved finger rises
+//      upward and inward, meeting at the top center
+//   3. A small dot at the meeting point seals the "hook" visually
+//
+// At 30×30pt (the size we use in the dock central button), the hooked
+// pinkies read clearly even though the elements are small. At 24×24pt
+// it still reads but with less detail in the fists.
+//
+// This glyph IS the brand. Promi is built around the universal childlike
+// gesture of pinky-promise-as-sincere-commitment. Putting it at the
+// center of the dock makes it the visual signature of the home screen.
+
+struct PinkyPromiseGlyph: View {
     let isDarkField: Bool
 
     var body: some View {
         Canvas { context, size in
-            let stroke = isDarkField ? Color.white.opacity(0.94) : Color.white.opacity(0.92)
-            let lineWidth: CGFloat = 1.7
+            let stroke = isDarkField ? Color.white.opacity(0.96) : Color.white.opacity(0.94)
+            let lineWidth: CGFloat = 1.6
             let w = size.width
             let h = size.height
 
-            // 5-pointed star outline — universal rating/reputation metaphor,
-            // larger visual presence than a small bar chart.
-            let center = CGPoint(x: w * 0.50, y: h * 0.52)
-            let outerR = min(w, h) * 0.46
-            let innerR = outerR * 0.42
+            // Two closed fists at the bottom — small rounded rectangles
+            // suggesting hand silhouettes viewed from the side.
+            let fistW: CGFloat = w * 0.26
+            let fistH: CGFloat = h * 0.26
+            let fistY: CGFloat = h * 0.58
 
-            var star = Path()
-            for i in 0..<10 {
-                let angle = -Double.pi / 2 + Double.pi * 2 * Double(i) / 10
-                let r = i % 2 == 0 ? outerR : innerR
-                let x = center.x + CGFloat(cos(angle)) * r
-                let y = center.y + CGFloat(sin(angle)) * r
-                if i == 0 {
-                    star.move(to: CGPoint(x: x, y: y))
-                } else {
-                    star.addLine(to: CGPoint(x: x, y: y))
-                }
-            }
-            star.closeSubpath()
+            let leftFistRect = CGRect(
+                x: w * 0.16,
+                y: fistY,
+                width: fistW,
+                height: fistH
+            )
+            let rightFistRect = CGRect(
+                x: w * 0.58,
+                y: fistY,
+                width: fistW,
+                height: fistH
+            )
 
-            context.stroke(
-                star,
-                with: .color(stroke),
-                style: StrokeStyle(lineWidth: lineWidth, lineJoin: .round)
+            let leftFist = Path(roundedRect: leftFistRect, cornerRadius: fistW * 0.34)
+            let rightFist = Path(roundedRect: rightFistRect, cornerRadius: fistW * 0.34)
+
+            let style = StrokeStyle(
+                lineWidth: lineWidth,
+                lineCap: .round,
+                lineJoin: .round
+            )
+
+            context.stroke(leftFist, with: .color(stroke), style: style)
+            context.stroke(rightFist, with: .color(stroke), style: style)
+
+            // Two pinky fingers extending upward from the inner-top edge
+            // of each fist, curving toward the center to hook together.
+            //
+            // Left pinky: starts at the right side of the left fist's
+            // top edge, curves up-and-right to meet the top center.
+            // Right pinky: mirrors the left, curves up-and-left to meet
+            // the top center.
+            //
+            // The two curves meet at h * 0.18 (top area of the glyph),
+            // creating the iconic "hook" of the linked pinkies.
+            let topMeetingY: CGFloat = h * 0.18
+
+            let leftPinkyStart = CGPoint(
+                x: leftFistRect.maxX - fistW * 0.18,
+                y: fistY
+            )
+            let leftPinkyEnd = CGPoint(x: w * 0.50, y: topMeetingY)
+            let leftPinkyControl = CGPoint(
+                x: leftFistRect.maxX - fistW * 0.05,
+                y: h * 0.30
+            )
+
+            var leftPinky = Path()
+            leftPinky.move(to: leftPinkyStart)
+            leftPinky.addQuadCurve(to: leftPinkyEnd, control: leftPinkyControl)
+
+            let rightPinkyStart = CGPoint(
+                x: rightFistRect.minX + fistW * 0.18,
+                y: fistY
+            )
+            let rightPinkyEnd = CGPoint(x: w * 0.50, y: topMeetingY)
+            let rightPinkyControl = CGPoint(
+                x: rightFistRect.minX + fistW * 0.05,
+                y: h * 0.30
+            )
+
+            var rightPinky = Path()
+            rightPinky.move(to: rightPinkyStart)
+            rightPinky.addQuadCurve(to: rightPinkyEnd, control: rightPinkyControl)
+
+            context.stroke(leftPinky, with: .color(stroke), style: style)
+            context.stroke(rightPinky, with: .color(stroke), style: style)
+
+            // Small dot at the meeting point — the "hook" / link seal.
+            // Visually anchors the two curves so they read as joined,
+            // not just adjacent.
+            let hookR: CGFloat = 1.7
+            context.fill(
+                Path(ellipseIn: CGRect(
+                    x: w * 0.50 - hookR,
+                    y: topMeetingY - hookR,
+                    width: hookR * 2,
+                    height: hookR * 2
+                )),
+                with: .color(stroke)
             )
         }
     }

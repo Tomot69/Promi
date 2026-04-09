@@ -17,8 +17,8 @@ import SwiftUI
 //   1. Nom — champ texte obligatoire
 //   2. Mode — chips Thématique / Intime
 //   3. Thème — champ optionnel décrivant le sujet (plus utile pour .thematic)
-//   4. Mood — sélecteur de PromiColorMood (12 options)
-//   5. Durée — toggle Permanente / Éphémère + date d'expiration si éphémère
+//   4. Palette — grille 6×4 de 24 hex swatches couvrant tout le spectre
+//   5. Durée — toggle Permanente / Éphémère + date centrée si éphémère
 //   6. Bouton Créer la Nuée
 //
 // L'utilisateur courant est automatiquement ajouté comme premier membre
@@ -40,7 +40,7 @@ struct CreateNuéeView: View {
     @State private var name: String = ""
     @State private var theme: String = ""
     @State private var selectedKind: NuéeKind = .thematic
-    @State private var selectedMood: PromiColorMood = .terrePromi
+    @State private var selectedSwatchHex: String = NuéePalette.swatches[0].hex
     @State private var isEphemeral: Bool = false
     @State private var expirationDate: Date = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
 
@@ -258,9 +258,11 @@ struct CreateNuéeView: View {
 
     // MARK: Section: Mood
 
+    // MARK: Section: Palette
+
     private var moodSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel(isEnglish ? "MOOD" : "AMBIANCE")
+            sectionLabel(isEnglish ? "PALETTE" : "PALETTE")
 
             Text(isEnglish
                  ? "the visual vibe of the shared swarm"
@@ -268,48 +270,60 @@ struct CreateNuéeView: View {
                 .font(.system(size: 11, weight: .regular))
                 .foregroundColor(Color.white.opacity(0.52))
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(PromiColorMood.allCases, id: \.self) { mood in
-                        moodChip(mood)
-                    }
+            // 24 hand-curated swatches arranged in a 6×4 grid. Each swatch
+            // is a hex color stored on the Nuée; the palette spans the full
+            // hue spectrum (warm reds → ochers → greens → teals → blues →
+            // purples → pinks → neutrals) so the user can find a color that
+            // truly matches the spirit of their group, instead of being
+            // boxed into the 12 PromiColorMood gradients used elsewhere.
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 6),
+                spacing: 10
+            ) {
+                ForEach(NuéePalette.swatches, id: \.hex) { swatch in
+                    swatchCircle(swatch)
                 }
-                .padding(.vertical, 4)
             }
+            .padding(.vertical, 4)
         }
     }
 
     @ViewBuilder
-    private func moodChip(_ mood: PromiColorMood) -> some View {
-        let isSelected = selectedMood == mood
+    private func swatchCircle(_ swatch: NuéeSwatch) -> some View {
+        let isSelected = selectedSwatchHex == swatch.hex
+        // Force unwrap is safe here: NuéePalette.swatches contains only
+        // hand-curated 6-char hex literals defined statically in the same
+        // file, so the parser cannot fail for any value in the loop.
+        let color = NuéePalette.color(fromHex: swatch.hex) ?? Color.gray
 
         Button {
             Haptics.shared.lightTap()
             withAnimation(.spring(response: 0.24, dampingFraction: 0.86)) {
-                selectedMood = mood
+                selectedSwatchHex = swatch.hex
             }
         } label: {
             ZStack {
                 Circle()
-                    .fill(mood.homeBackground)
-                    .frame(width: 42, height: 42)
+                    .fill(color)
+                    .frame(width: 38, height: 38)
 
                 Circle()
                     .stroke(
                         isSelected
-                            ? Color.white.opacity(0.94)
-                            : Color.white.opacity(0.20),
+                            ? Color.white.opacity(0.96)
+                            : Color.white.opacity(0.18),
                         lineWidth: isSelected ? 2.0 : 0.6
                     )
-                    .frame(width: 42, height: 42)
+                    .frame(width: 38, height: 38)
 
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.4), radius: 2)
+                        .shadow(color: .black.opacity(0.42), radius: 2)
                 }
             }
+            .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
     }
@@ -342,28 +356,37 @@ struct CreateNuéeView: View {
             }
 
             if isEphemeral {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(isEnglish
-                         ? "expires on"
-                         : "expire le")
+                // Centered, minimal, slightly dramatic. No chrome card,
+                // no left-aligned label, no padding box. Just two elements
+                // floating in the center of the screen — the label "expire
+                // le" and the date picker beneath it. The visual restraint
+                // is what makes it feel weighty: the user sees an expiration
+                // date as a small ceremony rather than as a form field.
+                VStack(alignment: .center, spacing: 10) {
+                    Text(isEnglish ? "expires on" : "expire le")
                         .font(.system(size: 11, weight: .regular))
+                        .tracking(0.4)
                         .foregroundColor(Color.white.opacity(0.52))
 
-                    DatePicker(
-                        "",
-                        selection: $expirationDate,
-                        in: Date()...,
-                        displayedComponents: [.date]
-                    )
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-                    .colorScheme(.dark)
-                    .tint(brandOrange)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(chromeCard)
+                    HStack {
+                        Spacer()
+                        DatePicker(
+                            "",
+                            selection: $expirationDate,
+                            in: Date()...,
+                            displayedComponents: [.date]
+                        )
+                        .datePickerStyle(.compact)
+                        .labelsHidden()
+                        .colorScheme(.dark)
+                        .tint(brandOrange)
+                        Spacer()
+                    }
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 14)
+                .padding(.bottom, 6)
+                .transition(.opacity)
             }
         }
     }
@@ -495,7 +518,7 @@ struct CreateNuéeView: View {
             creatorId: userStore.localUserId,
             createdAt: Date(),
             expiresAt: isEphemeral ? expirationDate : nil,
-            moodHintRawValue: selectedMood.rawValue,
+            moodHintRawValue: selectedSwatchHex,
             iconGlyph: nil
         )
 

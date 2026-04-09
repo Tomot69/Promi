@@ -15,6 +15,7 @@ struct EditPromiView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var promiStore: PromiStore
     @EnvironmentObject var userStore: UserStore
+    @EnvironmentObject var nuéeStore: NuéeStore
 
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
@@ -29,6 +30,7 @@ struct EditPromiView: View {
     @State private var assignee: String
     @State private var intensity: Int
     @State private var selectedKind: PromiKind
+    @State private var selectedNuéeId: UUID?
     @State private var showValidationAnimation = false
     @State private var showDeleteConfirmation = false
 
@@ -39,6 +41,7 @@ struct EditPromiView: View {
         _assignee = State(initialValue: promi.assignee ?? "")
         _intensity = State(initialValue: promi.intensity)
         _selectedKind = State(initialValue: promi.kind)
+        _selectedNuéeId = State(initialValue: promi.nuéeId)
     }
 
     // MARK: - Derived state
@@ -120,6 +123,7 @@ struct EditPromiView: View {
                         }
 
                         forWhomSection
+                        nuéeSection
                         intensitySection
 
                         Spacer(minLength: 16)
@@ -440,6 +444,131 @@ struct EditPromiView: View {
         }
     }
 
+    // MARK: - Section: Nuée (optional — attach this Promi to a Nuée)
+    //
+    // Horizontal scroll of chips. The first chip is always "Aucune"
+    // (default selection — personal Promi, not attached to any group).
+    // Each subsequent chip is one of the user's active Nuées, displayed
+    // with its swatch dot, its icon, and its name. Tap to select.
+    //
+    // Editing existing membership: when this view opens with a Promi that
+    // already has a `nuéeId`, the chip for that Nuée is preselected. The
+    // user can change to another Nuée or to "Aucune" (which detaches the
+    // Promi from any group). Saved on tap of the Save button.
+
+    @ViewBuilder
+    private var nuéeSection: some View {
+        let userNuées = nuéeStore.activeNuées(for: userStore.localUserId)
+
+        VStack(alignment: .leading, spacing: 10) {
+            sectionLabel(isEnglish ? "NUÉE" : "NUÉE")
+
+            Text(isEnglish
+                 ? "optional — attach to a shared swarm"
+                 : "optionnel — rattacher à un essaim partagé")
+                .font(.system(size: 11, weight: .regular))
+                .foregroundColor(Color.white.opacity(0.52))
+
+            if userNuées.isEmpty {
+                Text(isEnglish
+                     ? "no Nuée yet · create one in the dock"
+                     : "aucune Nuée pour l'instant · crées-en une dans la dock")
+                    .font(.system(size: 12, weight: .regular))
+                    .italic()
+                    .foregroundColor(Color.white.opacity(0.46))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(chromeCard)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        nuéeChip(
+                            isSelected: selectedNuéeId == nil,
+                            label: isEnglish ? "None" : "Aucune",
+                            iconGlyph: nil,
+                            swatchHex: nil
+                        ) {
+                            Haptics.shared.lightTap()
+                            withAnimation(.spring(response: 0.24, dampingFraction: 0.86)) {
+                                selectedNuéeId = nil
+                            }
+                        }
+
+                        ForEach(userNuées) { nuée in
+                            nuéeChip(
+                                isSelected: selectedNuéeId == nuée.id,
+                                label: nuée.name,
+                                iconGlyph: nuée.displayIconGlyph,
+                                swatchHex: nuée.moodHintRawValue
+                            ) {
+                                Haptics.shared.lightTap()
+                                withAnimation(.spring(response: 0.24, dampingFraction: 0.86)) {
+                                    selectedNuéeId = nuée.id
+                                }
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func nuéeChip(
+        isSelected: Bool,
+        label: String,
+        iconGlyph: String?,
+        swatchHex: String?,
+        action: @escaping () -> Void
+    ) -> some View {
+        let swatchColor = NuéePalette.color(fromHex: swatchHex)
+
+        Button(action: action) {
+            HStack(spacing: 8) {
+                if let swatch = swatchColor {
+                    Circle()
+                        .fill(swatch)
+                        .frame(width: 10, height: 10)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.32), lineWidth: 0.6)
+                        )
+                } else {
+                    Circle()
+                        .stroke(Color.white.opacity(0.42), lineWidth: 0.8)
+                        .frame(width: 10, height: 10)
+                }
+
+                if let iconGlyph {
+                    Image(systemName: iconGlyph)
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundColor(Color.white.opacity(isSelected ? 0.96 : 0.66))
+                }
+
+                Text(label)
+                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(Color.white.opacity(isSelected ? 0.96 : 0.68))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(
+                ZStack {
+                    Capsule(style: .continuous)
+                        .fill(Color.white.opacity(isSelected ? 0.10 : 0.04))
+                    Capsule(style: .continuous)
+                        .stroke(
+                            Color.white.opacity(isSelected ? 0.24 : 0.10),
+                            lineWidth: isSelected ? 1.0 : 0.6
+                        )
+                }
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Section: Intensity
 
     @ViewBuilder
@@ -578,6 +707,7 @@ struct EditPromiView: View {
         let trimmedAssignee = cleanAssignee
         updatedPromi.assignee = trimmedAssignee.isEmpty ? nil : trimmedAssignee
         updatedPromi.intensity = intensity
+        updatedPromi.nuéeId = selectedNuéeId
 
         promiStore.updatePromi(updatedPromi)
 
