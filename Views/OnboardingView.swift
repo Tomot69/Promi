@@ -76,6 +76,16 @@ struct OnboardingView: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
+                .onChange(of: currentPage) { oldValue, newValue in
+                    // Haptic feedback on every page change — whether from
+                    // native swipe, from the "Suivant" button, or from the
+                    // "Passer" skip button. Keeps the interaction tactile
+                    // on every transition without double-tapping on the
+                    // ones that already fire a haptic (handleNext, skip).
+                    if oldValue != newValue {
+                        Haptics.shared.lightTap()
+                    }
+                }
 
                 indicators
 
@@ -205,20 +215,21 @@ struct OnboardingView: View {
     // MARK: Actions
 
     private func skipToLast() {
-        Haptics.shared.lightTap()
+        // Haptic is fired by the onChange(of: currentPage) handler above.
         withAnimation(.spring(response: 0.34, dampingFraction: 0.82)) {
             currentPage = max(slides.count - 1, 0)
         }
     }
 
     private func handleNext() {
-        Haptics.shared.lightTap()
-
         if currentPage < slides.count - 1 {
+            // Haptic is fired by the onChange(of: currentPage) handler above.
             withAnimation(.spring(response: 0.34, dampingFraction: 0.82)) {
                 currentPage += 1
             }
         } else {
+            // Final slide → no page change (onChange won't fire). Use the
+            // richer success haptic to mark "crossing the threshold".
             Haptics.shared.success()
             userStore.completeOnboarding()
             // dismiss() pops the fullScreenCover when this is a replay
@@ -246,8 +257,13 @@ struct OnboardingView: View {
         ),
         PromiOnboardingSlide(
             title: "Votre Karma, c’est vous.",
-            body: "Chaque Promi tenu renforce votre parole. Chaque Promi oublié la fragilise. Soyez honnête avec vous-même.",
-            examples: [],
+            body: "Chaque Promi tenu renforce votre parole. Chaque Promi oublié la fragilise.",
+            examples: [
+                "90–100 %  —  t’es une légende",
+                "70–89 %    —  solide, régulier",
+                "50–69 %    —  ça va, ça vient",
+                "moins de 50 %  —  on en reparle ?"
+            ],
             shape: .karma
         ),
         PromiOnboardingSlide(
@@ -280,8 +296,13 @@ struct OnboardingView: View {
         ),
         PromiOnboardingSlide(
             title: "Your Karma is you.",
-            body: "Every Promi kept strengthens your word. Every Promi forgotten weakens it. Be honest with yourself.",
-            examples: [],
+            body: "Every Promi kept strengthens your word. Every Promi forgotten weakens it.",
+            examples: [
+                "90–100 %  —  you’re a legend",
+                "70–89 %    —  solid and steady",
+                "50–69 %    —  it goes, it comes",
+                "under 50 %  —  let’s have that talk"
+            ],
             shape: .karma
         ),
         PromiOnboardingSlide(
@@ -392,14 +413,34 @@ private struct PromiOnboardingSlideView: View {
         switch shape {
         case .concept:
             ZStack {
+                // Orange solid rectangle = precise Promi: a pinned moment with
+                // sharp edges, a clear boundary in time. Full opacity fill.
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
                     .fill(Color(red: 1.0, green: 0.42, blue: 0.08).opacity(0.92))
                     .frame(width: 96, height: 82)
                     .offset(x: -28, y: -30)
+
+                // Blue rectangle = floating Promi: an intention that drifts in
+                // time with no fixed anchor. The linear gradient fading out
+                // toward the bottom visually evokes the "en l'air" quality —
+                // the shape exists, it's a real commitment, but it doesn't
+                // have a hard edge in time.
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(Color(red: 0.14, green: 0.46, blue: 0.96).opacity(0.90))
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.14, green: 0.46, blue: 0.96).opacity(0.94),
+                                Color(red: 0.14, green: 0.46, blue: 0.96).opacity(0.38)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
                     .frame(width: 90, height: 92)
                     .offset(x: 32, y: 14)
+
+                // Black circle = the person — self or other — at the center
+                // of both commitments.
                 Circle()
                     .fill(Color.black.opacity(0.92))
                     .frame(width: 66, height: 66)

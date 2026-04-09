@@ -89,6 +89,15 @@ struct ContentView: View {
     @State private var isSortMenuExpanded = false
     @State private var isAddMenuExpanded = false
 
+    // Tutorial overlay (shown once, on first landing on the home if the
+    // user has not yet completed it). The currentTutorialStep tracks the
+    // active step inside TutorialOverlayView; when the user finishes the
+    // last step, tutorialBinding flips to false AND calls
+    // userStore.completeTutorial() so the flag is persisted and the
+    // tutorial never re-triggers.
+    @State private var showTutorial = false
+    @State private var currentTutorialStep = 0
+
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
 
@@ -115,6 +124,20 @@ struct ContentView: View {
             }
 
             homeChrome()
+
+            // Tutorial overlay — sits on top of everything when active.
+            // Soft chrome card with arrow pointing at the element being
+            // explained, dim 0.58 over the home so the Voronoï stays
+            // visible as the learning context.
+            if showTutorial {
+                TutorialOverlayView(
+                    isPresented: tutorialBinding,
+                    currentStep: $currentTutorialStep,
+                    steps: TutorialContent.getSteps(language: userStore.selectedLanguage)
+                )
+                .transition(.opacity)
+                .zIndex(100)
+            }
         }
         .ignoresSafeArea()
         .sheet(isPresented: $showAddPromi) {
@@ -154,7 +177,37 @@ struct ContentView: View {
         }
         .onAppear {
             karmaStore.updateKarma(basedOn: promiStore.promis)
+
+            // First-landing tutorial trigger. The 0.6s delay lets the home
+            // Voronoï finish its appear animation before we dim the screen,
+            // so the user sees the field "settle" before being asked to
+            // learn it. Once the tutorial completes (or is dismissed),
+            // userStore.hasCompletedTutorial flips to true and this branch
+            // never fires again.
+            if !userStore.hasCompletedTutorial && !showTutorial {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    withAnimation(.easeInOut(duration: 0.32)) {
+                        showTutorial = true
+                    }
+                }
+            }
         }
+    }
+
+    /// Tutorial isPresented binding with a side-effect: when the overlay
+    /// flips to false (user finished the last step or tapped through),
+    /// we persist the completion in UserStore so the tutorial never
+    /// re-triggers on subsequent app launches.
+    private var tutorialBinding: Binding<Bool> {
+        Binding(
+            get: { showTutorial },
+            set: { newValue in
+                showTutorial = newValue
+                if !newValue {
+                    userStore.completeTutorial()
+                }
+            }
+        )
     }
 
     // MARK: Layers
@@ -184,9 +237,11 @@ struct ContentView: View {
             .ignoresSafeArea()
             .onTapGesture {
                 Haptics.shared.lightTap()
-                withAnimation(.spring(response: 0.24, dampingFraction: 0.88)) {
-                    isSortMenuExpanded = false
-                }
+                // Close BOTH menus on tap-outside, not just one. The
+                // dismissLayer is shown whenever EITHER menu is open
+                // (see line above), so its tap handler must mirror that
+                // by closing both via the existing helper.
+                closeFloatingMenusIfNeeded()
             }
             .zIndex(10)
     }

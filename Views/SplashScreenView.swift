@@ -1,95 +1,111 @@
 import SwiftUI
 
+// MARK: - SplashScreenView
+//
+// Premier écran vu au lancement de l'app. Design chrome cohérent avec
+// l'identité Promi : PromiChromePageBackground (mood-aware, même recette
+// que les autres pages) + card chrome contenant le logo + « Promi » en
+// orange en-dessous. Pour un nouvel utilisateur, le mood par défaut est
+// terrePromi (chaudes tonalités orange/terre) via les @AppStorage. Pour
+// un utilisateur récurrent, il voit IMMÉDIATEMENT son identité visuelle
+// personnalisée depuis le splash — continuité parfaite avec son univers.
+//
+// Note: la struct `PromiEntryBackground` qui existait dans ce fichier a
+// été supprimée. Elle fournissait un fond de formes abstraites beiges
+// destiné à l'ancienne identité pré-Voronoï. Le chrome mood-aware la
+// remplace entièrement avec plus de cohérence (même backdrop que le
+// home courant + dropdown menus).
+
 struct SplashScreenView: View {
+    @EnvironmentObject var userStore: UserStore
+    @EnvironmentObject var promiStore: PromiStore
+
+    @AppStorage("promi.visualPack")
+    private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
+
+    @AppStorage("promi.visualMood")
+    private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
+
     @State private var phase: CGFloat = 0.82
-    
+    @State private var titleOpacity: Double = 0.0
+
+    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
+
+    private var currentPack: PromiVisualPack {
+        PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
+    }
+
+    private var currentMood: PromiColorMood {
+        PromiColorMood(rawValue: visualMoodRawValue) ?? .terrePromi
+    }
+
+    private var isEnglish: Bool {
+        userStore.selectedLanguage.starts(with: "en")
+    }
+
+    // MARK: Body
+
     var body: some View {
         ZStack {
-            Color(red: 0.965, green: 0.963, blue: 0.947)
-                .ignoresSafeArea()
-            
-            PromiEntryBackground(progress: 0.35)
-                .ignoresSafeArea()
-            
-            VStack(spacing: 26) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .fill(Color.white.opacity(0.22))
-                        .frame(width: 132, height: 168)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                                .stroke(Color.black.opacity(0.06), lineWidth: 1)
-                        )
-                    
-                    Image("LogoPromi")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 88, height: 110)
-                }
-                .scaleEffect(phase)
-                .opacity(Double(phase))
-                
-                Text("Promi")
-                    .font(.system(size: 24, weight: .light))
-                    .foregroundColor(.black.opacity(0.84))
-                    .tracking(0.8)
+            PromiChromePageBackground(
+                pack: currentPack,
+                mood: currentMood,
+                promis: promiStore.promis,
+                languageCode: userStore.selectedLanguage
+            )
+
+            VStack(spacing: 28) {
+                logoCard
+                    .scaleEffect(phase)
+                    .opacity(Double(phase))
+
+                titleBlock
+                    .opacity(titleOpacity)
             }
         }
         .onAppear {
             withAnimation(.spring(response: 0.82, dampingFraction: 0.82)) {
                 phase = 1.0
             }
+            withAnimation(.easeOut(duration: 0.7).delay(0.22)) {
+                titleOpacity = 1.0
+            }
         }
     }
-}
 
-struct PromiEntryBackground: View {
-    let progress: CGFloat
-    
-    var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let h = geo.size.height
-            
-            ZStack {
-                RoundedRectangle(cornerRadius: 34, style: .continuous)
-                    .fill(Color(red: 1.0, green: 0.40, blue: 0.06).opacity(0.92))
-                    .frame(width: w * 0.36, height: h * 0.13)
-                    .position(x: w * 0.36, y: h * 0.16)
-                
-                RoundedRectangle(cornerRadius: 36, style: .continuous)
-                    .fill(Color(red: 0.98, green: 0.84, blue: 0.08).opacity(0.95))
-                    .frame(width: w * 0.38, height: h * 0.15)
-                    .position(x: w * 0.62, y: h * 0.15)
-                
-                RoundedRectangle(cornerRadius: 34, style: .continuous)
-                    .fill(Color(red: 1.0, green: 0.78, blue: 0.84).opacity(0.75))
-                    .frame(width: w * 0.32, height: h * 0.18)
-                    .position(x: w * 0.28, y: h * 0.28)
-                
-                RoundedRectangle(cornerRadius: 34, style: .continuous)
-                    .fill(Color(red: 0.12, green: 0.44, blue: 0.95).opacity(0.92))
-                    .frame(width: w * 0.33, height: h * 0.20)
-                    .position(x: w * 0.66, y: h * 0.30)
-                
-                RoundedRectangle(cornerRadius: 34, style: .continuous)
-                    .fill(Color(red: 0.10, green: 0.75, blue: 0.48).opacity(0.94))
-                    .frame(width: w * 0.36, height: h * 0.16)
-                    .position(x: w * 0.30, y: h * 0.44)
-                
-                RoundedRectangle(cornerRadius: 34, style: .continuous)
-                    .fill(Color(red: 1.0, green: 0.40, blue: 0.06).opacity(0.90))
-                    .frame(width: w * 0.34, height: h * 0.15)
-                    .position(x: w * 0.60, y: h * 0.45)
-                
-                Circle()
-                    .fill(Color.black.opacity(0.92))
-                    .frame(width: min(w, h) * 0.20)
-                    .position(x: w * 0.50, y: h * 0.29)
-                    .scaleEffect(0.92 + (0.08 * progress))
-            }
-            .blur(radius: 54)
-            .opacity(0.18)
+    // MARK: Logo card (chrome)
+
+    private var logoCard: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color.white.opacity(0.06))
+                .frame(width: 132, height: 168)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color.white.opacity(0.16), lineWidth: 0.6)
+                .frame(width: 132, height: 168)
+
+            Image("LogoPromi")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 88, height: 110)
+        }
+    }
+
+    // MARK: Title block (Promi in orange + tagline)
+
+    private var titleBlock: some View {
+        VStack(spacing: 6) {
+            Text("Promi")
+                .font(.system(size: 28, weight: .light))
+                .foregroundColor(brandOrange)
+                .tracking(0.8)
+
+            Text(isEnglish
+                 ? "your word, made visible."
+                 : "votre parole, rendue visible.")
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(Color.white.opacity(0.56))
+                .tracking(0.2)
         }
     }
 }

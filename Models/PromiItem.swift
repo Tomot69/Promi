@@ -14,6 +14,13 @@ struct PromiItem: Identifiable, Codable, Equatable {
     var completedAt: Date?
     var postponedUntil: Date?
 
+    /// The id of the Nuée this Promi belongs to, or nil if it's a personal
+    /// Promi (not part of any group). Backward-compatible: existing JSON
+    /// without this field decodes to nil. The JSON key is ASCII ("nueeId")
+    /// for cross-platform serialization safety, while the Swift property
+    /// name keeps the accent for consistency with the Nuée model.
+    var nuéeId: UUID?
+
     init(
         id: UUID = UUID(),
         title: String,
@@ -26,7 +33,8 @@ struct PromiItem: Identifiable, Codable, Equatable {
         kind: PromiKind = .precise,
         createdAt: Date = Date(),
         completedAt: Date? = nil,
-        postponedUntil: Date? = nil
+        postponedUntil: Date? = nil,
+        nuéeId: UUID? = nil
     ) {
         self.id = id
         self.title = PromiItem.normalizedTitle(from: title)
@@ -40,6 +48,7 @@ struct PromiItem: Identifiable, Codable, Equatable {
         self.createdAt = createdAt
         self.completedAt = completedAt
         self.postponedUntil = postponedUntil
+        self.nuéeId = nuéeId
     }
 
     enum CodingKeys: String, CodingKey {
@@ -55,6 +64,7 @@ struct PromiItem: Identifiable, Codable, Equatable {
         case createdAt
         case completedAt
         case postponedUntil
+        case nuéeId = "nueeId"
     }
 
     init(from decoder: Decoder) throws {
@@ -71,6 +81,8 @@ struct PromiItem: Identifiable, Codable, Equatable {
         createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
         completedAt = try container.decodeIfPresent(Date.self, forKey: .completedAt)
         postponedUntil = try container.decodeIfPresent(Date.self, forKey: .postponedUntil)
+        // Backward-compatible: missing in old JSON → nil. Personal Promi.
+        nuéeId = try container.decodeIfPresent(UUID.self, forKey: .nuéeId)
     }
 
     static let requiredPrefix = "Promi "

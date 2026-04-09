@@ -1,6 +1,17 @@
 import SwiftUI
 import UIKit
 
+// MARK: - PromiCompositionShareView
+//
+// Page "Composition & Partage" accessible depuis le bouton partage du dock.
+// Design chrome cohérent avec les autres pages : PromiChromePageBackground
+// (mood-aware, même recette que CompactMenuSurface) + titre "Mon Promi" avec
+// "Promi" en orange + chips template chrome + bouton Partager orange.
+//
+// La preview card au centre, elle, conserve son propre système visuel car
+// c'est le RENDU final de l'image qui sera partagée — ses couleurs doivent
+// s'adapter au mood pour que l'export ait de la légitimité.
+
 struct PromiCompositionShareView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var userStore: UserStore
@@ -17,11 +28,23 @@ struct PromiCompositionShareView: View {
     @State private var shareItems: [Any] = []
     @State private var showShareSheet = false
 
+    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
+
+    private var isEnglish: Bool {
+        userStore.selectedLanguage.starts(with: "en")
+    }
+
+    // MARK: - Body
+
     var body: some View {
         NavigationStack {
             ZStack {
-                backgroundLayer
-                    .ignoresSafeArea()
+                PromiChromePageBackground(
+                    pack: pack,
+                    mood: mood,
+                    promis: promiStore.promis,
+                    languageCode: userStore.selectedLanguage
+                )
 
                 VStack(spacing: 0) {
                     header
@@ -86,66 +109,62 @@ struct PromiCompositionShareView: View {
         return abs(hasher.finalize())
     }
 
-    // MARK: - Background (mood-anchored, Promi identity)
-
-    @ViewBuilder
-    private var backgroundLayer: some View {
-        ZStack {
-            mood.homeBackground
-
-            LinearGradient(
-                colors: [
-                    Color.white.opacity(mood.prefersDarkChrome ? 0.05 : 0.22),
-                    Color.clear
-                ],
-                startPoint: .top,
-                endPoint: .center
-            )
-
-            LinearGradient(
-                colors: [
-                    Color.clear,
-                    Color.black.opacity(mood.prefersDarkChrome ? 0.18 : 0.06)
-                ],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-        }
-    }
-
     // MARK: - Header
 
     @ViewBuilder
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Mon Promi")
+                titleAttributed
                     .font(.system(size: 31, weight: .light))
-                    .foregroundColor(primaryTextColor)
 
-                Text("composition pleine page et partage")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(secondaryTextColor)
+                Text(isEnglish
+                     ? "full-page composition & share"
+                     : "composition pleine page et partage")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.54))
             }
 
             Spacer()
 
-            Button(action: {
-                Haptics.shared.lightTap()
-                dismiss()
-            }) {
-                Text("Fermer")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(Color(red: 0.96, green: 0.47, blue: 0.20))
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 10)
-                    .background(ChromeCapsuleSurface(isDarkField: mood.prefersDarkChrome))
-            }
-            .buttonStyle(.plain)
+            closeButton
         }
         .padding(.horizontal, 20)
         .padding(.top, 20)
         .padding(.bottom, 16)
+    }
+
+    /// "Mon Promi" / "My Promi" with "Promi" highlighted in brand orange.
+    private var titleAttributed: Text {
+        let raw = isEnglish ? "My Promi" : "Mon Promi"
+        var attributed = AttributedString(raw)
+        attributed.foregroundColor = Color.white.opacity(0.94)
+
+        if let range = attributed.range(of: "Promi") {
+            attributed[range].foregroundColor = brandOrange
+        }
+
+        return Text(attributed)
+    }
+
+    private var closeButton: some View {
+        Button {
+            Haptics.shared.lightTap()
+            dismiss()
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(Color.white.opacity(0.86))
+                Text(isEnglish ? "Close" : "Fermer")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.92))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(chromePill)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Controls (templates + toggles)
@@ -164,7 +183,9 @@ struct PromiCompositionShareView: View {
 
             HStack(spacing: 12) {
                 toggleButton(
-                    title: hideText ? "Textes masqués" : "Textes visibles",
+                    title: hideText
+                        ? (isEnglish ? "Text hidden" : "Textes masqués")
+                        : (isEnglish ? "Text visible" : "Textes visibles"),
                     isSelected: hideText
                 ) {
                     Haptics.shared.tinyPop()
@@ -173,9 +194,10 @@ struct PromiCompositionShareView: View {
                     }
                 }
 
-                actionButton(
-                    title: isPreparingShare ? "Préparation…" : "Partager",
-                    emphasized: true
+                shareActionButton(
+                    title: isPreparingShare
+                        ? (isEnglish ? "Preparing…" : "Préparation…")
+                        : (isEnglish ? "Share" : "Partager")
                 ) {
                     prepareShare()
                 }
@@ -185,44 +207,52 @@ struct PromiCompositionShareView: View {
         .padding(.bottom, 14)
     }
 
+    // MARK: - Template chip (chrome card)
+
     @ViewBuilder
     private func templateChip(_ template: PromiShareTemplate) -> some View {
         let isSelected = selectedTemplate == template
 
-        Button(action: {
+        Button {
             Haptics.shared.lightTap()
             withAnimation(.spring(response: 0.24, dampingFraction: 0.88)) {
                 selectedTemplate = template
             }
-        }) {
+        } label: {
             VStack(alignment: .leading, spacing: 3) {
-                Text(template.title)
+                Text(template.title(isEnglish: isEnglish))
                     .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                    .foregroundColor(isSelected ? .white : primaryTextColor.opacity(0.86))
+                    .foregroundColor(
+                        isSelected
+                            ? Color.white.opacity(0.98)
+                            : Color.white.opacity(0.84)
+                    )
 
-                Text(template.subtitle)
+                Text(template.subtitle(isEnglish: isEnglish))
                     .font(.system(size: 10, weight: .regular))
-                    .foregroundColor(isSelected ? .white.opacity(0.80) : secondaryTextColor)
+                    .foregroundColor(
+                        isSelected
+                            ? Color.white.opacity(0.82)
+                            : Color.white.opacity(0.54)
+                    )
                     .lineLimit(1)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(
                 ZStack {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(.ultraThinMaterial)
-
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .fill(
                             isSelected
-                            ? Color(red: 0.18, green: 0.26, blue: 0.42)
-                            : Color.white.opacity(mood.prefersDarkChrome ? 0.10 : 0.22)
+                                ? Color.white.opacity(0.14)
+                                : Color.white.opacity(0.05)
                         )
-
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .stroke(
-                            Color.white.opacity(isSelected ? 0 : (mood.prefersDarkChrome ? 0.18 : 0.34)),
-                            lineWidth: 0.8
+                            isSelected
+                                ? Color.white.opacity(0.24)
+                                : Color.white.opacity(0.12),
+                            lineWidth: 0.6
                         )
                 }
             )
@@ -230,30 +260,34 @@ struct PromiCompositionShareView: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: - Toggle button (text visible / hidden)
+
     @ViewBuilder
-    private func toggleButton(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+    private func toggleButton(
+        title: String,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(isSelected ? .white : primaryTextColor.opacity(0.86))
+                .foregroundColor(Color.white.opacity(isSelected ? 0.96 : 0.82))
                 .padding(.horizontal, 16)
                 .frame(height: 40)
                 .background(
                     ZStack {
                         Capsule(style: .continuous)
-                            .fill(.ultraThinMaterial)
-
-                        Capsule(style: .continuous)
                             .fill(
                                 isSelected
-                                ? Color(red: 0.96, green: 0.39, blue: 0.28)
-                                : Color.white.opacity(mood.prefersDarkChrome ? 0.10 : 0.22)
+                                    ? Color.white.opacity(0.14)
+                                    : Color.white.opacity(0.05)
                             )
-
                         Capsule(style: .continuous)
                             .stroke(
-                                Color.white.opacity(isSelected ? 0 : (mood.prefersDarkChrome ? 0.18 : 0.34)),
-                                lineWidth: 0.8
+                                isSelected
+                                    ? Color.white.opacity(0.24)
+                                    : Color.white.opacity(0.12),
+                                lineWidth: 0.6
                             )
                     }
                 )
@@ -261,31 +295,25 @@ struct PromiCompositionShareView: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: - Share action button (brand orange primary)
+
     @ViewBuilder
-    private func actionButton(title: String, emphasized: Bool, action: @escaping () -> Void) -> some View {
+    private func shareActionButton(
+        title: String,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(emphasized ? .white : primaryTextColor.opacity(0.86))
-                .padding(.horizontal, 20)
+                .foregroundColor(Color.white.opacity(0.96))
+                .padding(.horizontal, 22)
                 .frame(height: 40)
                 .background(
                     ZStack {
                         Capsule(style: .continuous)
-                            .fill(.ultraThinMaterial)
-
+                            .fill(brandOrange.opacity(isPreparingShare ? 0.54 : 0.86))
                         Capsule(style: .continuous)
-                            .fill(
-                                emphasized
-                                ? Color(red: 0.18, green: 0.26, blue: 0.42)
-                                : Color.white.opacity(mood.prefersDarkChrome ? 0.10 : 0.22)
-                            )
-
-                        Capsule(style: .continuous)
-                            .stroke(
-                                Color.white.opacity(emphasized ? 0 : (mood.prefersDarkChrome ? 0.18 : 0.34)),
-                                lineWidth: 0.8
-                            )
+                            .stroke(Color.white.opacity(0.22), lineWidth: 0.6)
                     }
                 )
         }
@@ -293,7 +321,7 @@ struct PromiCompositionShareView: View {
         .disabled(isPreparingShare)
     }
 
-    // MARK: - Preview area (centered, no scroll, fits both dims)
+    // MARK: - Preview area
 
     @ViewBuilder
     private var previewArea: some View {
@@ -314,7 +342,7 @@ struct PromiCompositionShareView: View {
                     languageCode: userStore.selectedLanguage,
                     sortOption: sortOption,
                     hideText: hideText,
-                    title: "Mon Promi",
+                    title: isEnglish ? "My Promi" : "Mon Promi",
                     subtitle: selectedTemplate.previewBadge
                 )
                 .animation(.spring(response: 0.40, dampingFraction: 0.86), value: selectedTemplate)
@@ -330,13 +358,13 @@ struct PromiCompositionShareView: View {
     @ViewBuilder
     private var footer: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(selectedTemplate.title)
+            Text(selectedTemplate.title(isEnglish: isEnglish))
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(primaryTextColor.opacity(0.86))
+                .foregroundColor(Color.white.opacity(0.86))
 
-            Text(selectedTemplate.shareHint)
-                .font(.system(size: 13, weight: .regular))
-                .foregroundColor(secondaryTextColor)
+            Text(selectedTemplate.shareHint(isEnglish: isEnglish))
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(Color.white.opacity(0.56))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -346,14 +374,17 @@ struct PromiCompositionShareView: View {
         .animation(.spring(response: 0.30, dampingFraction: 0.88), value: selectedTemplate)
     }
 
-    // MARK: - Adaptive text colors
+    // MARK: - Chrome pill helper
 
-    private var primaryTextColor: Color {
-        mood.prefersDarkChrome ? .white.opacity(0.96) : .black.opacity(0.86)
-    }
-
-    private var secondaryTextColor: Color {
-        mood.prefersDarkChrome ? .white.opacity(0.62) : .black.opacity(0.50)
+    private var chromePill: some View {
+        ZStack {
+            Capsule(style: .continuous)
+                .fill(.ultraThinMaterial)
+            Capsule(style: .continuous)
+                .fill(Color.black.opacity(0.22))
+            Capsule(style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+        }
     }
 
     // MARK: - Share rendering
@@ -373,7 +404,7 @@ struct PromiCompositionShareView: View {
             languageCode: userStore.selectedLanguage,
             sortOption: sortOption,
             hideText: hideText,
-            title: "Mon Promi",
+            title: isEnglish ? "My Promi" : "Mon Promi",
             subtitle: selectedTemplate.previewBadge
         )
         .frame(width: renderSize.width + 12, height: renderSize.height + 12)
@@ -405,12 +436,16 @@ struct PromiCompositionShareView: View {
     }
 
     private func makeShareItems(with image: UIImage) -> [Any] {
-        let caption = selectedTemplate.captionText
+        let caption = selectedTemplate.captionText(isEnglish: isEnglish)
         return [caption, image]
     }
 }
 
 // MARK: - Composition card (Promi-styled, uses PromiFieldPreviewView)
+//
+// This is the SHAREABLE render — it's independent from the chrome page
+// background. Its visual system stays mood-adaptive so the exported image
+// has the mood's full colors, not the muted chrome version.
 
 private struct CompositionPreviewCard: View {
     let size: CGSize
@@ -452,7 +487,7 @@ private struct CompositionPreviewCard: View {
             RoundedRectangle(cornerRadius: cardCornerRadius + 6, style: .continuous)
                 .fill(Color.black.opacity(0.06))
         )
-        .shadow(color: .black.opacity(0.24), radius: 30, x: 0, y: 14)
+        .shadow(color: .black.opacity(0.32), radius: 30, x: 0, y: 14)
     }
 
     @ViewBuilder
@@ -559,63 +594,68 @@ private enum PromiShareTemplate: CaseIterable {
     case linkedinPost
     case pinterestPin
 
-    var title: String {
+    func title(isEnglish: Bool) -> String {
         switch self {
         case .instagramStory: return "Story"
-        case .instagramPost: return "Post carré"
-        case .xPost: return "X / paysage"
-        case .linkedinPost: return "LinkedIn"
-        case .pinterestPin: return "Pinterest"
+        case .instagramPost:  return isEnglish ? "Square post" : "Post carré"
+        case .xPost:          return isEnglish ? "X / landscape" : "X / paysage"
+        case .linkedinPost:   return "LinkedIn"
+        case .pinterestPin:   return "Pinterest"
         }
     }
 
-    var subtitle: String {
+    func subtitle(isEnglish: Bool) -> String {
         switch self {
-        case .instagramStory: return "9:16, immersif"
-        case .instagramPost: return "1:1, propre"
-        case .xPost: return "16:9, large"
-        case .linkedinPost: return "4:5, éditorial"
-        case .pinterestPin: return "2:3, vertical"
+        case .instagramStory: return isEnglish ? "9:16, immersive" : "9:16, immersif"
+        case .instagramPost:  return isEnglish ? "1:1, clean" : "1:1, propre"
+        case .xPost:          return isEnglish ? "16:9, wide" : "16:9, large"
+        case .linkedinPost:   return isEnglish ? "4:5, editorial" : "4:5, éditorial"
+        case .pinterestPin:   return isEnglish ? "2:3, vertical" : "2:3, vertical"
         }
     }
 
     var previewBadge: String {
         switch self {
         case .instagramStory: return "Story"
-        case .instagramPost: return "Post"
-        case .xPost: return "X"
-        case .linkedinPost: return "LinkedIn"
-        case .pinterestPin: return "Pinterest"
+        case .instagramPost:  return "Post"
+        case .xPost:          return "X"
+        case .linkedinPost:   return "LinkedIn"
+        case .pinterestPin:   return "Pinterest"
         }
     }
 
-    var shareHint: String {
-        switch self {
-        case .instagramStory:
-            return "Idéal pour une publication immersive verticale, avec logo et composition bien lisibles."
-        case .instagramPost:
-            return "Format simple, net et centré, parfait pour un post classique et esthétique."
-        case .xPost:
-            return "Version large pour une composition plus panoramique, adaptée aux posts rapides."
-        case .linkedinPost:
-            return "Lecture éditoriale et plus posée, adaptée à une promesse racontée sobrement."
-        case .pinterestPin:
-            return "Vertical, ample et très visuel, utile pour mettre en avant une composition forte."
+    func shareHint(isEnglish: Bool) -> String {
+        if isEnglish {
+            switch self {
+            case .instagramStory: return "Ideal for an immersive vertical post, with logo and composition fully readable."
+            case .instagramPost:  return "Simple, clean and centered format — perfect for a classic, elegant post."
+            case .xPost:          return "Wide version for a more panoramic composition, suited to quick posts."
+            case .linkedinPost:   return "Editorial, slower reading pace — fits a promise told with sobriety."
+            case .pinterestPin:   return "Vertical, ample and highly visual — useful to highlight a strong composition."
+            }
+        } else {
+            switch self {
+            case .instagramStory: return "Idéal pour une publication immersive verticale, avec logo et composition bien lisibles."
+            case .instagramPost:  return "Format simple, net et centré, parfait pour un post classique et esthétique."
+            case .xPost:          return "Version large pour une composition plus panoramique, adaptée aux posts rapides."
+            case .linkedinPost:   return "Lecture éditoriale et plus posée, adaptée à une promesse racontée sobrement."
+            case .pinterestPin:   return "Vertical, ample et très visuel, utile pour mettre en avant une composition forte."
+            }
         }
     }
 
-    var captionText: String {
-        "Mon Promi"
+    func captionText(isEnglish: Bool) -> String {
+        isEnglish ? "My Promi" : "Mon Promi"
     }
 
     /// Aspect ratio expressed as width / height.
     var aspectRatio: CGFloat {
         switch self {
         case .instagramStory: return 9.0 / 16.0
-        case .instagramPost: return 1.0
-        case .xPost: return 16.0 / 9.0
-        case .linkedinPost: return 4.0 / 5.0
-        case .pinterestPin: return 2.0 / 3.0
+        case .instagramPost:  return 1.0
+        case .xPost:          return 16.0 / 9.0
+        case .linkedinPost:   return 4.0 / 5.0
+        case .pinterestPin:   return 2.0 / 3.0
         }
     }
 
@@ -638,16 +678,11 @@ private enum PromiShareTemplate: CaseIterable {
 
     var renderSize: CGSize {
         switch self {
-        case .instagramStory:
-            return CGSize(width: 1080, height: 1920)
-        case .instagramPost:
-            return CGSize(width: 1080, height: 1080)
-        case .xPost:
-            return CGSize(width: 1600, height: 900)
-        case .linkedinPost:
-            return CGSize(width: 1200, height: 1500)
-        case .pinterestPin:
-            return CGSize(width: 1000, height: 1500)
+        case .instagramStory: return CGSize(width: 1080, height: 1920)
+        case .instagramPost:  return CGSize(width: 1080, height: 1080)
+        case .xPost:          return CGSize(width: 1600, height: 900)
+        case .linkedinPost:   return CGSize(width: 1200, height: 1500)
+        case .pinterestPin:   return CGSize(width: 1000, height: 1500)
         }
     }
 }
@@ -664,5 +699,8 @@ private struct ShareSheet: UIViewControllerRepresentable {
         )
     }
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) { }
+    func updateUIViewController(
+        _ uiViewController: UIActivityViewController,
+        context: Context
+    ) { }
 }

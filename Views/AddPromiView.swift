@@ -74,9 +74,18 @@ struct AddPromiView: View {
                         titleField
                         kindSelector
 
-                        if selectedKind == .precise {
+                        // Le bloc qui suit le sélecteur dépend du kind :
+                        //   .precise   → date picker uniquement (moment fixe)
+                        //   .emotional → date picker + indice relationnel
+                        //                ("Lié" = la relation prime sur l'horaire)
+                        //   .floating  → pas de date, juste une explication
+                        //                ("En l'air" = pure intention)
+                        switch selectedKind {
+                        case .precise:
                             dateBlock
-                        } else {
+                        case .emotional:
+                            linkedBlock
+                        case .floating:
                             floatingBlock
                         }
 
@@ -241,10 +250,18 @@ struct AddPromiView: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionLabel(isEnglish ? "Mode" : "Mode")
 
+            // Trois modes, ordonnés en gradient sémantique :
+            //   gauche  : Précis  → ancrage technique, moment fixe
+            //   centre  : Lié     → relationnel, moment ancré sur une personne
+            //   droite  : En l'air → libre, sans moment, pure intention
             HStack(spacing: 8) {
                 kindChip(
                     kind: .precise,
                     title: isEnglish ? "Precise" : "Précis"
+                )
+                kindChip(
+                    kind: .emotional,
+                    title: isEnglish ? "Linked" : "Lié"
                 )
                 kindChip(
                     kind: .floating,
@@ -331,6 +348,60 @@ struct AddPromiView: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(chromeCard(radius: 16))
+    }
+
+    // MARK: - Linked block (.emotional Promi: date + relational hint)
+    //
+    // A "Lié" Promi a une date, comme un Promi précis, mais le sens
+    // produit est différent : c'est une promesse ANCRÉE à une personne,
+    // où la relation prime sur la rigueur de l'horaire. Le date picker
+    // est donc présent (tu peux dire "samedi matin"), mais on souligne
+    // visuellement que la dimension émotionnelle est centrale.
+
+    private var linkedBlock: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 10) {
+                sectionLabel(isEnglish ? "When" : "Quand")
+
+                HStack {
+                    DatePicker(
+                        "",
+                        selection: $dueDate,
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+                    .tint(brandOrange)
+                    .colorScheme(.dark)
+
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(chromeCard(radius: 16))
+            }
+
+            // Relational hint — visually anchored under the date to make
+            // explicit that "Lié" is about the relationship, not the clock.
+            HStack(alignment: .top, spacing: 10) {
+                Circle()
+                    .fill(brandOrange.opacity(0.58))
+                    .frame(width: 4, height: 4)
+                    .padding(.top, 6)
+
+                Text(
+                    isEnglish
+                    ? "A linked Promi belongs to a person before it belongs to a moment. The clock matters; the bond matters more."
+                    : "Un Promi lié appartient d’abord à une personne, ensuite à un moment. L’heure compte ; le lien compte davantage."
+                )
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(Color.white.opacity(0.62))
+                .italic()
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 4)
+        }
     }
 
     // MARK: - Recipient block

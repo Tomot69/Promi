@@ -13,6 +13,7 @@ struct SettingsView: View {
     @State private var showLanguagePicker = false
     @State private var showStudio = false
     @State private var showReplayOnboarding = false
+    @State private var showMesNuées = false
 
     private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
@@ -56,6 +57,7 @@ struct SettingsView: View {
                         sectionLabel(isFrench ? "DÉCOUVERTE" : "DISCOVER")
                             .padding(.top, 14)
 
+                        mesNuéesRow
                         replayOnboardingRow
 
                         sectionLabel(isFrench ? "BIENTÔT" : "COMING SOON")
@@ -89,6 +91,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showStudio) {
             PaletteView()
+        }
+        .sheet(isPresented: $showMesNuées) {
+            MesNuéesView()
         }
         .fullScreenCover(isPresented: $showReplayOnboarding) {
             OnboardingView()
@@ -147,6 +152,18 @@ struct SettingsView: View {
         ) {
             Haptics.shared.lightTap()
             showStudio = true
+        }
+    }
+
+    private var mesNuéesRow: some View {
+        SettingsRow(
+            title: isFrench ? "Mes Nuées" : "My Nuées",
+            value: isFrench ? "groupes & thèmes" : "groups & themes",
+            accent: brandOrange.opacity(0.92),
+            enabled: true
+        ) {
+            Haptics.shared.lightTap()
+            showMesNuées = true
         }
     }
 

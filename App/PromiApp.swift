@@ -6,6 +6,7 @@ struct PromiApp: App {
     @StateObject private var promiStore = PromiStore()
     @StateObject private var karmaStore = KarmaStore()
     @StateObject private var draftStore = DraftStore()
+    @StateObject private var nuéeStore = NuéeStore()
 
     @State private var isShowingSplash = true
 
@@ -16,6 +17,7 @@ struct PromiApp: App {
                 .environmentObject(promiStore)
                 .environmentObject(karmaStore)
                 .environmentObject(draftStore)
+                .environmentObject(nuéeStore)
                 .onAppear {
                     ReadPathBootstrapper.applyIfEnabled(
                         defaults: .standard,

@@ -1,10 +1,19 @@
 import Foundation
 import Combine
 
+/// Central store for user identity, preferences and app-lifecycle flags.
+///
+/// Architectural note: visual identity (pack / mood) is **not** stored here —
+/// it lives in SwiftUI `@AppStorage("promi.visualPack")` and
+/// `@AppStorage("promi.visualMood")` bindings because they need to update
+/// reactively across independent view hierarchies (home, Studio, chrome
+/// pages). Keeping them in UserStore would require manual observer wiring
+/// that `@AppStorage` already solves. The legacy `ColorPalette` system that
+/// used to live here has been fully removed: it was an earlier beige-based
+/// theme layer that the mood system has superseded.
 final class UserStore: ObservableObject {
     @Published var localUserId: String
     @Published var selectedLanguage: String
-    @Published var selectedPalette: ColorPalette
     @Published var hasChosenLanguage: Bool
     @Published var hasCompletedOnboarding: Bool
     @Published var hasCompletedTutorial: Bool
@@ -14,7 +23,6 @@ final class UserStore: ObservableObject {
 
     private let userIdKey = "localUserId"
     private let languageKey = "selectedLanguage"
-    private let paletteKey = "selectedPalette"
     private let languageChosenKey = "hasChosenLanguage"
     private let onboardingKey = "hasCompletedOnboarding"
     private let tutorialKey = "hasCompletedTutorial"
@@ -30,19 +38,13 @@ final class UserStore: ObservableObject {
         }
 
         self.selectedLanguage = userDefaults.string(forKey: languageKey) ?? "fr"
-
-        if let paletteRawValue = userDefaults.string(forKey: paletteKey),
-           let palette = ColorPalette(rawValue: paletteRawValue) {
-            self.selectedPalette = palette
-        } else {
-            self.selectedPalette = .pureWhite
-        }
-
         self.hasChosenLanguage = userDefaults.bool(forKey: languageChosenKey)
         self.hasCompletedOnboarding = userDefaults.bool(forKey: onboardingKey)
         self.hasCompletedTutorial = userDefaults.bool(forKey: tutorialKey)
         self.isPremium = userDefaults.bool(forKey: premiumKey)
     }
+
+    // MARK: - Language
 
     func chooseLanguage(_ language: String) {
         selectedLanguage = language
@@ -56,10 +58,7 @@ final class UserStore: ObservableObject {
         userDefaults.set(language, forKey: languageKey)
     }
 
-    func updatePalette(_ palette: ColorPalette) {
-        selectedPalette = palette
-        userDefaults.set(palette.rawValue, forKey: paletteKey)
-    }
+    // MARK: - Onboarding
 
     func completeOnboarding() {
         hasCompletedOnboarding = true
@@ -67,26 +66,39 @@ final class UserStore: ObservableObject {
     }
 
     /// Resets the onboarding flag so the user can replay it from Settings.
-    /// Keeps the language choice intact — only the onboarding slides are reset.
+    /// Keeps the language choice and user id intact — only the onboarding
+    /// slides are reset. This is the canonical way to re-trigger the
+    /// onboarding flow from inside the app.
     func replayOnboarding() {
         hasCompletedOnboarding = false
         userDefaults.set(false, forKey: onboardingKey)
     }
+
+    // MARK: - Tutorial
 
     func completeTutorial() {
         hasCompletedTutorial = true
         userDefaults.set(true, forKey: tutorialKey)
     }
 
+    // MARK: - Premium
+
     func setPremium(_ isPremium: Bool) {
         self.isPremium = isPremium
         userDefaults.set(isPremium, forKey: premiumKey)
     }
 
+    // MARK: - Debug
+
+    /// Debug-only: resets both the language selection and the onboarding
+    /// flags so the app enters its first-run flow from the beginning.
+    /// Not available in release builds to prevent accidental wipes.
+    #if DEBUG
     func resetEntryFlowForDebug() {
         hasChosenLanguage = false
         hasCompletedOnboarding = false
         userDefaults.set(false, forKey: languageChosenKey)
         userDefaults.set(false, forKey: onboardingKey)
     }
+    #endif
 }
