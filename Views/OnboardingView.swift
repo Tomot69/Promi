@@ -35,7 +35,6 @@ struct OnboardingView: View {
 
     @State private var currentPage: Int = 0
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var currentPack: PromiVisualPack {
         PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
@@ -71,7 +70,7 @@ struct OnboardingView: View {
 
                 TabView(selection: $currentPage) {
                     ForEach(Array(slides.enumerated()), id: \.offset) { index, slide in
-                        PromiOnboardingSlideView(slide: slide, brandOrange: brandOrange)
+                        PromiOnboardingSlideView(slide: slide)
                             .tag(index)
                     }
                 }
@@ -101,20 +100,24 @@ struct OnboardingView: View {
             // « Promi » en orange — même accent identité que les autres pages.
             Text("Promi")
                 .font(.system(size: 22, weight: .light))
-                .foregroundColor(brandOrange)
+                .foregroundColor(Brand.orange)
 
             Spacer()
 
-            // Skip button — chrome pill style.
-            Button(action: skipToLast) {
-                Text(isFrench ? "Passer" : "Skip")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color.white.opacity(0.72))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(chromePill)
+            // Skip button — chrome pill style. Hidden on the last slide
+            // because there's nothing left to skip: the user is already
+            // at the final step and the primary CTA is "Entrer dans Promi".
+            if !isLastSlide {
+                Button(action: skipToLast) {
+                    Text(isFrench ? "Passer" : "Skip")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.72))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(chromePill)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 24)
         .padding(.top, 18)
@@ -168,7 +171,7 @@ struct OnboardingView: View {
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .fill(
                             isLastSlide
-                                ? brandOrange.opacity(0.86)
+                                ? Brand.orange.opacity(0.86)
                                 : Color.white.opacity(0.08)
                         )
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -324,7 +327,6 @@ struct OnboardingView: View {
 
 private struct PromiOnboardingSlideView: View {
     let slide: PromiOnboardingSlide
-    let brandOrange: Color
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -374,9 +376,9 @@ private struct PromiOnboardingSlideView: View {
         attributed.font = .system(size: 26, weight: .light)
         attributed.foregroundColor = Color.white.opacity(0.94)
 
-        // Highlight "Promi" in brandOrange wherever it appears in the title.
+        // Highlight "Promi" in Brand.orange wherever it appears in the title.
         if let range = attributed.range(of: "Promi") {
-            attributed[range].foregroundColor = brandOrange
+            attributed[range].foregroundColor = Brand.orange
         }
 
         return Text(attributed)
@@ -389,7 +391,7 @@ private struct PromiOnboardingSlideView: View {
             ForEach(slide.examples, id: \.self) { example in
                 HStack(alignment: .top, spacing: 10) {
                     Circle()
-                        .fill(brandOrange.opacity(0.58))
+                        .fill(Brand.orange.opacity(0.58))
                         .frame(width: 4, height: 4)
                         .padding(.top, 7)
 

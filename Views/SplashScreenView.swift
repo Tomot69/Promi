@@ -29,7 +29,6 @@ struct SplashScreenView: View {
     @State private var phase: CGFloat = 0.82
     @State private var titleOpacity: Double = 0.0
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var currentPack: PromiVisualPack {
         PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
@@ -97,7 +96,7 @@ struct SplashScreenView: View {
         VStack(spacing: 6) {
             Text("Promi")
                 .font(.system(size: 28, weight: .light))
-                .foregroundColor(brandOrange)
+                .foregroundColor(Brand.orange)
                 .tracking(0.8)
 
             Text(isEnglish

@@ -88,32 +88,11 @@ struct PromiFieldRootView: View {
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
 
-    /// Vertical space reserved at the bottom of the field for the floating
-    /// dock (tri / œil / karma / studio / share). Keeps the content rect
-    /// above the dock even at minimum zoom (0.6), so when the user pinches
-    /// all the way out the Voronoi rectangle no longer collides with the
-    /// dock buttons. Valid for all packs of the Studio.
-    private let dockReservedBottom: CGFloat = 96
-
     var body: some View {
         GeometryReader { geo in
-            let fieldHeight = max(geo.size.height - dockReservedBottom, 1)
-            let fieldSize = CGSize(width: geo.size.width, height: fieldHeight)
-
-            VStack(spacing: 0) {
-                ZoomablePromiViewport {
-                    packContent(size: fieldSize)
-                        .frame(width: fieldSize.width, height: fieldSize.height, alignment: .topLeading)
-                }
-                .frame(height: fieldHeight)
-
-                // Reserved transparent strip for the dock. Nothing is drawn
-                // here — the dock lives in ContentView as an overlay on
-                // top of everything else. This just pushes the zoomable
-                // field up, so pinch-to-min never places cells under the
-                // dock.
-                Color.clear
-                    .frame(height: dockReservedBottom)
+            ZoomablePromiViewport {
+                packContent(size: geo.size)
+                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             }
         }
         .ignoresSafeArea()
@@ -168,6 +147,17 @@ struct PromiFieldRootView: View {
             )
         case .cristal:
             CristalPromiFieldView(
+                mood: mood,
+                size: size,
+                promis: promis,
+                nuées: nuées,
+                languageCode: languageCode,
+                sortOption: sortOption,
+                onTapPromi: onTapPromi,
+                onTapNuée: onTapNuée
+            )
+        case .vitrailChrome:
+            VitrailChromePromiFieldView(
                 mood: mood,
                 size: size,
                 promis: promis,
@@ -285,7 +275,65 @@ struct PromiFieldPreviewView: View {
                 onTapPromi: { _ in },
                 onTapNuée: { _ in }
             )
+        case .vitrailChrome:
+            VitrailChromeStudioPreview(mood: mood, size: size)
         }
+    }
+}
+
+/// Aperçu Studio du pack vitrailChrome : zoom cadré sur une zone du vrai
+/// PNG vitrail_chrome_overlay.png, avec les 141 cellules réelles remplies
+/// des couleurs de la palette mood (toutes allumées pour la démo).
+fileprivate struct VitrailChromeStudioPreview: View {
+    let mood: PromiColorMood
+    let size: CGSize
+
+    var body: some View {
+        // Image native 1024x1536. On en cadre une zone centrale qui remplit
+        // complètement la tuile du Studio (pas de bande vide).
+        let imageRatio: CGFloat = 1024.0 / 1536.0
+        let tileRatio = size.width / size.height
+        let imageWidth: CGFloat
+        let imageHeight: CGFloat
+        if tileRatio > imageRatio {
+            imageWidth = size.width
+            imageHeight = size.width / imageRatio
+        } else {
+            imageHeight = size.height
+            imageWidth = size.height * imageRatio
+        }
+        let canvas = CGSize(width: imageWidth, height: imageHeight)
+        let cells = VitrailChromeCellsData.cells
+        let swatches = mood.swatches
+
+        return ZStack(alignment: .center) {
+            Color.white
+            ZStack(alignment: .topLeading) {
+                // Remplissage palette : chaque cellule reçoit une couleur
+                // piochée cycliquement dans mood.swatches.
+                ForEach(Array(cells.enumerated()), id: \.element.id) { idx, vc in
+                    let color = swatches[idx % max(swatches.count, 1)]
+                    let pts = vc.polygon.map {
+                        CGPoint(x: $0.x * canvas.width, y: $0.y * canvas.height)
+                    }
+                    VitrailCellShape(points: pts)
+                        .fill(color)
+                }
+                // Une seule couche chrome en multiply. Pas de screen — la
+                // couche screen délave les palettes saturées vers du pastel,
+                // donc les 3 Vitrail finissent par se ressembler. Dans
+                // l'app principale on garde screen pour les reflets (c'est
+                // une grande surface), mais dans la tuile preview du Studio
+                // on veut voir la vraie palette saturée.
+                Image("vitrail_chrome_overlay")
+                    .resizable()
+                    .frame(width: imageWidth, height: imageHeight)
+                    .blendMode(.multiply)
+            }
+            .frame(width: imageWidth, height: imageHeight)
+        }
+        .frame(width: size.width, height: size.height)
+        .clipped()
     }
 }
 
@@ -312,58 +360,23 @@ private final class ZoomHostScrollView: UIScrollView {
         centerContentIfNeeded()
     }
 
-    /// Reserved safe area at the top of the screen above which no Voronoi
-    /// content should settle at dezoom (status bar + "Promi" header).
-    private let topReservedAtDezoom: CGFloat = 92
-
-    /// Reserved safe area at the bottom of the screen above which no
-    /// Voronoi content should settle at dezoom (dock icons + home indicator).
-    /// This prevents the cell rectangle from being overlapped by the dock
-    /// buttons when the user pinches to min zoom and releases.
-    private let bottomReservedAtDezoom: CGFloat = 118
-
+    /// Simple symmetric centering — when zoomed out, the content
+    /// centers in the full viewport. No reserved zones for dock or
+    /// status bar — the Voronoï extends edge-to-edge and the chrome
+    /// overlays on top. Exactly how Photos.app centers its content.
     func centerContentIfNeeded() {
         guard hostedView != nil else { return }
 
-        // Zoom-aware centering via contentInset. At zoom = 1 the inset is
-        // zero so the field fills the viewport edge-to-edge (as before).
-        // At dezoom, we center the scaled content in a "safe area" that
-        // excludes the top header and the bottom dock, so the cells settle
-        // above the dock buttons — matching the reference screenshots.
         let scaledW = contentSize.width * zoomScale
         let scaledH = contentSize.height * zoomScale
 
-        let horizontalInset: CGFloat = scaledW < bounds.width
-            ? (bounds.width - scaledW) / 2
-            : 0
-
-        let availableHeight = bounds.height - topReservedAtDezoom - bottomReservedAtDezoom
-
-        var topInset: CGFloat = 0
-        var bottomInset: CGFloat = 0
-
-        if scaledH <= availableHeight && scaledH < bounds.height {
-            // Content fits inside the safe area → center it there with the
-            // top/bottom reservations fully applied.
-            let extraSpace = availableHeight - scaledH
-            topInset = topReservedAtDezoom + extraSpace / 2
-            bottomInset = bottomReservedAtDezoom + extraSpace / 2
-        } else if scaledH < bounds.height {
-            // Content taller than the safe area but shorter than bounds.
-            // Taper the reservations linearly so at exactly bounds.height
-            // the insets are zero (dock overlap becomes unavoidable close
-            // to zoom 1, which is the existing intended behavior).
-            let overflow = scaledH - availableHeight
-            let reservedSpan = bounds.height - availableHeight
-            let factor = max(0, 1 - overflow / reservedSpan)
-            topInset = topReservedAtDezoom * factor
-            bottomInset = bottomReservedAtDezoom * factor
-        }
+        let horizontalInset = max(0, (bounds.width - scaledW) / 2)
+        let verticalInset = max(0, (bounds.height - scaledH) / 2)
 
         contentInset = UIEdgeInsets(
-            top: topInset,
+            top: verticalInset,
             left: horizontalInset,
-            bottom: bottomInset,
+            bottom: verticalInset,
             right: horizontalInset
         )
     }
@@ -396,7 +409,7 @@ private struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
         scrollView.canCancelContentTouches = true
         scrollView.clipsToBounds = true
         scrollView.contentInsetAdjustmentBehavior = .never
-        scrollView.decelerationRate = .fast
+        scrollView.decelerationRate = .normal
 
         let hosting = context.coordinator.hostingController
         hosting.view.backgroundColor = .clear
@@ -525,6 +538,228 @@ struct AlveolesPromiFieldView: View {
     }
 }
 
+struct VitrailChromePromiFieldView: View {
+    let mood: PromiColorMood
+    let size: CGSize
+    let promis: [PromiItem]
+    let nuées: [Nuée]
+    let languageCode: String
+    let sortOption: PromiFieldSortOption
+    let onTapPromi: (PromiItem) -> Void
+    let onTapNuée: (Nuée) -> Void
+
+    @StateObject private var motion = MotionTilt.shared
+
+    var body: some View {
+        let clampedTilt = CGSize(
+            width: min(max(-0.4, motion.tilt.width), 0.4),
+            height: min(max(-0.4, motion.tilt.height), 0.4)
+        )
+        let layout = PromiFieldLayoutFactory.make(
+            theme: .vitrail,
+            mood: mood,
+            size: size,
+            promis: promis,
+            nuées: nuées,
+            sortOption: sortOption
+        )
+        // Image native 1024x1536 -> ratio 2:3. Objectif : remplir TOUT
+        // l'écran safe area comprise, avec un léger débordement pour un
+        // zoom initial un cran plus serré (cellules plus grosses, plus
+        // présentes). On multiplie par 1.15 et on ajoute 120 pts à la
+        // hauteur pour couvrir safe areas haut+bas sur tout iPhone.
+        let imageRatio: CGFloat = 1024.0 / 1536.0
+        let targetHeight = (size.height + 120) * 1.15
+        let imageHeight = targetHeight
+        let imageWidth = targetHeight * imageRatio
+        let canvas = CGSize(width: imageWidth, height: imageHeight)
+        let remapped = Self.vitrailRemappedCells(from: layout.cells, canvas: canvas)
+
+        return ZoomablePromiViewport {
+            ZStack(alignment: .topLeading) {
+                // Couche 1 : chrome multiply (plombs sombres qui dessinent la
+                // grille). Placé AVANT les remplissages pour que le contour
+                // des cellules soit visible.
+                Image("vitrail_chrome_overlay")
+                    .resizable()
+                    .frame(width: imageWidth, height: imageHeight)
+                    .blendMode(.multiply)
+                    .allowsHitTesting(false)
+                // Couche 2 : chrome screen (reflets métalliques). Appliqué
+                // uniquement sur le fond blanc, donc les zones claires vont
+                // se nuancer. Les remplissages colorés passent par-dessus
+                // dans la Couche 3 pour ne pas être délavés.
+                Image("vitrail_chrome_overlay")
+                    .resizable()
+                    .frame(width: imageWidth, height: imageHeight)
+                    .blendMode(.screen)
+                    .opacity(0.7)
+                    .allowsHitTesting(false)
+                // Couche 3 : vitrail qui s'allume — PAR-DESSUS le chrome pour
+                // que les vraies couleurs de la palette ressortent sans être
+                // délavées par le blendMode screen. Promi = couleur palette
+                // cyclée, Nuée = dernière swatch (accent).
+                ForEach(remapped) { cell in
+                    let isNuée = cell.promotedNuée != nil
+                    let isPromi = cell.promotedPromi != nil
+                    if isNuée || isPromi {
+                        let shape = VitrailCellShape(points: cell.points)
+                        let b = cell.visibleBounds
+                        let radius = max(b.width, b.height) * 0.70
+                        let swatches = mood.swatches
+                        let swatchCount = max(swatches.count, 1)
+                        let promiSwatchIdx = abs(cell.id.hashValue) % swatchCount
+                        let tint: AnyShapeStyle = isNuée
+                            ? AnyShapeStyle(swatches[swatchCount - 1])
+                            : AnyShapeStyle(swatches[promiSwatchIdx])
+                        // Remplissage coloré saturé, masqué par un gradient
+                        // radial pour un effet vitrail rétro-éclairé : centre
+                        // opaque (couleur vive), bords translucides (on devine
+                        // encore le chrome dessous). Les couleurs sont saturées
+                        // parce qu'elles sont AU-DESSUS des deux couches chrome.
+                        shape.fill(tint)
+                            .mask(
+                                RadialGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: .white.opacity(0.95), location: 0.0),
+                                        .init(color: .white.opacity(0.80), location: 0.55),
+                                        .init(color: .white.opacity(0.0),  location: 1.0)
+                                    ]),
+                                    center: .center,
+                                    startRadius: 0,
+                                    endRadius: radius
+                                )
+                                .frame(width: b.width, height: b.height)
+                                .position(x: b.midX, y: b.midY)
+                            )
+                            .allowsHitTesting(false)
+                    }
+                }
+                // Couche 4 : PromiItems / Nuées centrés sur les vrais centroïdes,
+                // hit-test par polygone (pas bbox).
+                ForEach(remapped) { cell in
+                    if cell.promotedPromi != nil || cell.promotedNuée != nil {
+                        let title: String = cell.promotedNuée?.name
+                            ?? cell.promotedPromi?.title
+                            ?? ""
+                        Text(title)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color.black.opacity(0.85))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: max(cell.visibleBounds.width * 0.8, 40))
+                            .position(
+                                x: cell.visibleBounds.midX,
+                                y: cell.visibleBounds.midY
+                            )
+                            .contentShape(VitrailCellShape(points: cell.points))
+                            .onTapGesture {
+                                if let n = cell.promotedNuée { onTapNuée(n) }
+                                else if let p = cell.promotedPromi { onTapPromi(p) }
+                            }
+                    }
+                }
+            }
+            .frame(width: imageWidth, height: imageHeight)
+            .background(Color.white)
+        }
+        .frame(width: size.width, height: size.height)
+        .background(mood.homeBackground)
+        .ignoresSafeArea()
+        .onAppear { motion.subscribe() }
+        .onDisappear { motion.unsubscribe() }
+    }
+
+    /// Remappe les cellules synthétiques du layout factory sur les 141 vraies
+    /// cellules détectées dans vitrail_chrome_overlay.png, en préservant
+    /// fillStyle, promotedPromi, promotedNuée, strokeColor, strokeStyle, textMode.
+    /// Les vraies cellules sont triées par distance croissante au centre de
+    /// l'image, donc les premiers Promis/Nuées tombent au milieu de l'écran
+    /// (visibles dès le lancement) plutôt que sur les bords.
+    fileprivate static func vitrailRemappedCells(
+        from source: [PromiFieldCell],
+        canvas: CGSize
+    ) -> [PromiFieldCell] {
+        let real = VitrailChromeCellsData.cells
+        guard !real.isEmpty else { return source }
+        // Tri des cellules réelles par distance centroïde -> centre de l'image.
+        // Le centre est (0.5, 0.5) en coordonnées normalisées.
+        let sortedReal = real.sorted { a, b in
+            let da = (a.centroid.x - 0.5) * (a.centroid.x - 0.5)
+                   + (a.centroid.y - 0.5) * (a.centroid.y - 0.5)
+            let db = (b.centroid.x - 0.5) * (b.centroid.x - 0.5)
+                   + (b.centroid.y - 0.5) * (b.centroid.y - 0.5)
+            return da < db
+        }
+        return source.enumerated().prefix(sortedReal.count).map { idx, base in
+            let vc = sortedReal[idx]
+            let pts = vc.polygon.map {
+                CGPoint(x: $0.x * canvas.width, y: $0.y * canvas.height)
+            }
+            let xs = pts.map(\.x), ys = pts.map(\.y)
+            let bounds = CGRect(
+                x: xs.min() ?? 0,
+                y: ys.min() ?? 0,
+                width: (xs.max() ?? 0) - (xs.min() ?? 0),
+                height: (ys.max() ?? 0) - (ys.min() ?? 0)
+            )
+            return PromiFieldCell(
+                id: base.id,
+                points: pts,
+                visibleBounds: bounds,
+                promotedPromi: base.promotedPromi,
+                promotedNuée: base.promotedNuée,
+                fillStyle: base.fillStyle,
+                strokeColor: base.strokeColor,
+                strokeStyle: base.strokeStyle,
+                textMode: base.textMode
+            )
+        }
+    }
+}
+
+/// Shape polygonale utilisée pour le hit-test précis des cellules vitrailChrome
+/// (pas de bbox — tap uniquement si le doigt est réellement dans le polygone).
+fileprivate struct VitrailCellShape: Shape {
+    let points: [CGPoint]
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        guard let first = points.first else { return p }
+        p.move(to: first)
+        for pt in points.dropFirst() { p.addLine(to: pt) }
+        p.closeSubpath()
+        return p
+    }
+}
+
+fileprivate struct VitrailChromeCellView: View {
+    let cell: PromiFieldCell
+    let clampedTilt: CGSize
+
+    var body: some View {
+        let path: Path = {
+            var p = Path()
+            guard let first = cell.points.first else { return p }
+            p.move(to: first)
+            for pt in cell.points.dropFirst() { p.addLine(to: pt) }
+            p.closeSubpath()
+            return p
+        }()
+        let bounds = cell.visibleBounds
+        let tx = clampedTilt.width
+        let ty = clampedTilt.height
+        return ZStack {
+            path.fill(cell.fillStyle)
+            path.fill(RadialGradient(
+                colors: [Color.white.opacity(0.35), .clear],
+                center: UnitPoint(x: 0.35 + tx * 0.4, y: 0.35 + ty * 0.4),
+                startRadius: 0,
+                endRadius: max(bounds.width, bounds.height) * 0.6
+            ))
+        }
+    }
+}
+
 struct MosaicFlatPromiFieldView: View {
     let mood: PromiColorMood
     let size: CGSize
@@ -615,10 +850,7 @@ fileprivate final class PromiFieldLayoutCache: ObservableObject {
         cells: [],
         cristalMediumCells: nil,
         nestedSubCells: nil,
-        bounds: .zero,
-        fieldScale: 1,
-        offsetX: 0,
-        offsetY: 0
+        bounds: .zero
     )
     @Published var key: String = ""
     private var generation: Int = 0
@@ -748,18 +980,26 @@ fileprivate struct CommonPromiFieldView: View {
                 cellView(for: cell)
             }
 
-            // Cristal: interactive label overlay for promoted medium cells.
-            // Each promoted medium gets a transparent tappable shape with
-            // the Promi label centered on its centroid.
+            // Cristal: interactive label overlays for promoted medium cells.
+            //
+            // Two passes — Nuées first (they sit behind Promi labels in
+            // the z-order, which is the correct visual layering since Nuées
+            // are background anchors and Promis are foreground engagements).
+            //
+            // Nuée medium cells get a semi-transparent swatch tint ON TOP
+            // of their sub-cell mosaic (preserving the cristal texture) plus
+            // the Nuée icon+name label. Promi medium cells get the standard
+            // transparent hit-area with the Promi label centered.
             if let medium = layout.cristalMediumCells {
+                ForEach(medium.filter { $0.promotedNuée != nil }) { mediumCell in
+                    cristalMediumNuéeButton(for: mediumCell)
+                }
                 ForEach(medium.filter { $0.promotedPromi != nil }) { mediumCell in
                     cristalMediumPromoButton(for: mediumCell)
                 }
             }
         }
         .frame(width: max(size.width, 1), height: max(size.height, 1), alignment: .topLeading)
-        .scaleEffect(layout.fieldScale, anchor: .center)
-        .offset(x: layout.offsetX, y: layout.offsetY)
         .animation(.spring(response: 0.44, dampingFraction: 0.86), value: cache.key)
         .onAppear { regenerate() }
         .onChange(of: renderKey) { _, _ in regenerate() }
@@ -871,7 +1111,9 @@ fileprivate struct CommonPromiFieldView: View {
     /// The sub-cell mosaic remains visible underneath — promoted media no
     /// longer get a solid color fill, per user request to preserve the
     /// cristal design. This layer provides only the interactive label
-    /// centered on the medium centroid.
+    /// centered on the medium centroid, plus an optional Nuée halo stroke
+    /// if the Promi belongs to a Nuée (Option B: colored stroke on the
+    /// medium cell border, coherent with Cristal's bold-line aesthetic).
     @ViewBuilder
     private func cristalMediumPromoButton(for medium: CristalMediumCell) -> some View {
         if let promi = medium.promotedPromi {
@@ -880,20 +1122,94 @@ fileprivate struct CommonPromiFieldView: View {
             let visible = bbox.intersection(viewport)
             let frame = visible.isNull ? bbox : visible
             let textMode = PromiFieldThemeConfig.textMode(for: .cristal, mood: mood)
+            let shape = PromiFieldPolygonShape(points: medium.points, softness: 0)
+
+            // Resolve Nuée halo: if this Promi belongs to a Nuée, we
+            // overlay a colored stroke on the medium cell border using
+            // the Nuée's swatch hex. Layered ON TOP of the regular
+            // Cristal black border so it reads as a clear secondary
+            // signal — same principle as the outer-tier halo.
+            let haloColor: Color? = {
+                guard let nuéeId = promi.nuéeId,
+                      let parentNuée = nuéeLookup[nuéeId] else { return nil }
+                return NuéePalette.color(fromHex: parentNuée.moodHintRawValue)
+            }()
 
             Button(action: {
                 Haptics.shared.lightTap()
                 onTapPromi(promi)
             }) {
-                PromiFieldPolygonShape(points: medium.points, softness: 0)
+                shape
                     .fill(Color.clear)
-                    .contentShape(PromiFieldPolygonShape(points: medium.points, softness: 0))
+                    .contentShape(shape)
+                    .overlay(
+                        Group {
+                            if let halo = haloColor {
+                                shape
+                                    .stroke(
+                                        halo.opacity(0.86),
+                                        style: StrokeStyle(
+                                            lineWidth: 2.4,
+                                            lineCap: .round,
+                                            lineJoin: .round
+                                        )
+                                    )
+                            }
+                        }
+                    )
                     .overlay(
                         PromiCellCenteredLabelView(
                             promi: promi,
                             languageCode: languageCode,
                             frame: frame,
                             textMode: textMode
+                        )
+                    )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    /// Renders a promoted Nuée cell at the Cristal medium tier.
+    ///
+    /// Design choice: the Nuée's swatch color is applied as a
+    /// semi-transparent fill (opacity 0.72) ON TOP of the sub-cell
+    /// mosaic, so the cristal texture bleeds through slightly — this
+    /// preserves the three-tier design coherence while still making
+    /// the Nuée cell visually distinct from its idle neighbours.
+    /// The Nuée's icon and name are centered on the cell via
+    /// `NuéeCellIconLabel`, same as the outer-tier Nuée rendering.
+    @ViewBuilder
+    private func cristalMediumNuéeButton(for medium: CristalMediumCell) -> some View {
+        if let nuée = medium.promotedNuée {
+            let bbox = polygonBoundingBox(for: medium.points)
+            let viewport = CGRect(origin: .zero, size: size)
+            let visible = bbox.intersection(viewport)
+            let frame = visible.isNull ? bbox : visible
+            let shape = PromiFieldPolygonShape(points: medium.points, softness: 0)
+
+            let swatch = NuéePalette.color(fromHex: nuée.moodHintRawValue)
+                ?? Color(red: 0.65, green: 0.40, blue: 0.30)
+
+            Button(action: {
+                Haptics.shared.lightTap()
+                onTapNuée(nuée)
+            }) {
+                shape
+                    // Semi-transparent swatch tint — lets the sub-cell
+                    // mosaic texture bleed through (cristal identity).
+                    .fill(swatch.opacity(0.72))
+                    .contentShape(shape)
+                    .overlay(
+                        shape.stroke(
+                            Color.black.opacity(0.88),
+                            lineWidth: 1.9
+                        )
+                    )
+                    .overlay(
+                        NuéeCellIconLabel(
+                            nuée: nuée,
+                            frame: frame
                         )
                     )
             }
@@ -909,13 +1225,7 @@ fileprivate struct PromiFieldLayout {
     let cristalMediumCells: [CristalMediumCell]?
     let nestedSubCells: [CristalSubCell]?
     /// The full Voronoi bounds rect (viewport-relative, includes overscan).
-    /// Kept for potential future use; currently not consumed by the render
-    /// pipeline since sub-cells are rendered as inline Shapes in the main
-    /// ZStack and render freely beyond the parent viewport frame.
     let bounds: CGRect
-    let fieldScale: CGFloat
-    let offsetX: CGFloat
-    let offsetY: CGFloat
 }
 
 fileprivate struct CristalMediumCell: Identifiable {
@@ -925,6 +1235,7 @@ fileprivate struct CristalMediumCell: Identifiable {
     let parentOuterIndex: Int
     let centroid: CGPoint
     let promotedPromi: PromiItem?
+    let promotedNuée: Nuée?
 }
 
 fileprivate struct CristalSubCell {
@@ -950,6 +1261,7 @@ fileprivate enum PromiFieldTheme: String {
     case alveoles
     case cristal
     case mosaic
+    case vitrail
     case spectrum
 
     var id: String { rawValue }
@@ -969,6 +1281,7 @@ fileprivate enum PromiFieldThemeConfig {
         case .alveoles: return 14
         case .cristal: return 0
         case .mosaic: return 4
+        case .vitrail: return 4
         case .spectrum: return 1
         }
     }
@@ -979,6 +1292,7 @@ fileprivate enum PromiFieldThemeConfig {
         case .alveoles: return 6.0
         case .cristal: return 4.0
         case .mosaic: return 2.1
+        case .vitrail: return 0.0
         case .spectrum: return 0.55
         }
     }
@@ -997,6 +1311,9 @@ fileprivate enum PromiFieldThemeConfig {
             return Color.black.opacity(0.92)
 
         case .mosaic:
+            return mood.prefersDarkChrome ? Color.white.opacity(0.26) : Color(red: 0.08, green: 0.12, blue: 0.24).opacity(0.82)
+
+        case .vitrail:
             return mood.prefersDarkChrome ? Color.white.opacity(0.26) : Color(red: 0.08, green: 0.12, blue: 0.24).opacity(0.82)
 
         case .spectrum:
@@ -1025,6 +1342,8 @@ fileprivate enum PromiFieldThemeConfig {
             return min(28, max(8, scaled + 8 + promiCount / 3))
         case .mosaic:
             return min(62, max(24, density + 12 + promiCount))
+        case .vitrail:
+            return min(62, max(24, density + 12 + promiCount))
         case .spectrum:
             return min(94, max(38, density + 24 + promiCount * 2))
         }
@@ -1036,6 +1355,7 @@ fileprivate enum PromiFieldThemeConfig {
         case .alveoles: return 2
         case .cristal: return 0
         case .mosaic: return 1
+        case .vitrail: return 1
         case .spectrum: return 1
         }
     }
@@ -1233,15 +1553,13 @@ fileprivate enum PromiFieldLayoutFactory {
         // fill). Inside each, a tier-2 medium-cell pavage is computed and clipped
         // to the outer polygon. Inside each medium, a tier-3 fine sub-pavage is
         // computed and clipped to the medium polygon. Promotion happens at the
-        // medium tier — Promis take the place of a medium alvéole.
+        // medium tier — both Nuées and Promis take the place of medium alvéoles.
         //
-        // KNOWN LIMITATION: Cristal does NOT yet display Nuée cells. The
-        // promotion path here works at the medium-cell tier with a different
-        // assignment loop (see below) and does not currently handle Nuées.
-        // Nuée cells assigned by the outer-tier logic above are silently
-        // dropped here when the outer cells are rebuilt as transparent
-        // frames. Fixing this requires a parallel Nuée assignment at the
-        // medium tier — deferred to a follow-up tour.
+        // Nuées are assigned FIRST to the most central medium cells (same
+        // spatial logic as the outer tier: biggest visible cells closest to
+        // the viewport centre). Promis are assigned AFTER, skipping any
+        // medium cells already claimed by a Nuée. This mirrors the outer-tier
+        // priority (Nuées are anchor entities) translated to the medium tier.
         var cristalMedium: [CristalMediumCell]? = nil
         var cristalSub: [CristalSubCell]? = nil
         if theme == .cristal {
@@ -1266,14 +1584,54 @@ fileprivate enum PromiFieldLayoutFactory {
                 seed: seedBase(for: theme)
             )
 
-            // Assign Promis to medium cells closest to the sort target.
-            // Each promoted medium cell gets its promi label, no sub-cells
-            // are drawn inside it (they'll be filtered at render time via
-            // the medium's id matching).
             var mediumWithPromotion = nested.medium
+            var usedMediumIndices: Set<Int> = []
+
+            // ── Phase 1: Nuées → most central medium cells ──────────
+            //
+            // Nuées are identity anchors. They get the prime medium-tier
+            // real estate: largest visible cells closest to the viewport
+            // centre. Sorted by createdAt (oldest first → most central).
+            let nuéeCenter = CGPoint(x: safeSize.width * 0.50, y: safeSize.height * 0.42)
+            let sortedNuéesForMedium = nuées.sorted { $0.createdAt < $1.createdAt }
+
+            for nuée in sortedNuéesForMedium {
+                var bestIdx: Int? = nil
+                var bestScore = -CGFloat.greatestFiniteMagnitude
+                for (idx, medium) in mediumWithPromotion.enumerated() {
+                    if usedMediumIndices.contains(idx) { continue }
+                    let area = polygonArea(for: medium.points)
+                    let dx = medium.centroid.x - nuéeCenter.x
+                    let dy = medium.centroid.y - nuéeCenter.y
+                    let dist = hypot(dx, dy)
+                    // Score: favour large cells close to centre.
+                    let score = area - dist * 80
+                    if score > bestScore {
+                        bestScore = score
+                        bestIdx = idx
+                    }
+                }
+                if let idx = bestIdx {
+                    let m = mediumWithPromotion[idx]
+                    mediumWithPromotion[idx] = CristalMediumCell(
+                        id: m.id,
+                        points: m.points,
+                        baseColor: m.baseColor,
+                        parentOuterIndex: m.parentOuterIndex,
+                        centroid: m.centroid,
+                        promotedPromi: nil,
+                        promotedNuée: nuée
+                    )
+                    usedMediumIndices.insert(idx)
+                }
+            }
+
+            // ── Phase 2: Promis → remaining medium cells ────────────
+            //
+            // Standard sort-aware assignment, identical to pre-Nuée logic
+            // but skipping any indices already claimed by a Nuée above.
             let target = preferredTarget(for: sortOption, size: safeSize)
             let sortedPromis = sortPromis(promis, by: sortOption)
-            var usedMediumIndices: Set<Int> = []
 
             for promi in sortedPromis {
                 var bestIdx: Int? = nil
@@ -1296,91 +1654,37 @@ fileprivate enum PromiFieldLayoutFactory {
                         baseColor: m.baseColor,
                         parentOuterIndex: m.parentOuterIndex,
                         centroid: m.centroid,
-                        promotedPromi: promi
+                        promotedPromi: promi,
+                        promotedNuée: nil
                     )
                     usedMediumIndices.insert(idx)
                 }
             }
 
             // Keep ALL sub-cells visible — including those under promoted
-            // medium cells. Per user request, promoted Promi cells should
-            // NOT be filled with a solid color that breaks the cristal
-            // mosaic. Instead they retain their sub-cell pavage underneath,
-            // with only the thick medium border + centered Promi label
-            // marking them as promoted. This preserves visual coherence.
+            // medium cells (both Promi AND Nuée). Per user request,
+            // promoted cells should NOT be filled with a solid color that
+            // breaks the cristal mosaic. Instead they retain their sub-cell
+            // pavage underneath, with only the thick medium border +
+            // centered label marking them as promoted. For Nuée cells the
+            // swatch color is applied as a semi-transparent tint at render
+            // time so the sub-cell texture bleeds through slightly.
             cristalMedium = mediumWithPromotion
             cristalSub = nested.sub
         }
 
-        // Smart dezoom: ensure every promoted cell is visible in viewport.
-        // For Cristal we hard-code (1, 0, 0) — promoted cells are tiny medium-tier
-        // alvéoles that are ALWAYS inside their parent outer compartment which
-        // is always inside the viewport. Smart dezoom would offset the layout
-        // to center on a tiny medium cell, shifting the rest off-screen.
-        let fieldScale: CGFloat
-        let offsetX: CGFloat
-        let offsetY: CGFloat
-        if theme == .cristal {
-            fieldScale = 1.0
-            offsetX = 0
-            offsetY = 0
-        } else {
-            let promotedPolygonsForFit = promotedMap.keys.sorted().compactMap {
-                polygons.indices.contains($0) ? polygons[$0] : nil
-            }
-            let transform = computeFitTransform(
-                promotedPolygons: promotedPolygonsForFit,
-                viewport: viewport
-            )
-            fieldScale = transform.scale
-            offsetX = transform.offsetX
-            offsetY = transform.offsetY
-        }
+        // Zoom and pan are handled exclusively by the UIScrollView
+        // (ZoomablePromiViewport). The layout always produces content at
+        // 1:1 scale with no offset — the user controls the viewport
+        // position via pinch/pan gestures, Photos-style. No more "smart
+        // dezoom" that fights the scroll view and causes jumps.
 
         return PromiFieldLayout(
             cells: cells,
             cristalMediumCells: cristalMedium,
             nestedSubCells: cristalSub,
-            bounds: bounds,
-            fieldScale: fieldScale,
-            offsetX: offsetX,
-            offsetY: offsetY
+            bounds: bounds
         )
-    }
-
-    // MARK: - Fit transform (smart dezoom)
-
-    private static func computeFitTransform(
-        promotedPolygons: [[CGPoint]],
-        viewport: CGRect
-    ) -> (scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) {
-        guard !promotedPolygons.isEmpty else { return (1.0, 0, 0) }
-
-        let boxes = promotedPolygons.map { polygonBoundingBox(for: $0) }
-        guard let first = boxes.first else { return (1.0, 0, 0) }
-
-        var combined = first
-        for box in boxes.dropFirst() {
-            combined = combined.union(box)
-        }
-
-        let margin: CGFloat = 0.08
-        let targetWidth = viewport.width * (1 - margin * 2)
-        let targetHeight = viewport.height * (1 - margin * 2)
-
-        let scaleX = targetWidth / max(combined.width, 1)
-        let scaleY = targetHeight / max(combined.height, 1)
-        let fitScale = min(scaleX, scaleY)
-
-        // Never scale UP beyond 1.0 (no forced zoom in).
-        // Floor at 0.55 to avoid absurd shrinkage on extreme overflow.
-        let scale = min(1.0, max(0.55, fitScale))
-
-        // Center the combined box inside the viewport after scaling.
-        let offsetX = (viewport.midX - combined.midX) * scale
-        let offsetY = (viewport.midY - combined.midY) * scale
-
-        return (scale, offsetX, offsetY)
     }
 
     // MARK: - Sites
@@ -1398,7 +1702,7 @@ fileprivate enum PromiFieldLayoutFactory {
             // identité Galets (rectangles arrondis, asymétrie composée).
             return makeGaletsGridSites(size: size, count: count, seed: seed)
 
-        case .alveoles:
+        case .alveoles, .vitrail:
             return (0..<count).map { index in
                 let x = randomUnit(seed: seed, index: index, stream: 11)
                 let y = randomUnit(seed: seed, index: index, stream: 27)
@@ -1523,6 +1827,8 @@ fileprivate enum PromiFieldLayoutFactory {
                 weight += CGFloat((index % 7) * 2_200)
             case .mosaic:
                 weight += CGFloat((index % 4) * 720)
+            case .vitrail:
+                weight += CGFloat((index % 4) * 720)
             case .spectrum:
                 weight += CGFloat((index % 7) * 520)
             }
@@ -1543,6 +1849,10 @@ fileprivate enum PromiFieldLayoutFactory {
             return CGPoint(x: size.width * 0.50, y: size.height * 0.38)
         case .inspiration:
             return CGPoint(x: size.width * 0.52, y: size.height * 0.50)
+        case .nuée:
+            // Groups radiate from the left so clusters read left-to-right.
+            // Slightly higher than center to give swarm labels breathing room.
+            return CGPoint(x: size.width * 0.28, y: size.height * 0.44)
         }
     }
 
@@ -1643,6 +1953,21 @@ fileprivate enum PromiFieldLayoutFactory {
                     let areaR = r.width * r.height
                     if abs(areaL - areaR) > 900 { return areaL > areaR }
                     return lhs.offset < rhs.offset
+                }
+                .map(\.offset)
+
+        case .nuée:
+            // Lateral grouping — same logic as .person but with the Nuée
+            // target offset. Promis with the same nuéeId land in adjacent
+            // cells reading left-to-right because both the Promi sort and
+            // the cell rank share the same X-primary spatial ordering.
+            rankedCellIndices = polygons.enumerated()
+                .sorted { lhs, rhs in
+                    let l = visibleBoundingBox(for: lhs.element, viewport: viewport)
+                    let r = visibleBoundingBox(for: rhs.element, viewport: viewport)
+                    if abs(l.midX - r.midX) > 8 { return l.midX < r.midX }
+                    if abs(l.midY - r.midY) > 8 { return l.midY < r.midY }
+                    return l.width * l.height > r.width * r.height
                 }
                 .map(\.offset)
         }
@@ -1763,7 +2088,7 @@ fileprivate enum PromiFieldLayoutFactory {
     ) -> [Int] {
         let paletteSize: Int
         switch theme {
-        case .galets, .alveoles, .mosaic, .cristal:
+        case .galets, .alveoles, .mosaic, .vitrail, .cristal:
             paletteSize = 5
         case .spectrum:
             paletteSize = max(5, min(9, 7))
@@ -1818,7 +2143,7 @@ fileprivate enum PromiFieldLayoutFactory {
         size: CGSize
     ) -> [AnyShapeStyle] {
         switch theme {
-        case .galets, .alveoles, .mosaic, .cristal:
+        case .galets, .alveoles, .mosaic, .vitrail, .cristal:
             let palette = themedPalette(for: theme, mood: mood)
             return indices.map { idx in
                 AnyShapeStyle(palette[idx % palette.count])
@@ -1847,7 +2172,7 @@ fileprivate enum PromiFieldLayoutFactory {
         promotedMap: [Int: PromiItem]
     ) -> [Int: AnyShapeStyle] {
         switch theme {
-        case .galets, .alveoles, .mosaic, .cristal:
+        case .galets, .alveoles, .mosaic, .vitrail, .cristal:
             let palette = themedPalette(for: theme, mood: mood)
             guard !palette.isEmpty else { return [:] }
 
@@ -1980,6 +2305,19 @@ fileprivate enum PromiFieldLayoutFactory {
         case .inspiration:
             return promis.sorted { lhs, rhs in
                 stablePromiRank(lhs) < stablePromiRank(rhs)
+            }
+
+        case .nuée:
+            // Group by nuéeId — Promis belonging to the same Nuée cluster
+            // together on the field. Personal Promis (nuéeId == nil) come
+            // last. Within each group, oldest first for stable ordering.
+            return promis.sorted { lhs, rhs in
+                let lhsKey = lhs.nuéeId?.uuidString ?? "zzz"
+                let rhsKey = rhs.nuéeId?.uuidString ?? "zzz"
+                if lhsKey == rhsKey {
+                    return lhs.createdAt < rhs.createdAt
+                }
+                return lhsKey < rhsKey
             }
         }
     }
@@ -2115,7 +2453,8 @@ fileprivate enum PromiFieldLayoutFactory {
                     baseColor: mediumColor,
                     parentOuterIndex: outerIdx,
                     centroid: polygonCentroid(for: clippedMedium),
-                    promotedPromi: nil
+                    promotedPromi: nil,
+                    promotedNuée: nil
                 )
                 allMedium.append(medium)
                 mediumsAddedForThisOuter += 1
@@ -2146,7 +2485,8 @@ fileprivate enum PromiFieldLayoutFactory {
                     baseColor: palette[safeSlot],
                     parentOuterIndex: outerIdx,
                     centroid: outerCentroidPt,
-                    promotedPromi: nil
+                    promotedPromi: nil,
+                    promotedNuée: nil
                 )
                 allMedium.append(fallbackMedium)
                 let fallbackMediumIdx = allMedium.count - 1
@@ -2334,6 +2674,7 @@ fileprivate enum PromiFieldLayoutFactory {
         case .alveoles: return 11_731
         case .cristal: return 53_281
         case .mosaic: return 23_921
+        case .vitrail: return 23_921
         case .spectrum: return 41_113
         }
     }
@@ -2361,6 +2702,8 @@ fileprivate enum PromiFieldLayoutFactory {
         case .cristal:
             return cristalThemedPalette(mood: mood)
         case .mosaic:
+            return mosaicThemedPalette(mood: mood)
+        case .vitrail:
             return mosaicThemedPalette(mood: mood)
         case .spectrum:
             // Spectrum uses gradients derived from swatches; palette not used directly.
@@ -2671,6 +3014,33 @@ fileprivate enum PromiFieldLayoutFactory {
                 Color(red: 0.66, green: 0.96, blue: 0.30),
                 Color(red: 0.30, green: 0.20, blue: 0.86),
                 Color(red: 0.98, green: 0.78, blue: 0.20)
+            ]
+
+        case .vitrailCathédrale:
+            return [
+                Color(red: 0.78, green: 0.12, blue: 0.18),
+                Color(red: 0.12, green: 0.22, blue: 0.62),
+                Color(red: 0.86, green: 0.58, blue: 0.18),
+                Color(red: 0.10, green: 0.50, blue: 0.32),
+                Color(red: 0.42, green: 0.18, blue: 0.58)
+            ]
+
+        case .vitrailAube:
+            return [
+                Color(red: 0.98, green: 0.72, blue: 0.82),
+                Color(red: 0.78, green: 0.72, blue: 0.95),
+                Color(red: 0.68, green: 0.86, blue: 0.98),
+                Color(red: 0.99, green: 0.82, blue: 0.68),
+                Color(red: 0.72, green: 0.94, blue: 0.84)
+            ]
+
+        case .vitrailNuit:
+            return [
+                Color(red: 0.14, green: 0.16, blue: 0.42),
+                Color(red: 0.36, green: 0.18, blue: 0.42),
+                Color(red: 0.48, green: 0.10, blue: 0.18),
+                Color(red: 0.10, green: 0.26, blue: 0.18),
+                Color(red: 0.16, green: 0.16, blue: 0.20)
             ]
         }
     }
@@ -3202,5 +3572,32 @@ fileprivate enum VoronoiMath {
             x: p1.x + (p2.x - p1.x) * t,
             y: p1.y + (p2.y - p1.y) * t
         )
+    }
+}
+
+
+// MARK: - Tour 3a Vitrail Chrome — fondations
+
+import UIKit
+
+extension Color {
+    func lighter(_ amount: CGFloat = 0.2) -> Color {
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(self).getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+        return Color(UIColor(hue: h, saturation: s, brightness: min(1, b + amount), alpha: a))
+    }
+    func darker(_ amount: CGFloat = 0.2) -> Color {
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        UIColor(self).getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+        return Color(UIColor(hue: h, saturation: s, brightness: max(0, b - amount), alpha: a))
+    }
+}
+
+fileprivate struct SeededRNG: RandomNumberGenerator {
+    var state: UInt64
+    init(seed: UInt64) { self.state = seed == 0 ? 0xDEADBEEF : seed }
+    mutating func next() -> UInt64 {
+        state = state &* 6364136223846793005 &+ 1442695040888963407
+        return state
     }
 }

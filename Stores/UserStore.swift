@@ -66,12 +66,15 @@ final class UserStore: ObservableObject {
     }
 
     /// Resets the onboarding flag so the user can replay it from Settings.
-    /// Keeps the language choice and user id intact — only the onboarding
-    /// slides are reset. This is the canonical way to re-trigger the
-    /// onboarding flow from inside the app.
+    /// Also resets the tutorial flag so the 3 tutorial cards replay on the
+    /// home screen after the onboarding slides — the full "first launch"
+    /// experience is re-triggered as a unit. Keeps the language choice and
+    /// user id intact.
     func replayOnboarding() {
         hasCompletedOnboarding = false
+        hasCompletedTutorial = false
         userDefaults.set(false, forKey: onboardingKey)
+        userDefaults.set(false, forKey: tutorialKey)
     }
 
     // MARK: - Tutorial

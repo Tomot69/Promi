@@ -1,28 +1,11 @@
-//
-//  TutorialOverlayView.swift
-//  Promi
-//
-//  Created on 25/10/2025.
-//
-
 import SwiftUI
 
 // MARK: - TutorialOverlayView
 //
-// Overlay semi-transparent affiché au-dessus du home lors de la première
-// visite. La carte du tutorial est positionnée selon `step.position` et
-// pointe une flèche vers l'élément concerné selon `step.arrowDirection`.
-// L'utilisateur voit immédiatement quel bouton on lui montre.
-//
-// Design chrome cohérent avec les autres pages : la card utilise les mêmes
-// tokens (.ultraThinMaterial + white/0.05 + white/0.16 stroke) et le
-// bouton primaire devient orange sur le dernier step. Le dim du fond est
-// volontairement plus léger (0.58 vs 0.70 avant) pour laisser respirer
-// le Voronoï du home en arrière-plan — l'utilisateur voit toujours le
-// contexte qu'il apprend à manipuler.
-//
-// Navigation : tap anywhere OU tap bouton avance au step suivant. Sur le
-// dernier step, le bouton devient « Terminé » en orange et ferme l'overlay.
+// 5 encarts qui présentent chaque icône du home. Chaque encart est un
+// CALLOUT — une forme unique qui dessine la carte arrondie ET la pointe
+// directionnelle comme un seul path continu (speech-bubble style).
+// Aucune jonction visible, la pointe naît du bord de la carte.
 
 struct TutorialOverlayView: View {
     @Binding var isPresented: Bool
@@ -30,8 +13,6 @@ struct TutorialOverlayView: View {
     let steps: [TutorialStep]
 
     @EnvironmentObject var userStore: UserStore
-
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var isEnglish: Bool {
         userStore.selectedLanguage.starts(with: "en")
@@ -49,146 +30,123 @@ struct TutorialOverlayView: View {
     // MARK: Body
 
     var body: some View {
-        ZStack {
-            // Dim backdrop — softer to keep the home Voronoï visible.
-            Color.black.opacity(0.58)
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .onTapGesture { nextStep() }
+        GeometryReader { geo in
+            let screen = geo.size
 
-            if let step = currentStepData {
-                positionedCard(for: step)
-            }
+            ZStack {
+                Color.black.opacity(0.58)
+                    .ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture { nextStep() }
 
-            VStack {
-                Spacer()
-                if steps.count > 1 {
+                if let step = currentStepData {
+                    positionedCallout(for: step, screen: screen)
+                        .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                        .id(currentStep)
+                }
+
+                VStack {
+                    Spacer()
                     stepIndicators
-                        .padding(.bottom, 44)
+                        .padding(.bottom, 58)
                 }
             }
         }
+        .ignoresSafeArea()
         .animation(.spring(response: 0.34, dampingFraction: 0.84), value: currentStep)
     }
 
-    // MARK: Positioned card
+    // MARK: - Icon center X (pixel-perfect)
+    //
+    // LAYOUT:
+    //   Top-right cluster: [Nuées hex 46pt] (spacing 10) [Pinky 46pt]
+    //   Bottom dock: [tri 46] [sp] [eye 46] [sp] [+ 54pt] [sp] [studio 46] [sp] [share 46]
+    //   padding(.horizontal, 18), 4 spacers = (width - 36 - 238) / 4
 
-    /// Place the card according to `step.position`. Each position uses a
-    /// dedicated ZStack alignment + insets so the card sits next to the
-    /// element it's pointing at:
-    ///   .topLeading    → top-left, near the "Promi" brand button
-    ///   .topTrailing   → top-right, near the "+" button
-    ///   .bottomCenter  → bottom-center, near the dock
-    ///   .center        → screen center, no specific anchor
+    private func iconCenterX(for target: TutorialTarget, screen: CGSize) -> CGFloat {
+        let side: CGFloat = 18
+        let btn: CGFloat = 46
+
+        switch target {
+        case .addButton:
+            return screen.width / 2
+
+        case .promiListButton:
+            return screen.width - side - btn / 2
+
+        case .nuéesButton:
+            return screen.width - side - btn - 10 - btn / 2
+
+        case .karmaButton, .studioButton:
+            let spacer = max(8, (screen.width - 36 - 238) / 4)
+            if target == .karmaButton {
+                return side + btn + spacer + btn / 2
+            } else {
+                return screen.width - side - btn - spacer - btn / 2
+            }
+        }
+    }
+
+    // MARK: - Positioned callout
+
     @ViewBuilder
-    private func positionedCard(for step: TutorialStep) -> some View {
+    private func positionedCallout(for step: TutorialStep, screen: CGSize) -> some View {
+        let iconX = iconCenterX(for: step.target, screen: screen)
         let alignment = zStackAlignment(for: step.position)
-        let insets = insets(for: step.position)
+        let pad = insets(for: step.position, target: step.target)
 
         ZStack(alignment: alignment) {
             Color.clear
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            tutorialCardWithArrow(for: step)
-                .padding(.top, insets.top)
-                .padding(.bottom, insets.bottom)
-                .padding(.leading, insets.leading)
-                .padding(.trailing, insets.trailing)
-                .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                .id(currentStep)
-        }
-        .ignoresSafeArea()
-    }
-
-    private func zStackAlignment(for position: TutorialPosition) -> Alignment {
-        switch position {
-        case .topLeading:    return .topLeading
-        case .topTrailing:   return .topTrailing
-        case .bottomCenter:  return .bottom
-        case .center:        return .center
+            calloutView(for: step, iconX: iconX, screen: screen)
+                .padding(.top, pad.top)
+                .padding(.bottom, pad.bottom)
+                .padding(.leading, pad.leading)
+                .padding(.trailing, pad.trailing)
         }
     }
 
-    /// Insets that push the card AWAY from the screen edge it's anchored
-    /// to. Top-anchored cards get a generous top padding to clear the
-    /// status bar + the chrome anchor button it points at. Bottom-anchored
-    /// cards leave room for the dock.
-    private func insets(for position: TutorialPosition) -> EdgeInsets {
-        switch position {
-        case .topLeading:
-            return EdgeInsets(top: 110, leading: 22, bottom: 0, trailing: 22)
-        case .topTrailing:
-            return EdgeInsets(top: 110, leading: 22, bottom: 0, trailing: 22)
-        case .bottomCenter:
-            return EdgeInsets(top: 0, leading: 22, bottom: 160, trailing: 22)
-        case .center:
-            return EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28)
-        }
-    }
+    // MARK: - Callout view (card + integrated pointer)
+    //
+    // One single shape draws everything. The pointer tip aims at the
+    // icon's X coordinate. The card content sits inside with padding
+    // that accounts for the pointer height on the relevant edge.
 
-    // MARK: Tutorial card with arrow
-
-    /// The card itself, decorated with an arrow on the side that points
-    /// toward the anchor element. The arrow is rendered as a small filled
-    /// triangle in the same brand color, positioned at the appropriate
-    /// edge of the card.
     @ViewBuilder
-    private func tutorialCardWithArrow(for step: TutorialStep) -> some View {
-        VStack(spacing: 0) {
-            if step.arrowDirection == .up {
-                arrowGlyph(for: .up)
-                    .padding(.bottom, -2)
-            }
+    private func calloutView(for step: TutorialStep, iconX: CGFloat, screen: CGSize) -> some View {
+        let pad = insets(for: step.position, target: step.target)
+        let cardW: CGFloat = min(320, screen.width - pad.leading - pad.trailing)
+        let pointerH: CGFloat = 18
 
-            HStack(spacing: 0) {
-                if step.arrowDirection == .left {
-                    arrowGlyph(for: .left)
-                        .padding(.trailing, -2)
-                }
-
-                tutorialCard(for: step)
-
-                if step.arrowDirection == .right {
-                    arrowGlyph(for: .right)
-                        .padding(.leading, -2)
-                }
-            }
-
-            if step.arrowDirection == .down {
-                arrowGlyph(for: .down)
-                    .padding(.top, -2)
-            }
-        }
-    }
-
-    /// Small filled triangle in brand orange, pointing in the given
-    /// direction. Used as the arrow that connects the tutorial card to
-    /// the UI element it's describing.
-    @ViewBuilder
-    private func arrowGlyph(for direction: ArrowDirection) -> some View {
-        let symbolName: String = {
-            switch direction {
-            case .up:    return "arrowtriangle.up.fill"
-            case .down:  return "arrowtriangle.down.fill"
-            case .left:  return "arrowtriangle.left.fill"
-            case .right: return "arrowtriangle.right.fill"
-            case .none:  return ""
+        // Card leading edge in screen coordinates
+        let cardLeading: CGFloat = {
+            switch step.position {
+            case .topTrailing, .bottomTrailing:
+                return screen.width - pad.trailing - cardW
+            case .topLeading, .bottomLeading:
+                return pad.leading
+            case .bottomCenter, .center:
+                return (screen.width - cardW) / 2
             }
         }()
 
-        if !symbolName.isEmpty {
-            Image(systemName: symbolName)
-                .font(.system(size: 16, weight: .regular))
-                .foregroundColor(brandOrange.opacity(0.86))
-                .shadow(color: .black.opacity(0.32), radius: 4, x: 0, y: 1)
-        }
-    }
+        // Icon X in card-local coordinates, clamped for pointer base
+        let iconInCard = iconX - cardLeading
+        let clampedTipX = max(16, min(iconInCard, cardW - 16))
 
-    // MARK: Tutorial card body
+        let pointsUp = step.arrowDirection == .up
 
-    @ViewBuilder
-    private func tutorialCard(for step: TutorialStep) -> some View {
-        VStack(spacing: 16) {
+        let shape = CalloutShape(
+            cornerRadius: 20,
+            pointerOnTop: pointsUp,
+            pointerTipX: clampedTipX,
+            pointerHeight: pointerH,
+            pointerBaseHalf: 12
+        )
+
+        // Card content with asymmetric padding for the pointer side
+        VStack(spacing: 14) {
             titleText(for: step)
                 .multilineTextAlignment(.center)
 
@@ -203,7 +161,6 @@ struct TutorialOverlayView: View {
                 HStack(spacing: 6) {
                     Text(buttonText)
                         .font(.system(size: 13, weight: .semibold))
-
                     if !isLastStep {
                         Image(systemName: "arrow.right")
                             .font(.system(size: 10, weight: .semibold))
@@ -217,7 +174,7 @@ struct TutorialOverlayView: View {
                         Capsule(style: .continuous)
                             .fill(
                                 isLastStep
-                                    ? brandOrange.opacity(0.86)
+                                    ? Brand.orange.opacity(0.86)
                                     : Color.white.opacity(0.10)
                             )
                         Capsule(style: .continuous)
@@ -234,29 +191,63 @@ struct TutorialOverlayView: View {
             .padding(.top, 2)
         }
         .padding(.horizontal, 22)
-        .padding(.vertical, 22)
-        .frame(maxWidth: 320)
-        .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.white.opacity(0.05))
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.white.opacity(0.16), lineWidth: 0.6)
-            }
-        )
+        .padding(.top, pointsUp ? 20 + pointerH : 20)
+        .padding(.bottom, pointsUp ? 20 : 20 + pointerH)
+        .frame(width: cardW)
+        .background(shape.fill(.ultraThinMaterial))
+        .background(shape.fill(Color.white.opacity(0.05)))
+        .overlay(shape.stroke(Brand.orange.opacity(0.36), lineWidth: 0.8))
         .shadow(color: .black.opacity(0.32), radius: 18, x: 0, y: 6)
     }
 
-    /// Title with "Promi" highlighted in brand orange wherever it appears.
+    // MARK: - Alignment & insets
+
+    private func zStackAlignment(for position: TutorialPosition) -> Alignment {
+        switch position {
+        case .topLeading:     return .topLeading
+        case .topTrailing:    return .topTrailing
+        case .bottomLeading:  return .bottomLeading
+        case .bottomTrailing: return .bottomTrailing
+        case .bottomCenter:   return .bottom
+        case .center:         return .center
+        }
+    }
+
+    private func insets(for position: TutorialPosition, target: TutorialTarget) -> EdgeInsets {
+        switch position {
+        case .topLeading:
+            return EdgeInsets(top: 110, leading: 18, bottom: 0, trailing: 18)
+        case .topTrailing:
+            // Both top-right encarts (Nuée step 1, Pinky step 3) sit lower
+            // so the pointer reaches the icon cleanly. Pinky needs less
+            // trailing padding because the pinky icon is the rightmost
+            // element on screen — the callout shifts right to align.
+            if target == .promiListButton {
+                return EdgeInsets(top: 124, leading: 18, bottom: 0, trailing: 4)
+            }
+            return EdgeInsets(top: 124, leading: 18, bottom: 0, trailing: 12)
+        case .bottomLeading:
+            return EdgeInsets(top: 0, leading: 14, bottom: 128, trailing: 14)
+        case .bottomTrailing:
+            return EdgeInsets(top: 0, leading: 14, bottom: 128, trailing: 14)
+        case .bottomCenter:
+            return EdgeInsets(top: 0, leading: 14, bottom: 128, trailing: 14)
+        case .center:
+            return EdgeInsets(top: 0, leading: 28, bottom: 0, trailing: 28)
+        }
+    }
+
+    // MARK: - Text helpers
+
     private func titleText(for step: TutorialStep) -> Text {
         var attributed = AttributedString(step.title)
         attributed.font = .system(size: 18, weight: .semibold)
         attributed.foregroundColor = Color.white.opacity(0.96)
 
-        if let range = attributed.range(of: "Promi") {
-            attributed[range].foregroundColor = brandOrange
+        for keyword in ["Promi", "Nuée", "Karma", "Studio"] {
+            if let range = attributed.range(of: keyword) {
+                attributed[range].foregroundColor = Brand.orange
+            }
         }
 
         return Text(attributed)
@@ -270,7 +261,7 @@ struct TutorialOverlayView: View {
         }
     }
 
-    // MARK: Step indicators
+    // MARK: - Step indicators
 
     private var stepIndicators: some View {
         HStack(spacing: 8) {
@@ -290,7 +281,7 @@ struct TutorialOverlayView: View {
         }
     }
 
-    // MARK: Actions
+    // MARK: - Actions
 
     private func nextStep() {
         if currentStep < steps.count - 1 {
@@ -304,5 +295,135 @@ struct TutorialOverlayView: View {
                 isPresented = false
             }
         }
+    }
+}
+
+// MARK: - CalloutShape
+//
+// A rounded rectangle with a triangular pointer growing out of one
+// edge — all as a SINGLE continuous path. No separate overlay, no
+// junction gap. The pointer merges seamlessly into the card body
+// because it IS part of the same bezier contour.
+//
+// Works like a speech bubble / tooltip arrow. The pointer tip can be
+// positioned anywhere along the edge (via pointerTipX in local coords).
+
+struct CalloutShape: Shape {
+    let cornerRadius: CGFloat
+    let pointerOnTop: Bool
+    let pointerTipX: CGFloat
+    let pointerHeight: CGFloat
+    let pointerBaseHalf: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let cr = min(cornerRadius, min(rect.width, rect.height) / 4)
+        let ph = pointerHeight
+        let bh = pointerBaseHalf
+
+        // The card body rect (excludes the pointer protrusion)
+        let cardRect: CGRect
+        if pointerOnTop {
+            cardRect = CGRect(x: rect.minX, y: rect.minY + ph,
+                              width: rect.width, height: rect.height - ph)
+        } else {
+            cardRect = CGRect(x: rect.minX, y: rect.minY,
+                              width: rect.width, height: rect.height - ph)
+        }
+
+        let minX = cardRect.minX
+        let maxX = cardRect.maxX
+        let minY = cardRect.minY
+        let maxY = cardRect.maxY
+
+        // Clamp pointer base within the straight portion of the edge
+        let tipX = max(cr + bh + 2, min(pointerTipX, rect.width - cr - bh - 2))
+        let baseL = tipX - bh
+        let baseR = tipX + bh
+
+        var p = Path()
+
+        if pointerOnTop {
+            // Start: top-left corner, end of arc
+            p.move(to: CGPoint(x: minX + cr, y: minY))
+
+            // Top edge → pointer notch → rest of top edge
+            p.addLine(to: CGPoint(x: baseL, y: minY))
+            p.addLine(to: CGPoint(x: tipX, y: rect.minY))
+            p.addLine(to: CGPoint(x: baseR, y: minY))
+            p.addLine(to: CGPoint(x: maxX - cr, y: minY))
+
+            // Top-right corner
+            p.addArc(center: CGPoint(x: maxX - cr, y: minY + cr),
+                      radius: cr, startAngle: .degrees(-90), endAngle: .degrees(0),
+                      clockwise: false)
+
+            // Right edge
+            p.addLine(to: CGPoint(x: maxX, y: maxY - cr))
+
+            // Bottom-right corner
+            p.addArc(center: CGPoint(x: maxX - cr, y: maxY - cr),
+                      radius: cr, startAngle: .degrees(0), endAngle: .degrees(90),
+                      clockwise: false)
+
+            // Bottom edge
+            p.addLine(to: CGPoint(x: minX + cr, y: maxY))
+
+            // Bottom-left corner
+            p.addArc(center: CGPoint(x: minX + cr, y: maxY - cr),
+                      radius: cr, startAngle: .degrees(90), endAngle: .degrees(180),
+                      clockwise: false)
+
+            // Left edge
+            p.addLine(to: CGPoint(x: minX, y: minY + cr))
+
+            // Top-left corner
+            p.addArc(center: CGPoint(x: minX + cr, y: minY + cr),
+                      radius: cr, startAngle: .degrees(180), endAngle: .degrees(270),
+                      clockwise: false)
+
+        } else {
+            // Pointer on bottom
+
+            // Start: top-left corner, end of arc
+            p.move(to: CGPoint(x: minX + cr, y: minY))
+
+            // Top edge
+            p.addLine(to: CGPoint(x: maxX - cr, y: minY))
+
+            // Top-right corner
+            p.addArc(center: CGPoint(x: maxX - cr, y: minY + cr),
+                      radius: cr, startAngle: .degrees(-90), endAngle: .degrees(0),
+                      clockwise: false)
+
+            // Right edge
+            p.addLine(to: CGPoint(x: maxX, y: maxY - cr))
+
+            // Bottom-right corner
+            p.addArc(center: CGPoint(x: maxX - cr, y: maxY - cr),
+                      radius: cr, startAngle: .degrees(0), endAngle: .degrees(90),
+                      clockwise: false)
+
+            // Bottom edge → pointer notch (right to left)
+            p.addLine(to: CGPoint(x: baseR, y: maxY))
+            p.addLine(to: CGPoint(x: tipX, y: rect.maxY))
+            p.addLine(to: CGPoint(x: baseL, y: maxY))
+            p.addLine(to: CGPoint(x: minX + cr, y: maxY))
+
+            // Bottom-left corner
+            p.addArc(center: CGPoint(x: minX + cr, y: maxY - cr),
+                      radius: cr, startAngle: .degrees(90), endAngle: .degrees(180),
+                      clockwise: false)
+
+            // Left edge
+            p.addLine(to: CGPoint(x: minX, y: minY + cr))
+
+            // Top-left corner
+            p.addArc(center: CGPoint(x: minX + cr, y: minY + cr),
+                      radius: cr, startAngle: .degrees(180), endAngle: .degrees(270),
+                      clockwise: false)
+        }
+
+        p.closeSubpath()
+        return p
     }
 }

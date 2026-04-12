@@ -25,6 +25,12 @@ struct PromiApp: App {
                         draftStore: draftStore
                     )
 
+                    // Reconcile local notifications for ephemeral Nuées.
+                    // Runs on every launch — idempotent, replaces stale
+                    // notifications and schedules new ones as needed.
+                    let userNuées = nuéeStore.nuées(for: userStore.localUserId)
+                    NuéeLifecycleManager.reconcileNotifications(for: userNuées)
+
                     guard isShowingSplash else { return }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.15) {
                         withAnimation(.easeOut(duration: 0.28)) {

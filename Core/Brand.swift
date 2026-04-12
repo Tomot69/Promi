@@ -2,8 +2,16 @@ import SwiftUI
 
 struct Brand {
     
-    // MARK: - Core Color (vivant, profond, non-flat)
-    static let orange = Color(red: 1.0, green: 0.42, blue: 0.0)
+    // MARK: - Core Color (signature Promi — warm, luminous, recognizable)
+    //
+    // This is THE brand color of Promi. It appears in every title accent,
+    // every CTA button, every tutorial arrow, every onboarding highlight.
+    // Value: (0.98, 0.56, 0.22) — a warm amber-orange that reads as
+    // optimistic and sincere, never aggressive or corporate.
+    //
+    // Previously duplicated as `private let brandOrange` in ~16 files.
+    // Now unified here as the single source of truth.
+    static let orange = Color(red: 0.98, green: 0.56, blue: 0.22)
     
     // MARK: - Dynamic Layers
     static let orangeGlow = Color(red: 1.0, green: 0.5, blue: 0.1).opacity(0.25)

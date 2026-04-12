@@ -22,19 +22,24 @@ struct PromiCompositionShareView: View {
     let sortOption: PromiFieldSortOption
 
     @State private var hideText = false
+    @State private var showSignature = true
     @State private var selectedTemplate: PromiShareTemplate = .instagramStory
     @State private var shareImage: UIImage?
     @State private var isPreparingShare = false
     @State private var shareItems: [Any] = []
     @State private var showShareSheet = false
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var isEnglish: Bool {
         userStore.selectedLanguage.starts(with: "en")
     }
 
     // MARK: - Body
+    //
+    // Layout priority: the preview card is the HERO element — it takes
+    // all available vertical space. Controls, toggles and the share CTA
+    // sit below in a compact stack. The user sees their composition
+    // first, configures second, shares third.
 
     var body: some View {
         NavigationStack {
@@ -48,9 +53,8 @@ struct PromiCompositionShareView: View {
 
                 VStack(spacing: 0) {
                     header
-                    controls
                     previewArea
-                    footer
+                    bottomControls
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -99,6 +103,16 @@ struct PromiCompositionShareView: View {
             return visiblePromis.sorted { lhs, rhs in
                 stableRank(lhs) < stableRank(rhs)
             }
+
+        case .nuée:
+            return visiblePromis.sorted { lhs, rhs in
+                let lhsKey = lhs.nuéeId?.uuidString ?? "zzz"
+                let rhsKey = rhs.nuéeId?.uuidString ?? "zzz"
+                if lhsKey == rhsKey {
+                    return lhs.createdAt < rhs.createdAt
+                }
+                return lhsKey < rhsKey
+            }
         }
     }
 
@@ -113,16 +127,15 @@ struct PromiCompositionShareView: View {
 
     @ViewBuilder
     private var header: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 2) {
                 titleAttributed
-                    .font(.system(size: 31, weight: .light))
+                    .font(.system(size: 28, weight: .light))
 
-                Text(isEnglish
-                     ? "full-page composition & share"
-                     : "composition pleine page et partage")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundColor(Color.white.opacity(0.54))
+                Text(isEnglish ? "share your composition" : "partage ta composition")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.48))
+                    .tracking(0.2)
             }
 
             Spacer()
@@ -130,18 +143,18 @@ struct PromiCompositionShareView: View {
             closeButton
         }
         .padding(.horizontal, 20)
-        .padding(.top, 20)
-        .padding(.bottom, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 10)
     }
 
-    /// "Mon Promi" / "My Promi" with "Promi" highlighted in brand orange.
+    /// "Partager" with "Promi" style — or "Mon Promi" with orange accent.
     private var titleAttributed: Text {
         let raw = isEnglish ? "My Promi" : "Mon Promi"
         var attributed = AttributedString(raw)
         attributed.foregroundColor = Color.white.opacity(0.94)
 
         if let range = attributed.range(of: "Promi") {
-            attributed[range].foregroundColor = brandOrange
+            attributed[range].foregroundColor = Brand.orange
         }
 
         return Text(attributed)
@@ -167,11 +180,15 @@ struct PromiCompositionShareView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Controls (templates + toggles)
+    // MARK: - Bottom controls (under the preview)
+    //
+    // Compact stack: template chips → toggles → share CTA → hint.
+    // Everything below the preview, so the composition stays the hero.
 
     @ViewBuilder
-    private var controls: some View {
+    private var bottomControls: some View {
         VStack(spacing: 12) {
+            // Template chips (horizontal scroll)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(PromiShareTemplate.allCases, id: \.self) { template in
@@ -181,12 +198,14 @@ struct PromiCompositionShareView: View {
                 .padding(.horizontal, 20)
             }
 
-            HStack(spacing: 12) {
-                toggleButton(
-                    title: hideText
-                        ? (isEnglish ? "Text hidden" : "Textes masqués")
-                        : (isEnglish ? "Text visible" : "Textes visibles"),
-                    isSelected: hideText
+            // Toggles row: text visible + signature Promi
+            HStack(spacing: 10) {
+                iconToggle(
+                    icon: hideText ? "eye.slash" : "eye",
+                    label: hideText
+                        ? (isEnglish ? "Hidden" : "Masqués")
+                        : (isEnglish ? "Visible" : "Visibles"),
+                    isActive: !hideText
                 ) {
                     Haptics.shared.tinyPop()
                     withAnimation(.spring(response: 0.24, dampingFraction: 0.88)) {
@@ -194,17 +213,104 @@ struct PromiCompositionShareView: View {
                     }
                 }
 
-                shareActionButton(
-                    title: isPreparingShare
-                        ? (isEnglish ? "Preparing…" : "Préparation…")
-                        : (isEnglish ? "Share" : "Partager")
+                iconToggle(
+                    icon: "signature",
+                    label: "Promi",
+                    isActive: showSignature
                 ) {
-                    prepareShare()
+                    Haptics.shared.tinyPop()
+                    withAnimation(.spring(response: 0.24, dampingFraction: 0.88)) {
+                        showSignature.toggle()
+                    }
                 }
+
+                Spacer()
             }
             .padding(.horizontal, 20)
+
+            // Full-width share CTA
+            Button(action: prepareShare) {
+                HStack(spacing: 8) {
+                    if isPreparingShare {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+
+                    Text(isPreparingShare
+                         ? (isEnglish ? "Preparing…" : "Préparation…")
+                         : (isEnglish ? "Share" : "Partager"))
+                        .font(.system(size: 15, weight: .semibold))
+                }
+                .foregroundColor(Color.white.opacity(0.96))
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Brand.orange.opacity(isPreparingShare ? 0.54 : 0.86))
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(Color.white.opacity(0.22), lineWidth: 0.6)
+                    }
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(isPreparingShare)
+            .padding(.horizontal, 20)
+
+            // Template hint (subtle description)
+            Text(selectedTemplate.shareHint(isEnglish: isEnglish))
+                .font(.system(size: 11, weight: .regular))
+                .foregroundColor(Color.white.opacity(0.42))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+                .animation(.spring(response: 0.30, dampingFraction: 0.88), value: selectedTemplate)
         }
-        .padding(.bottom, 14)
+        .padding(.bottom, 24)
+        .padding(.top, 8)
+    }
+
+    // MARK: - Icon toggle (compact, visual)
+
+    @ViewBuilder
+    private func iconToggle(
+        icon: String,
+        label: String,
+        isActive: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(
+                        isActive
+                            ? Brand.orange.opacity(0.86)
+                            : Color.white.opacity(0.52)
+                    )
+
+                Text(label)
+                    .font(.system(size: 12, weight: isActive ? .semibold : .regular))
+                    .foregroundColor(Color.white.opacity(isActive ? 0.92 : 0.62))
+            }
+            .padding(.horizontal, 14)
+            .frame(height: 34)
+            .background(
+                ZStack {
+                    Capsule(style: .continuous)
+                        .fill(Color.white.opacity(isActive ? 0.12 : 0.04))
+                    Capsule(style: .continuous)
+                        .stroke(
+                            Color.white.opacity(isActive ? 0.22 : 0.10),
+                            lineWidth: 0.6
+                        )
+                }
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Template chip (chrome card)
@@ -260,68 +366,11 @@ struct PromiCompositionShareView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Toggle button (text visible / hidden)
-
-    @ViewBuilder
-    private func toggleButton(
-        title: String,
-        isSelected: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color.white.opacity(isSelected ? 0.96 : 0.82))
-                .padding(.horizontal, 16)
-                .frame(height: 40)
-                .background(
-                    ZStack {
-                        Capsule(style: .continuous)
-                            .fill(
-                                isSelected
-                                    ? Color.white.opacity(0.14)
-                                    : Color.white.opacity(0.05)
-                            )
-                        Capsule(style: .continuous)
-                            .stroke(
-                                isSelected
-                                    ? Color.white.opacity(0.24)
-                                    : Color.white.opacity(0.12),
-                                lineWidth: 0.6
-                            )
-                    }
-                )
-        }
-        .buttonStyle(.plain)
-    }
-
-    // MARK: - Share action button (brand orange primary)
-
-    @ViewBuilder
-    private func shareActionButton(
-        title: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(Color.white.opacity(0.96))
-                .padding(.horizontal, 22)
-                .frame(height: 40)
-                .background(
-                    ZStack {
-                        Capsule(style: .continuous)
-                            .fill(brandOrange.opacity(isPreparingShare ? 0.54 : 0.86))
-                        Capsule(style: .continuous)
-                            .stroke(Color.white.opacity(0.22), lineWidth: 0.6)
-                    }
-                )
-        }
-        .buttonStyle(.plain)
-        .disabled(isPreparingShare)
-    }
-
     // MARK: - Preview area
+    //
+    // The preview is the HERO — it takes all remaining vertical space
+    // via Spacer-free GeometryReader. The composition card is centered
+    // and sized to fit the available area with generous margins.
 
     @ViewBuilder
     private var previewArea: some View {
@@ -342,6 +391,7 @@ struct PromiCompositionShareView: View {
                     languageCode: userStore.selectedLanguage,
                     sortOption: sortOption,
                     hideText: hideText,
+                    showSignature: showSignature,
                     title: isEnglish ? "My Promi" : "Mon Promi",
                     subtitle: selectedTemplate.previewBadge
                 )
@@ -351,27 +401,6 @@ struct PromiCompositionShareView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .padding(inset)
         }
-    }
-
-    // MARK: - Footer (template description)
-
-    @ViewBuilder
-    private var footer: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(selectedTemplate.title(isEnglish: isEnglish))
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color.white.opacity(0.86))
-
-            Text(selectedTemplate.shareHint(isEnglish: isEnglish))
-                .font(.system(size: 12, weight: .regular))
-                .foregroundColor(Color.white.opacity(0.56))
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20)
-        .padding(.bottom, 22)
-        .padding(.top, 4)
-        .animation(.spring(response: 0.30, dampingFraction: 0.88), value: selectedTemplate)
     }
 
     // MARK: - Chrome pill helper
@@ -404,6 +433,7 @@ struct PromiCompositionShareView: View {
             languageCode: userStore.selectedLanguage,
             sortOption: sortOption,
             hideText: hideText,
+            showSignature: showSignature,
             title: isEnglish ? "My Promi" : "Mon Promi",
             subtitle: selectedTemplate.previewBadge
         )
@@ -435,9 +465,13 @@ struct PromiCompositionShareView: View {
         return 3.0
     }
 
+    /// Share items: image ONLY. Passing a String alongside the image causes
+    /// many social apps (Instagram, X, Pinterest) to not appear in the
+    /// UIActivityViewController because they don't support mixed content.
+    /// With image-only, all image-capable apps show up: Instagram, X,
+    /// LinkedIn, Pinterest, Messages, Mail, Save to Photos, etc.
     private func makeShareItems(with image: UIImage) -> [Any] {
-        let caption = selectedTemplate.captionText(isEnglish: isEnglish)
-        return [caption, image]
+        [image]
     }
 }
 
@@ -455,6 +489,7 @@ private struct CompositionPreviewCard: View {
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let hideText: Bool
+    let showSignature: Bool
     let title: String
     let subtitle: String
 
@@ -548,10 +583,14 @@ private struct CompositionPreviewCard: View {
     }
 
     private var textFooter: String {
+        if !showSignature {
+            if promis.isEmpty { return "" }
+            return "\(promis.count) Promi · \(sortOption.rawValue.lowercased())"
+        }
         if promis.isEmpty {
             return "promi.app"
         }
-        return "\(promis.count) Promi · \(sortOption.rawValue.lowercased())"
+        return "\(promis.count) Promi · promi.app"
     }
 
     // MARK: Sizing (scales with canvas)

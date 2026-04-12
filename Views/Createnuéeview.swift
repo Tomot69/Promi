@@ -30,6 +30,7 @@ struct CreateNuéeView: View {
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var promiStore: PromiStore
     @EnvironmentObject var nuéeStore: NuéeStore
+    @EnvironmentObject var draftStore: DraftStore
 
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
@@ -37,14 +38,26 @@ struct CreateNuéeView: View {
     @AppStorage("promi.visualMood")
     private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
 
-    @State private var name: String = ""
-    @State private var theme: String = ""
-    @State private var selectedKind: NuéeKind = .thematic
-    @State private var selectedSwatchHex: String = NuéePalette.swatches[0].hex
-    @State private var isEphemeral: Bool = false
-    @State private var expirationDate: Date = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
+    let editingDraft: NuéeDraft?
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
+    @State private var name: String
+    @State private var theme: String
+    @State private var selectedKind: NuéeKind
+    @State private var selectedSwatchHex: String
+    @State private var isEphemeral: Bool
+    @State private var expirationDate: Date
+    @State private var showDraftConfirmation = false
+
+    init(editingDraft: NuéeDraft? = nil) {
+        self.editingDraft = editingDraft
+        _name = State(initialValue: editingDraft?.name ?? "")
+        _theme = State(initialValue: editingDraft?.theme ?? "")
+        _selectedKind = State(initialValue: editingDraft?.kind ?? .thematic)
+        _selectedSwatchHex = State(initialValue: editingDraft?.moodHintRawValue ?? NuéePalette.swatches[0].hex)
+        _isEphemeral = State(initialValue: editingDraft?.expiresAt != nil)
+        _expirationDate = State(initialValue: editingDraft?.expiresAt ?? (Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()))
+    }
+
 
     private var currentPack: PromiVisualPack {
         PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
@@ -64,6 +77,12 @@ struct CreateNuéeView: View {
 
     private var canCreate: Bool {
         !cleanName.isEmpty
+    }
+
+    /// True if the user has typed anything — triggers draft confirmation
+    /// on close instead of silent dismiss.
+    private var hasChanges: Bool {
+        !cleanName.isEmpty || !theme.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     // MARK: Body
@@ -102,6 +121,22 @@ struct CreateNuéeView: View {
                 .padding(.trailing, 20)
                 .padding(.top, 16)
         }
+        .interactiveDismissDisabled(hasChanges)
+        .confirmationDialog(
+            isEnglish ? "Save as draft?" : "Enregistrer comme brouillon ?",
+            isPresented: $showDraftConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(isEnglish ? "Save draft" : "Enregistrer le brouillon") {
+                Haptics.shared.tinyPop()
+                saveDraft()
+            }
+            Button(isEnglish ? "Discard" : "Jeter", role: .destructive) {
+                if let d = editingDraft { draftStore.deleteNuéeDraft(d) }
+                dismiss()
+            }
+            Button(isEnglish ? "Cancel" : "Annuler", role: .cancel) { }
+        }
     }
 
     // MARK: Top header
@@ -129,7 +164,7 @@ struct CreateNuéeView: View {
         attributed.foregroundColor = Color.white.opacity(0.94)
 
         if let range = attributed.range(of: "Nuée") {
-            attributed[range].foregroundColor = brandOrange
+            attributed[range].foregroundColor = Brand.orange
         }
 
         return Text(attributed)
@@ -147,7 +182,7 @@ struct CreateNuéeView: View {
             )
             .font(.system(size: 16, weight: .regular))
             .foregroundColor(Color.white.opacity(0.92))
-            .tint(brandOrange)
+            .tint(Brand.orange)
             .padding(.vertical, 14)
             .padding(.horizontal, 16)
             .background(chromeCard)
@@ -198,7 +233,7 @@ struct CreateNuéeView: View {
                     .font(.system(size: 18, weight: .regular))
                     .foregroundColor(
                         isSelected
-                            ? brandOrange.opacity(0.92)
+                            ? Brand.orange.opacity(0.92)
                             : Color.white.opacity(0.62)
                     )
 
@@ -221,7 +256,7 @@ struct CreateNuéeView: View {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .stroke(
                             isSelected
-                                ? brandOrange.opacity(0.62)
+                                ? Brand.orange.opacity(0.62)
                                 : Color.white.opacity(0.12),
                             lineWidth: isSelected ? 1.0 : 0.6
                         )
@@ -249,7 +284,7 @@ struct CreateNuéeView: View {
             )
             .font(.system(size: 14, weight: .regular))
             .foregroundColor(Color.white.opacity(0.92))
-            .tint(brandOrange)
+            .tint(Brand.orange)
             .padding(.vertical, 14)
             .padding(.horizontal, 16)
             .background(chromeCard)
@@ -379,7 +414,7 @@ struct CreateNuéeView: View {
                         .datePickerStyle(.compact)
                         .labelsHidden()
                         .colorScheme(.dark)
-                        .tint(brandOrange)
+                        .tint(Brand.orange)
                         Spacer()
                     }
                 }
@@ -430,7 +465,7 @@ struct CreateNuéeView: View {
                 .background(
                     ZStack {
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(canCreate ? brandOrange.opacity(0.86) : Color.white.opacity(0.06))
+                            .fill(canCreate ? Brand.orange.opacity(0.86) : Color.white.opacity(0.06))
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .stroke(
                                 canCreate ? Color.white.opacity(0.22) : Color.white.opacity(0.12),
@@ -451,7 +486,11 @@ struct CreateNuéeView: View {
     private var closeButton: some View {
         Button {
             Haptics.shared.lightTap()
-            dismiss()
+            if hasChanges {
+                showDraftConfirmation = true
+            } else {
+                dismiss()
+            }
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: "xmark")
@@ -523,6 +562,22 @@ struct CreateNuéeView: View {
         )
 
         nuéeStore.create(nuée)
+        if let d = editingDraft { draftStore.deleteNuéeDraft(d) }
+        dismiss()
+    }
+
+    private func saveDraft() {
+        let draft = NuéeDraft(
+            id: editingDraft?.id ?? UUID(),
+            name: cleanName,
+            kind: selectedKind,
+            theme: theme.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? nil
+                : theme.trimmingCharacters(in: .whitespacesAndNewlines),
+            moodHintRawValue: selectedSwatchHex,
+            expiresAt: isEphemeral ? expirationDate : nil
+        )
+        draftStore.saveNuéeDraft(draft)
         dismiss()
     }
 }

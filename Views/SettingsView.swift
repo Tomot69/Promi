@@ -14,7 +14,6 @@ struct SettingsView: View {
     @State private var showStudio = false
     @State private var showReplayOnboarding = false
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var currentPack: PromiVisualPack {
         PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
@@ -103,7 +102,7 @@ struct SettingsView: View {
             // « Brouillons », « Karma » sur les autres pages.
             Text(isFrench ? "Réglages" : "Settings")
                 .font(.system(size: 32, weight: .light))
-                .foregroundColor(brandOrange)
+                .foregroundColor(Brand.orange)
 
             Text(isFrench
                  ? "préférences, visuels, découverte"
@@ -154,7 +153,7 @@ struct SettingsView: View {
         SettingsRow(
             title: isFrench ? "Revivre l’onboarding" : "Replay the onboarding",
             value: isFrench ? "tout revoir" : "see it again",
-            accent: brandOrange.opacity(0.92),
+            accent: Brand.orange.opacity(0.92),
             enabled: true
         ) {
             Haptics.shared.lightTap()

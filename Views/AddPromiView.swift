@@ -20,10 +20,28 @@ struct AddPromiView: View {
     @AppStorage("promi.visualMood")
     private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
 
-    @State private var titleSuffix = ""
-    @State private var dueDate = Calendar.current.date(byAdding: .hour, value: 2, to: Date()) ?? Date()
-    @State private var assignee = ""
-    @State private var intensity = 50
+    let editingDraft: PromiDraft?
+
+    @State private var titleSuffix: String
+    @State private var dueDate: Date
+    @State private var assignee: String
+    @State private var intensity: Int
+
+    init(editingDraft: PromiDraft? = nil) {
+        self.editingDraft = editingDraft
+        let stripped: String = {
+            guard let t = editingDraft?.title else { return "" }
+            let trimmed = t.trimmingCharacters(in: .whitespaces)
+            if trimmed.lowercased().hasPrefix("promi ") {
+                return String(trimmed.dropFirst(6))
+            }
+            return trimmed
+        }()
+        _titleSuffix = State(initialValue: stripped)
+        _dueDate = State(initialValue: editingDraft?.dueDate ?? (Calendar.current.date(byAdding: .hour, value: 2, to: Date()) ?? Date()))
+        _assignee = State(initialValue: editingDraft?.assignee ?? "")
+        _intensity = State(initialValue: editingDraft?.intensity ?? 50)
+    }
     @State private var selectedKind: PromiKind = .precise
     @State private var selectedNuéeId: UUID? = nil
     @State private var showValidationAnimation = false
@@ -41,7 +59,6 @@ struct AddPromiView: View {
         userStore.selectedLanguage.starts(with: "en")
     }
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var cleanSuffix: String {
         titleSuffix.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -116,6 +133,7 @@ struct AddPromiView: View {
                 dismiss()
             }
             Button(discardButtonTitle, role: .destructive) {
+                if let d = editingDraft { draftStore.deleteDraft(d) }
                 dismiss()
             }
             Button(cancelButtonTitle, role: .cancel) { }
@@ -133,7 +151,7 @@ struct AddPromiView: View {
     }
 
     private var discardButtonTitle: String {
-        isEnglish ? "Discard" : "Supprimer"
+        isEnglish ? "Discard" : "Jeter"
     }
 
     private var cancelButtonTitle: String {
@@ -169,7 +187,7 @@ struct AddPromiView: View {
         var attributed = AttributedString(prefix + "Promi")
         attributed.foregroundColor = Color.white.opacity(0.94)
         if let range = attributed.range(of: "Promi") {
-            attributed[range].foregroundColor = brandOrange
+            attributed[range].foregroundColor = Brand.orange
         }
         return Text(attributed)
     }
@@ -215,7 +233,7 @@ struct AddPromiView: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("Promi")
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(brandOrange)
+                    .foregroundColor(Brand.orange)
 
                 ZStack(alignment: .topLeading) {
                     if titleSuffix.isEmpty {
@@ -237,7 +255,7 @@ struct AddPromiView: View {
                     .textInputAutocapitalization(.sentences)
                     .font(.system(size: 22, weight: .regular))
                     .foregroundColor(Color.white.opacity(0.94))
-                    .tint(brandOrange)
+                    .tint(Brand.orange)
                     .lineLimit(1...4)
                 }
             }
@@ -320,7 +338,7 @@ struct AddPromiView: View {
                 )
                 .datePickerStyle(.compact)
                 .labelsHidden()
-                .tint(brandOrange)
+                .tint(Brand.orange)
                 .colorScheme(.dark)
 
                 Spacer()
@@ -374,7 +392,7 @@ struct AddPromiView: View {
                     )
                     .datePickerStyle(.compact)
                     .labelsHidden()
-                    .tint(brandOrange)
+                    .tint(Brand.orange)
                     .colorScheme(.dark)
 
                     Spacer()
@@ -388,7 +406,7 @@ struct AddPromiView: View {
             // explicit that "Lié" is about the relationship, not the clock.
             HStack(alignment: .top, spacing: 10) {
                 Circle()
-                    .fill(brandOrange.opacity(0.58))
+                    .fill(Brand.orange.opacity(0.58))
                     .frame(width: 4, height: 4)
                     .padding(.top, 6)
 
@@ -422,7 +440,7 @@ struct AddPromiView: View {
             .textInputAutocapitalization(.words)
             .font(.system(size: 16, weight: .regular))
             .foregroundColor(Color.white.opacity(0.92))
-            .tint(brandOrange)
+            .tint(Brand.orange)
             .padding(.vertical, 14)
             .padding(.horizontal, 16)
             .background(chromeCard(radius: 16))
@@ -600,11 +618,11 @@ struct AddPromiView: View {
     private var createButtonBackground: some View {
         let enabled = !cleanSuffix.isEmpty
         RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(enabled ? brandOrange.opacity(0.86) : Color.white.opacity(0.06))
+            .fill(enabled ? Brand.orange.opacity(0.86) : Color.white.opacity(0.06))
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(
-                        enabled ? brandOrange.opacity(0.60) : Color.white.opacity(0.10),
+                        enabled ? Brand.orange.opacity(0.60) : Color.white.opacity(0.10),
                         lineWidth: 0.6
                     )
             )
@@ -647,7 +665,9 @@ struct AddPromiView: View {
             assignee: cleanAssignee.isEmpty ? nil : cleanAssignee,
             intensity: intensity
         )
-        draftStore.saveDraft(draft)
+        var d = draft
+        if let existing = editingDraft { d = PromiDraft(id: existing.id, title: draft.title, dueDate: draft.dueDate, assignee: draft.assignee, intensity: draft.intensity, createdAt: existing.createdAt) }
+        draftStore.saveDraft(d)
     }
 
     private func createPromi() {

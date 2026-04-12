@@ -24,6 +24,11 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
     case foretSousBois
     case neonMidi
 
+    // Vitrail pack — stained-glass cathedral palettes.
+    case vitrailCathédrale
+    case vitrailAube
+    case vitrailNuit
+
     var id: String { rawValue }
 
     var title: String {
@@ -43,6 +48,10 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
         case .auroreFraise: return "Aurore Fraise"
         case .foretSousBois: return "Forêt Sous-Bois"
         case .neonMidi: return "Néon Midi"
+
+        case .vitrailCathédrale: return "Vitrail Cathédrale"
+        case .vitrailAube: return "Vitrail Aube"
+        case .vitrailNuit: return "Vitrail Nuit"
         }
     }
 
@@ -63,6 +72,10 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
         case .auroreFraise: return "pastels d’aube, pêche, sauge, lavande"
         case .foretSousBois: return "verts profonds, mousse, écorce, champignon"
         case .neonMidi: return "néons électriques sur nuit absolue"
+
+        case .vitrailCathédrale: return "rouge profond, cobalt, ocre, émeraude, violet"
+        case .vitrailAube: return "rose, lavande, bleu ciel, pêche, mint lumineux"
+        case .vitrailNuit: return "indigo, prune, bordeaux, sapin, anthracite"
         }
     }
 
@@ -95,12 +108,19 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
             return Color(red: 0.07, green: 0.11, blue: 0.09)
         case .neonMidi:
             return Color(red: 0.05, green: 0.05, blue: 0.10)
+
+        case .vitrailCathédrale:
+            return Color(red: 0.08, green: 0.06, blue: 0.10)
+        case .vitrailAube:
+            return Color(red: 0.96, green: 0.94, blue: 0.97)
+        case .vitrailNuit:
+            return Color(red: 0.04, green: 0.04, blue: 0.08)
         }
     }
 
     var prefersDarkChrome: Bool {
         switch self {
-        case .terrePromi, .nuitCobalt, .foretSousBois, .neonMidi:
+        case .terrePromi, .nuitCobalt, .foretSousBois, .neonMidi, .vitrailCathédrale, .vitrailNuit:
             return true
         default:
             return false
@@ -222,6 +242,33 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
                 Color(red: 0.98, green: 0.78, blue: 0.20),
                 Color(red: 0.04, green: 0.04, blue: 0.10)
             ]
+
+        case .vitrailCathédrale:
+            return [
+                Color(red: 0.78, green: 0.12, blue: 0.18),
+                Color(red: 0.12, green: 0.22, blue: 0.62),
+                Color(red: 0.86, green: 0.58, blue: 0.18),
+                Color(red: 0.10, green: 0.50, blue: 0.32),
+                Color(red: 0.42, green: 0.18, blue: 0.58)
+            ]
+
+        case .vitrailAube:
+            return [
+                Color(red: 0.98, green: 0.72, blue: 0.82),
+                Color(red: 0.78, green: 0.72, blue: 0.95),
+                Color(red: 0.68, green: 0.86, blue: 0.98),
+                Color(red: 0.99, green: 0.82, blue: 0.68),
+                Color(red: 0.72, green: 0.94, blue: 0.84)
+            ]
+
+        case .vitrailNuit:
+            return [
+                Color(red: 0.14, green: 0.16, blue: 0.42),
+                Color(red: 0.36, green: 0.18, blue: 0.42),
+                Color(red: 0.48, green: 0.10, blue: 0.18),
+                Color(red: 0.10, green: 0.26, blue: 0.18),
+                Color(red: 0.16, green: 0.16, blue: 0.20)
+            ]
         }
     }
 }
@@ -270,44 +317,55 @@ struct PaletteView: View {
         (.galets, [.terrePromi, .ivoireCorail, .nuitCobalt]),
         (.cristal, [.auroreFraise, .foretSousBois, .neonMidi]),
         (.mosaicFlat, [.craieMarine, .sableMenthe, .mineralPrune]),
-        (.spectrumSoft, [.jardinPromi, .auroreCobalt, .citrusBrume])
+        (.spectrumSoft, [.jardinPromi, .auroreCobalt, .citrusBrume]),
+        (.vitrailChrome, [.vitrailCathédrale, .vitrailAube, .vitrailNuit])
     ]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             GeometryReader { proxy in
+                let fullHeight = proxy.size.height
+                    + proxy.safeAreaInsets.top
+                    + proxy.safeAreaInsets.bottom
                 ZStack {
-                    // Layer 1: live background — homeBackground color of the
-                    // currently selected mood. Full-bleed, instant on tap.
+                    // Layer 0: fond inconditionnel qui empêche toute bande noire
+                    // de transparaître, quelle que soit la façon dont les layers
+                    // du dessus se comportent avec la safe area.
                     liveSelectedMood.homeBackground
                         .ignoresSafeArea()
 
-                    // Layer 2: live full-screen preview of the selected
-                    // pack × mood. Updates instantly when liveSelectedPack
-                    // or liveSelectedMood change. For Cristal this triggers
-                    // the async 3-tier compute behind the scenes.
-                    PromiFieldPreviewView(
-                        pack: liveSelectedPack,
-                        mood: liveSelectedMood,
-                        size: proxy.size,
-                        promis: [],
-                        languageCode: "fr_FR",
-                        sortOption: .inspiration
-                    )
-                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    // Layer 1: aperçu pack × mood, étendu aux safe areas via
+                    // un container qui ignore la safe area puis reframe à
+                    // la taille totale. Plus propre qu'un offset négatif.
+                    ZStack {
+                        PromiFieldPreviewView(
+                            pack: liveSelectedPack,
+                            mood: liveSelectedMood,
+                            size: CGSize(width: proxy.size.width, height: fullHeight),
+                            promis: [],
+                            languageCode: "fr_FR",
+                            sortOption: .inspiration
+                        )
+                    }
+                    .frame(width: proxy.size.width, height: fullHeight)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)
 
-                    // Layer 3: translucent readability veil. Light packs get
-                    // a white veil, dark packs a soft dark veil — keeps the
-                    // cards legible without hiding the live preview.
-                    (liveSelectedMood.prefersDarkChrome
-                        ? Color.black.opacity(0.55)
-                        : Color.white.opacity(0.62))
+                    // Layer 2: voile de lisibilité. Les cartes de preview
+                    // passent AU-DESSUS de ce voile (elles sont dans le
+                    // ScrollView qui vient après), donc leurs couleurs ne
+                    // sont jamais délavées par le voile. Le voile n'agit
+                    // que sur le background pleine page derrière les cartes.
+                    Rectangle()
+                        .fill(liveSelectedMood.prefersDarkChrome
+                            ? Color.black.opacity(0.72)
+                            : Color.white.opacity(0.78))
                         .ignoresSafeArea()
                         .allowsHitTesting(false)
 
-                    // Layer 4: scrollable studio content.
+                    // Layer 3: contenu scrollable. Le padding bas compense
+                    // explicitement la safe area pour que ActiveMoodFooter
+                    // ne soit jamais caché derrière le Home Indicator.
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 32) {
                             StudioHeader(prefersDarkChrome: liveSelectedMood.prefersDarkChrome)
@@ -320,9 +378,6 @@ struct PaletteView: View {
                                     selectedMood: liveSelectedMood,
                                     prefersDarkChrome: liveSelectedMood.prefersDarkChrome
                                 ) { pack, mood in
-                                    // Instant local state update — no @AppStorage
-                                    // round-trip lag. The live background and the
-                                    // card border both update on the next frame.
                                     liveSelectedPack = pack
                                     liveSelectedMood = mood
                                     Haptics.shared.tinyPop()
@@ -337,9 +392,10 @@ struct PaletteView: View {
                             .padding(.top, 8)
                         }
                         .padding(.horizontal, 22)
-                        .padding(.bottom, 36)
+                        .padding(.bottom, 64 + proxy.safeAreaInsets.bottom)
                     }
                 }
+                .toolbarBackground(.hidden, for: .navigationBar)
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -401,7 +457,7 @@ private struct StudioPackSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(pack.studioTitle)
+                Text(studioDisplayTitle(for: pack))
                     .font(.system(size: 19, weight: .medium))
                     .foregroundColor(textPrimary.opacity(0.92))
 
@@ -440,6 +496,18 @@ private struct StudioPackSection: View {
 
     private var textPrimary: Color {
         prefersDarkChrome ? .white : .black
+    }
+
+    /// Surcharge locale du titre d'affichage des packs dans le Studio,
+    /// sans modifier l'enum PromiVisualPack (qui vit dans un autre fichier
+    /// et sert à d'autres usages dans l'app).
+    private func studioDisplayTitle(for pack: PromiVisualPack) -> String {
+        switch pack {
+        case .vitrailChrome:
+            return "Chrome × Vitrail"
+        default:
+            return pack.studioTitle
+        }
     }
 }
 
@@ -522,7 +590,7 @@ private struct ActiveMoodFooter: View {
                 .font(.system(size: 12, weight: .regular))
                 .foregroundColor(textPrimary.opacity(0.32))
 
-            Text(pack.studioTitle)
+            Text(pack == .vitrailChrome ? "Chrome × Vitrail" : pack.studioTitle)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(textPrimary.opacity(0.84))
 

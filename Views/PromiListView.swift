@@ -13,7 +13,6 @@ struct PromiListView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var promiStore: PromiStore
-    @EnvironmentObject var draftStore: DraftStore
 
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
@@ -53,9 +52,7 @@ struct PromiListView: View {
                     topHeader
                     searchBar
                     segmentBar
-                    if selectedSegment != .drafts {
-                        sortBar
-                    }
+                    sortBar
                     contentArea
                 }
             }
@@ -73,10 +70,6 @@ struct PromiListView: View {
         promiStore.promis.filter { $0.status == .done }
     }
 
-    private var drafts: [PromiDraft] {
-        draftStore.drafts
-    }
-
     private var useSingular: Bool {
         promiStore.promis.count == 1
     }
@@ -85,14 +78,6 @@ struct PromiListView: View {
         let source = selectedSegment == .active ? activePromis : donePromis
         let searched = filteredPromis(source)
         return sortedPromis(searched, by: sortOption, doneSegment: selectedSegment == .done)
-    }
-
-    private var displayedDrafts: [PromiDraft] {
-        guard !trimmedQuery.isEmpty else { return drafts }
-        let needle = trimmedQuery.localizedLowercase
-        return drafts.filter { draft in
-            draft.title.localizedLowercase.contains(needle)
-        }
     }
 
     private var trimmedQuery: String {
@@ -108,7 +93,7 @@ struct PromiListView: View {
                 titleAttributed
                     .font(.system(size: 32, weight: .light))
 
-                Text("vue claire, complète, pilotable")
+                Text(dynamicSubtitle)
                     .font(.system(size: 12, weight: .regular))
                     .foregroundColor(Color.white.opacity(0.52))
                     .tracking(0.2)
@@ -122,6 +107,26 @@ struct PromiListView: View {
         .padding(.horizontal, 20)
         .padding(.top, 18)
         .padding(.bottom, 16)
+    }
+
+    /// Dynamic subtitle: "3 tenus · 5 à venir" — reflects the real state
+    /// of the user's promises at a glance.
+    private var dynamicSubtitle: String {
+        let doneCount = donePromis.count
+        let activeCount = activePromis.count
+
+        if doneCount == 0 && activeCount == 0 {
+            return "le territoire est en repos"
+        }
+
+        var parts: [String] = []
+        if doneCount > 0 {
+            parts.append("\(doneCount) tenu\(doneCount > 1 ? "s" : "")")
+        }
+        if activeCount > 0 {
+            parts.append("\(activeCount) à venir")
+        }
+        return parts.joined(separator: " · ")
     }
 
     /// "Mes " (or "Mon ") in near-white + "Promi" in the brand orange.
@@ -217,8 +222,7 @@ struct PromiListView: View {
     @ViewBuilder
     private var segmentBar: some View {
         HStack(spacing: 8) {
-            segmentButton(.active, title: "En cours", count: activePromis.count)
-            segmentButton(.drafts, title: "Brouillons", count: drafts.count)
+            segmentButton(.active, title: "À venir", count: activePromis.count)
             segmentButton(.done, title: "Accomplis", count: donePromis.count)
         }
         .padding(.horizontal, 20)
@@ -327,14 +331,51 @@ struct PromiListView: View {
     @ViewBuilder
     private var contentArea: some View {
         switch selectedSegment {
-        case .active, .done:
+        case .active:
+            if displayedPromis.isEmpty {
+                emptyState
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(horizonSections, id: \.title) { section in
+                            if !section.promis.isEmpty {
+                                horizonHeader(section.title, icon: section.icon)
+
+                                ForEach(section.promis) { promi in
+                                    PromiListRowCard(
+                                        promi: promi,
+                                        languageCode: userStore.selectedLanguage,
+                                        onOpen: {
+                                            Haptics.shared.lightTap()
+                                            dismiss()
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                                                selectedPromi = promi
+                                            }
+                                        },
+                                        onToggleDone: {
+                                            Haptics.shared.tinyPop()
+                                            togglePromiDone(promi)
+                                        }
+                                    )
+                                    .padding(.horizontal, 20)
+                                    .padding(.bottom, 12)
+                                }
+                            }
+                        }
+                    }
+                    .padding(.top, 4)
+                    .padding(.bottom, 28)
+                }
+            }
+
+        case .done:
             if displayedPromis.isEmpty {
                 emptyState
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(displayedPromis) { promi in
-                            PromiListRowCard(
+                            DonePromiCard(
                                 promi: promi,
                                 languageCode: userStore.selectedLanguage,
                                 onOpen: {
@@ -344,7 +385,7 @@ struct PromiListView: View {
                                         selectedPromi = promi
                                     }
                                 },
-                                onToggleDone: {
+                                onReopen: {
                                     Haptics.shared.tinyPop()
                                     togglePromiDone(promi)
                                 }
@@ -356,26 +397,67 @@ struct PromiListView: View {
                     .padding(.bottom, 28)
                 }
             }
+        }
+    }
 
-        case .drafts:
-            if displayedDrafts.isEmpty {
-                emptyState
+    // MARK: - Horizon sections (À venir grouping)
+
+    private struct HorizonSection {
+        let title: String
+        let icon: String
+        let promis: [PromiItem]
+    }
+
+    private var horizonSections: [HorizonSection] {
+        let cal = Calendar.current
+        let now = Date()
+        let endOfToday = cal.startOfDay(for: cal.date(byAdding: .day, value: 1, to: now) ?? now)
+        let endOfWeek = cal.date(byAdding: .day, value: 7, to: cal.startOfDay(for: now)) ?? now
+
+        var today: [PromiItem] = []
+        var thisWeek: [PromiItem] = []
+        var later: [PromiItem] = []
+        var floating: [PromiItem] = []
+
+        for promi in displayedPromis {
+            if promi.kind == .floating {
+                floating.append(promi)
+            } else if promi.dueDate < endOfToday {
+                today.append(promi)
+            } else if promi.dueDate < endOfWeek {
+                thisWeek.append(promi)
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 10) {
-                        ForEach(displayedDrafts) { draft in
-                            DraftListRowCard(
-                                draft: draft,
-                                languageCode: userStore.selectedLanguage
-                            )
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
-                    .padding(.bottom, 28)
-                }
+                later.append(promi)
             }
         }
+
+        return [
+            HorizonSection(title: "Aujourd'hui", icon: "sun.max", promis: today),
+            HorizonSection(title: "Cette semaine", icon: "calendar", promis: thisWeek),
+            HorizonSection(title: "Plus tard", icon: "clock", promis: later),
+            HorizonSection(title: "En l'air", icon: "wind", promis: floating)
+        ]
+    }
+
+    @ViewBuilder
+    private func horizonHeader(_ title: String, icon: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Color(red: 0.98, green: 0.56, blue: 0.22).opacity(0.78))
+
+            Text(title.uppercased())
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(Color.white.opacity(0.48))
+                .tracking(1.0)
+
+            Rectangle()
+                .fill(Color.white.opacity(0.10))
+                .frame(height: 0.5)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 18)
+        .padding(.bottom, 8)
     }
 
     // MARK: - Empty state
@@ -419,7 +501,6 @@ struct PromiListView: View {
     private var emptyIcon: String {
         switch selectedSegment {
         case .active: return "sparkles"
-        case .drafts: return "pencil.and.outline"
         case .done:   return "checkmark.seal"
         }
     }
@@ -427,11 +508,9 @@ struct PromiListView: View {
     private var emptyTitle: String {
         switch selectedSegment {
         case .active:
-            return trimmedQuery.isEmpty ? "Aucun Promi en cours" : "Aucun résultat"
-        case .drafts:
-            return trimmedQuery.isEmpty ? "Aucun brouillon" : "Aucun résultat"
+            return trimmedQuery.isEmpty ? "Le territoire est en repos" : "Aucun résultat"
         case .done:
-            return trimmedQuery.isEmpty ? "Aucun Promi accompli" : "Aucun résultat"
+            return trimmedQuery.isEmpty ? "Pas encore de promesses tenues" : "Aucun résultat"
         }
     }
 
@@ -439,16 +518,12 @@ struct PromiListView: View {
         switch selectedSegment {
         case .active:
             return trimmedQuery.isEmpty
-                ? "Vos promesses actives apparaîtront ici, dans une vue simple et rapide."
-                : "Ajustez la recherche ou le tri pour retrouver votre Promi."
-        case .drafts:
-            return trimmedQuery.isEmpty
-                ? "Les brouillons commencés sans validation sont conservés ici."
-                : "Ajustez la recherche pour retrouver votre brouillon."
+                ? "Crée ta prochaine promesse. Le champ attend un nouveau foyer."
+                : "Ajuste la recherche ou le tri pour retrouver ton Promi."
         case .done:
             return trimmedQuery.isEmpty
-                ? "Votre historique des promesses tenues apparaîtra ici."
-                : "Ajustez la recherche ou le tri pour retrouver une promesse accomplie."
+                ? "Chaque promesse tenue laissera une trace ici — un souvenir vivant."
+                : "Ajuste la recherche pour retrouver une promesse accomplie."
         }
     }
 
@@ -530,6 +605,16 @@ struct PromiListView: View {
             return promis.sorted(by: { (lhs: PromiItem, rhs: PromiItem) in
                 stableRank(lhs) < stableRank(rhs)
             })
+
+        case .nuée:
+            return promis.sorted(by: { (lhs: PromiItem, rhs: PromiItem) in
+                let lhsKey = lhs.nuéeId?.uuidString ?? "zzz"
+                let rhsKey = rhs.nuéeId?.uuidString ?? "zzz"
+                if lhsKey == rhsKey {
+                    return lhs.createdAt < rhs.createdAt
+                }
+                return lhsKey < rhsKey
+            })
         }
     }
 
@@ -553,7 +638,6 @@ struct PromiListView: View {
 
 private enum PromiListSegment {
     case active
-    case drafts
     case done
 }
 
@@ -770,59 +854,140 @@ private struct PromiListRowCard: View {
     }
 }
 
-// MARK: - Draft row card (chrome over mood background, compact)
+// MARK: - Done Promi card (album-style memory)
+//
+// Each accomplished Promi is presented as a small memory card — not a
+// checked-off task. Shows the title, the completion date, how many days
+// it took to fulfill, and a poetic one-liner that celebrates the act
+// of keeping a promise.
 
-private struct DraftListRowCard: View {
-    let draft: PromiDraft
+private struct DonePromiCard: View {
+    let promi: PromiItem
     let languageCode: String
+    let onOpen: () -> Void
+    let onReopen: () -> Void
+
 
     var body: some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(Color.white.opacity(0.30))
-                .frame(width: 8, height: 8)
+        Button(action: onOpen) {
+            VStack(alignment: .leading, spacing: 10) {
+                // Title
+                Text(fullPromiTitle)
+                    .font(.system(size: 18, weight: .light))
+                    .foregroundColor(Color.white.opacity(0.92))
+                    .multilineTextAlignment(.leading)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(Color.white.opacity(0.90))
-                    .lineLimit(2)
+                // Poetic completion note
+                Text(poeticNote)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(Brand.orange.opacity(0.78))
+                    .italic()
 
-                Text(subtitle)
-                    .font(.system(size: 10, weight: .regular))
-                    .foregroundColor(Color.white.opacity(0.52))
+                // Footer: completion date + duration + reopen
+                HStack(alignment: .bottom) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("ACCOMPLI")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundColor(Color.white.opacity(0.38))
+                            .tracking(0.5)
+
+                        Text(formattedCompletionDate)
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.68))
+                    }
+
+                    Spacer()
+
+                    // Duration pill
+                    Text(durationText)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(Color.white.opacity(0.72))
+                        .padding(.horizontal, 10)
+                        .frame(height: 24)
+                        .background(
+                            Capsule(style: .continuous)
+                                .fill(Color.white.opacity(0.06))
+                                .overlay(
+                                    Capsule(style: .continuous)
+                                        .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+                                )
+                        )
+                }
+
+                // Reopen button (discreet)
+                HStack {
+                    Spacer()
+                    Button(action: onReopen) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.uturn.backward")
+                                .font(.system(size: 9, weight: .semibold))
+                            Text("Rouvrir")
+                                .font(.system(size: 10, weight: .semibold))
+                        }
+                        .foregroundColor(Color.white.opacity(0.52))
+                        .padding(.horizontal, 10)
+                        .frame(height: 24)
+                        .background(
+                            Capsule(style: .continuous)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-
-            Spacer(minLength: 0)
-
-            Image(systemName: "pencil.tip")
-                .font(.system(size: 12, weight: .light))
-                .foregroundColor(Color.white.opacity(0.50))
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(cardBackground)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.white.opacity(0.05))
-
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
-            }
-        )
+        .buttonStyle(.plain)
     }
 
-    private var title: String {
-        let trimmed = draft.title.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        return trimmed.isEmpty ? "Brouillon sans titre" : trimmed
+    private var cardBackground: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.06))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+        }
     }
 
-    private var subtitle: String {
+    private var fullPromiTitle: String {
+        let trimmed = promi.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let lowered = trimmed.localizedLowercase
+        return lowered.hasPrefix("promi") ? trimmed : "Promi \(trimmed)"
+    }
+
+    private var formattedCompletionDate: String {
+        let date = promi.completedAt ?? promi.createdAt
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: languageCode.isEmpty ? "fr_FR" : languageCode)
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        return "Créé le \(formatter.string(from: draft.createdAt))"
+        return formatter.string(from: date)
+    }
+
+    /// Number of days between creation and completion.
+    private var daysTaken: Int {
+        let completion = promi.completedAt ?? Date()
+        let interval = completion.timeIntervalSince(promi.createdAt)
+        return max(0, Int(interval / 86400))
+    }
+
+    private var durationText: String {
+        let days = daysTaken
+        if days == 0 { return "le jour même" }
+        if days == 1 { return "en 1 jour" }
+        return "en \(days) jours"
+    }
+
+    /// A poetic one-liner based on how long it took to keep the promise.
+    /// Adds warmth to what could be a dry "completed" status.
+    private var poeticNote: String {
+        let days = daysTaken
+        if days == 0 { return "tenu sans détour" }
+        if days <= 2 { return "promesse rapide, parole solide" }
+        if days <= 7 { return "tenu dans la semaine" }
+        if days <= 30 { return "la patience a porté ses fruits" }
+        return "le temps n'a pas eu raison de cette promesse"
     }
 }

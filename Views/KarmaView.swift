@@ -27,7 +27,6 @@ struct KarmaView: View {
     @AppStorage("promi.visualMood")
     private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var currentPack: PromiVisualPack {
         PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
@@ -74,7 +73,7 @@ struct KarmaView: View {
         VStack(spacing: 16) {
             Text("Karma")
                 .font(.system(size: 28, weight: .light))
-                .foregroundColor(brandOrange)
+                .foregroundColor(Brand.orange)
 
             Text("\(karmaStore.karmaState.percentage)%")
                 .font(.system(size: 72, weight: .ultraLight))

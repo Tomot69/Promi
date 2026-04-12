@@ -33,7 +33,6 @@ struct MinimalIntensityGaugeView: View {
     @State private var heartStroke1: CGFloat = 0.0
     @State private var heartStroke2: CGFloat = 0.0
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     /// Vibey English-only intensity labels — intentionally kept in English
     /// across all locales as a product identity choice. These express the
@@ -64,7 +63,7 @@ struct MinimalIntensityGaugeView: View {
             Text(intensityLabel)
                 .font(.system(size: 12, weight: .medium))
                 .italic()
-                .foregroundColor(brandOrange.opacity(0.92))
+                .foregroundColor(Brand.orange.opacity(0.92))
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.bottom, 2)
                 .animation(.spring(response: 0.28, dampingFraction: 0.82), value: intensityLabel)
@@ -86,7 +85,7 @@ struct MinimalIntensityGaugeView: View {
             HeartStrokePath(isLeft: true)
                 .trim(from: 0, to: heartStroke1)
                 .stroke(
-                    brandOrange.opacity(0.78),
+                    Brand.orange.opacity(0.78),
                     style: StrokeStyle(lineWidth: 2, lineCap: .round)
                 )
                 .frame(width: 40, height: 40)
@@ -94,7 +93,7 @@ struct MinimalIntensityGaugeView: View {
             HeartStrokePath(isLeft: false)
                 .trim(from: 0, to: heartStroke2)
                 .stroke(
-                    brandOrange.opacity(0.78),
+                    Brand.orange.opacity(0.78),
                     style: StrokeStyle(lineWidth: 2, lineCap: .round)
                 )
                 .frame(width: 40, height: 40)
@@ -122,7 +121,7 @@ struct MinimalIntensityGaugeView: View {
             in: 0...100,
             step: 1
         )
-        .tint(brandOrange.opacity(0.78))
+        .tint(Brand.orange.opacity(0.78))
     }
 
     // MARK: Heart drawing logic

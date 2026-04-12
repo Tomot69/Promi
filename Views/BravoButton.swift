@@ -32,7 +32,6 @@ struct BravoButton: View {
     let count: Int
     let isActive: Bool
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     var body: some View {
         Button(action: toggleBravo) {
@@ -44,7 +43,7 @@ struct BravoButton: View {
             }
             .foregroundColor(
                 isActive
-                    ? brandOrange
+                    ? Brand.orange
                     : Color.white.opacity(0.58)
             )
         }

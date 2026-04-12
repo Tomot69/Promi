@@ -40,22 +40,18 @@ struct NuéeDetailView: View {
     @State private var showDeleteConfirmation = false
     @State private var showLeaveConfirmation = false
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     private var currentPack: PromiVisualPack {
         PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
     }
 
-    /// Visual mood: prefer the Nuée's own moodHint if set, else fall back
-    /// to the user's current global mood. This makes the chrome feel
-    /// "themed" by the Nuée when the user has explicitly chosen one.
-    private var effectiveMood: PromiColorMood {
-        if let nuée = currentNuée,
-           let raw = nuée.moodHintRawValue,
-           let mood = PromiColorMood(rawValue: raw) {
-            return mood
-        }
-        return PromiColorMood(rawValue: visualMoodRawValue) ?? .terrePromi
+    /// The page chrome uses the user's CURRENT global mood — the Nuée's
+    /// own signature color is used only for tinting its identity elements
+    /// (icon badge, member avatars, promi row dots). This keeps the
+    /// PromiChromePageBackground consistent with the rest of the app
+    /// while letting each Nuée carry its own visual personality on top.
+    private var currentMood: PromiColorMood {
+        PromiColorMood(rawValue: visualMoodRawValue) ?? .terrePromi
     }
 
     private var isEnglish: Bool {
@@ -82,7 +78,7 @@ struct NuéeDetailView: View {
         ZStack(alignment: .topTrailing) {
             PromiChromePageBackground(
                 pack: currentPack,
-                mood: effectiveMood,
+                mood: currentMood,
                 promis: promiStore.promis,
                 languageCode: userStore.selectedLanguage
             )
@@ -158,19 +154,26 @@ struct NuéeDetailView: View {
 
     @ViewBuilder
     private func nuéeHeader(_ nuée: Nuée) -> some View {
+        let badgeColor = NuéePalette.color(fromHex: nuée.moodHintRawValue) ?? Brand.orange
+
         HStack(alignment: .center, spacing: 14) {
-            // Big icon badge
+            // Big icon badge — uses the Nuée's own swatch color for
+            // identity. The SF Symbol matches CreateNuéeView's kind
+            // cards for visual cohérence across the app:
+            //   .thematic → "tag"
+            //   .intimate → "lock.heart"
             ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(brandOrange.opacity(0.32))
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(brandOrange.opacity(0.46), lineWidth: 0.6)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(badgeColor.opacity(0.28))
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(badgeColor.opacity(0.48), lineWidth: 0.6)
 
                 Image(systemName: nuée.displayIconGlyph)
-                    .font(.system(size: 22, weight: .regular))
+                    .font(.system(size: 24, weight: .light))
                     .foregroundColor(Color.white.opacity(0.96))
+                    .shadow(color: badgeColor.opacity(0.36), radius: 4, x: 0, y: 1)
             }
-            .frame(width: 60, height: 60)
+            .frame(width: 62, height: 62)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(nuée.name)
@@ -238,9 +241,9 @@ struct NuéeDetailView: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(brandOrange.opacity(0.28))
+                    .fill(Brand.orange.opacity(0.28))
                 Circle()
-                    .stroke(brandOrange.opacity(0.42), lineWidth: 0.6)
+                    .stroke(Brand.orange.opacity(0.42), lineWidth: 0.6)
 
                 Text(initials(from: member.displayName))
                     .font(.system(size: 11, weight: .semibold))
@@ -256,7 +259,7 @@ struct NuéeDetailView: View {
                 if isCreator {
                     Text(isEnglish ? "creator" : "créateur·ice")
                         .font(.system(size: 10, weight: .regular))
-                        .foregroundColor(brandOrange.opacity(0.86))
+                        .foregroundColor(Brand.orange.opacity(0.86))
                 }
             }
 
@@ -322,7 +325,7 @@ struct NuéeDetailView: View {
     private func nuéePromiRow(_ promi: PromiItem) -> some View {
         HStack(alignment: .center, spacing: 12) {
             Circle()
-                .fill(brandOrange.opacity(0.62))
+                .fill(Brand.orange.opacity(0.62))
                 .frame(width: 6, height: 6)
 
             VStack(alignment: .leading, spacing: 2) {

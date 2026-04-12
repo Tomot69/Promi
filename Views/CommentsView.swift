@@ -30,7 +30,6 @@ struct CommentsView: View {
 
     @State private var newCommentText = ""
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     // MARK: - Derived
 
@@ -111,7 +110,7 @@ struct CommentsView: View {
     private var titleAttributed: Text {
         let raw = isEnglish ? "Comments" : "Commentaires"
         var attributed = AttributedString(raw)
-        attributed.foregroundColor = brandOrange
+        attributed.foregroundColor = Brand.orange
         return Text(attributed)
     }
 
@@ -178,7 +177,7 @@ struct CommentsView: View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 12) {
                 ForEach(comments) { comment in
-                    CommentRowView(comment: comment, brandOrange: brandOrange)
+                    CommentRowView(comment: comment)
                 }
             }
             .padding(.horizontal, 22)
@@ -199,7 +198,7 @@ struct CommentsView: View {
             )
             .font(.system(size: 15, weight: .regular))
             .foregroundColor(Color.white.opacity(0.92))
-            .tint(brandOrange)
+            .tint(Brand.orange)
             .lineLimit(1...4)
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
@@ -223,7 +222,7 @@ struct CommentsView: View {
                         Circle()
                             .fill(
                                 canSend
-                                    ? brandOrange.opacity(0.86)
+                                    ? Brand.orange.opacity(0.86)
                                     : Color.white.opacity(0.06)
                             )
                         Circle()
@@ -286,7 +285,6 @@ struct CommentsView: View {
 private struct CommentRowView: View {
     @EnvironmentObject var userStore: UserStore
     let comment: Comment
-    let brandOrange: Color
 
     private var isEnglish: Bool {
         userStore.selectedLanguage.starts(with: "en")

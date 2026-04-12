@@ -30,7 +30,6 @@ struct LanguageSelectionView: View {
 
     @State private var selectedLanguage: String
 
-    private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
 
     /// The three supported languages: code + native display name.
     /// Each entry is rendered in its own native script to make the choice
@@ -108,7 +107,7 @@ struct LanguageSelectionView: View {
         VStack(spacing: 12) {
             Text("Promi")
                 .font(.system(size: 34, weight: .light))
-                .foregroundColor(brandOrange)
+                .foregroundColor(Brand.orange)
                 .tracking(0.8)
 
             Text(subtitleText)
@@ -186,7 +185,7 @@ struct LanguageSelectionView: View {
                     Circle()
                         .stroke(
                             isSelected
-                                ? brandOrange.opacity(0.78)
+                                ? Brand.orange.opacity(0.78)
                                 : Color.white.opacity(0.26),
                             lineWidth: 1
                         )
@@ -194,7 +193,7 @@ struct LanguageSelectionView: View {
 
                     if isSelected {
                         Circle()
-                            .fill(brandOrange)
+                            .fill(Brand.orange)
                             .frame(width: 10, height: 10)
                     }
                 }
@@ -218,7 +217,7 @@ struct LanguageSelectionView: View {
                 .background(
                     ZStack {
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(brandOrange.opacity(0.86))
+                            .fill(Brand.orange.opacity(0.86))
                         RoundedRectangle(cornerRadius: 20, style: .continuous)
                             .stroke(Color.white.opacity(0.22), lineWidth: 0.6)
                     }
