@@ -73,8 +73,8 @@ nonisolated enum NuéeKind: String, Codable, CaseIterable, Identifiable, Sendabl
     var id: String { rawValue }
     var defaultIconGlyph: String {
         switch self {
-        case .thematic: return "tag"
-        case .intimate: return "lock.heart"
+        case .thematic: return "circle.hexagongrid.fill"
+        case .intimate: return "hands.sparkles.fill"
         }
     }
 }

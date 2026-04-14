@@ -280,141 +280,25 @@ struct NuéeHexGlyph: View {
 
 // MARK: - PinkyPromiseGlyph
 //
-// Two hands viewed from the front with pinkies hooked together at
-// center-top — the universal gesture of sincere promise. Based on
-// the Promi brand logo (pinky promise illustration).
-//
-// At 24×24pt the silhouette is simplified to essential contours:
-// chunky fists at the bottom, two clear pinky fingers rising and
-// interlocking at the top. Bold 2.0pt stroke for instant legibility
-// on the chrome dock circles.
+// Icône du logo Promi (deux mains avec auriculaires crochetés),
+// chargée depuis l'asset "pinkypromise" dans Assets.xcassets.
+// Teintée en blanc ou noir selon le fond chrome pour rester lisible
+// sur tous les packs visuels.
 
 struct PinkyPromiseGlyph: View {
     let isDarkField: Bool
 
     var body: some View {
-        Canvas { context, size in
-            let color = isDarkField ? Color.white.opacity(0.96) : Color.white.opacity(0.94)
-            let w = size.width
-            let h = size.height
-
-            let style = StrokeStyle(
-                lineWidth: 2.0,
-                lineCap: .round,
-                lineJoin: .round
+        Image("pinkypromise")
+            .resizable()
+            .renderingMode(.template)
+            .aspectRatio(contentMode: .fit)
+            .scaleEffect(1.5)
+            .foregroundColor(
+                isDarkField
+                    ? Color.white.opacity(0.96)
+                    : Color.black.opacity(0.88)
             )
-
-            // ── LEFT HAND ──
-            // Viewed from front, wrist at bottom-left, pinky hooks right.
-            var left = Path()
-
-            // Wrist (bottom-left)
-            left.move(to: CGPoint(x: w * 0.08, y: h * 0.96))
-
-            // Up outer edge of fist
-            left.addCurve(
-                to: CGPoint(x: w * 0.10, y: h * 0.46),
-                control1: CGPoint(x: w * 0.04, y: h * 0.80),
-                control2: CGPoint(x: w * 0.04, y: h * 0.58)
-            )
-
-            // Curled fingers — two bold bumps
-            left.addCurve(
-                to: CGPoint(x: w * 0.22, y: h * 0.34),
-                control1: CGPoint(x: w * 0.12, y: h * 0.38),
-                control2: CGPoint(x: w * 0.18, y: h * 0.32)
-            )
-            left.addCurve(
-                to: CGPoint(x: w * 0.34, y: h * 0.30),
-                control1: CGPoint(x: w * 0.26, y: h * 0.32),
-                control2: CGPoint(x: w * 0.30, y: h * 0.28)
-            )
-
-            // Pinky rises to center-top
-            left.addCurve(
-                to: CGPoint(x: w * 0.46, y: h * 0.08),
-                control1: CGPoint(x: w * 0.38, y: h * 0.22),
-                control2: CGPoint(x: w * 0.42, y: h * 0.08)
-            )
-
-            // Hook crossing at center-top
-            left.addCurve(
-                to: CGPoint(x: w * 0.54, y: h * 0.14),
-                control1: CGPoint(x: w * 0.50, y: h * 0.06),
-                control2: CGPoint(x: w * 0.53, y: h * 0.10)
-            )
-
-            // Inner pinky back down
-            left.addCurve(
-                to: CGPoint(x: w * 0.36, y: h * 0.40),
-                control1: CGPoint(x: w * 0.50, y: h * 0.22),
-                control2: CGPoint(x: w * 0.40, y: h * 0.32)
-            )
-
-            // Inner palm to wrist
-            left.addCurve(
-                to: CGPoint(x: w * 0.26, y: h * 0.96),
-                control1: CGPoint(x: w * 0.34, y: h * 0.56),
-                control2: CGPoint(x: w * 0.30, y: h * 0.78)
-            )
-
-            context.stroke(left, with: .color(color), style: style)
-
-            // ── RIGHT HAND (mirror) ──
-            var right = Path()
-
-            // Wrist (bottom-right)
-            right.move(to: CGPoint(x: w * 0.92, y: h * 0.96))
-
-            // Up outer edge of fist
-            right.addCurve(
-                to: CGPoint(x: w * 0.90, y: h * 0.46),
-                control1: CGPoint(x: w * 0.96, y: h * 0.80),
-                control2: CGPoint(x: w * 0.96, y: h * 0.58)
-            )
-
-            // Curled fingers — two bold bumps
-            right.addCurve(
-                to: CGPoint(x: w * 0.78, y: h * 0.34),
-                control1: CGPoint(x: w * 0.88, y: h * 0.38),
-                control2: CGPoint(x: w * 0.82, y: h * 0.32)
-            )
-            right.addCurve(
-                to: CGPoint(x: w * 0.66, y: h * 0.30),
-                control1: CGPoint(x: w * 0.74, y: h * 0.32),
-                control2: CGPoint(x: w * 0.70, y: h * 0.28)
-            )
-
-            // Pinky rises to center-top
-            right.addCurve(
-                to: CGPoint(x: w * 0.54, y: h * 0.08),
-                control1: CGPoint(x: w * 0.62, y: h * 0.22),
-                control2: CGPoint(x: w * 0.58, y: h * 0.08)
-            )
-
-            // Hook crossing at center-top
-            right.addCurve(
-                to: CGPoint(x: w * 0.46, y: h * 0.14),
-                control1: CGPoint(x: w * 0.50, y: h * 0.06),
-                control2: CGPoint(x: w * 0.47, y: h * 0.10)
-            )
-
-            // Inner pinky back down
-            right.addCurve(
-                to: CGPoint(x: w * 0.64, y: h * 0.40),
-                control1: CGPoint(x: w * 0.50, y: h * 0.22),
-                control2: CGPoint(x: w * 0.60, y: h * 0.32)
-            )
-
-            // Inner palm to wrist
-            right.addCurve(
-                to: CGPoint(x: w * 0.74, y: h * 0.96),
-                control1: CGPoint(x: w * 0.66, y: h * 0.56),
-                control2: CGPoint(x: w * 0.70, y: h * 0.78)
-            )
-
-            context.stroke(right, with: .color(color), style: style)
-        }
     }
 }
 

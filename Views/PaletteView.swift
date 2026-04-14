@@ -29,6 +29,12 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
     case vitrailAube
     case vitrailNuit
 
+    // Trame pack — minimaliste, contours nets + points au centroïde.
+    case trameJardin
+    case trameObsidienne
+    case trameAdobe
+    case trameConfettis
+
     var id: String { rawValue }
 
     var title: String {
@@ -52,6 +58,11 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
         case .vitrailCathédrale: return "Vitrail Cathédrale"
         case .vitrailAube: return "Vitrail Aube"
         case .vitrailNuit: return "Vitrail Nuit"
+
+        case .trameJardin: return "Jardin"
+        case .trameObsidienne: return "Obsidienne"
+        case .trameAdobe: return "Adobe"
+        case .trameConfettis: return "Confettis"
         }
     }
 
@@ -76,6 +87,11 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
         case .vitrailCathédrale: return "rouge profond, cobalt, ocre, émeraude, violet"
         case .vitrailAube: return "rose, lavande, bleu ciel, pêche, mint lumineux"
         case .vitrailNuit: return "indigo, prune, bordeaux, sapin, anthracite"
+
+        case .trameJardin: return "fond blanc, contours vert mousse, point corail"
+        case .trameObsidienne: return "encre, contours ambre, point phosphore"
+        case .trameAdobe: return "sable chaud, contours cuir, point blanc cassé"
+        case .trameConfettis: return "crème, contours anthracite, points multicolores"
         }
     }
 
@@ -115,12 +131,23 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
             return Color(red: 0.96, green: 0.94, blue: 0.97)
         case .vitrailNuit:
             return Color(red: 0.04, green: 0.04, blue: 0.08)
+
+        case .trameJardin:
+            return Color(red: 1.00, green: 1.00, blue: 1.00)
+        case .trameObsidienne:
+            return Color(red: 0.039, green: 0.039, blue: 0.059)
+        case .trameAdobe:
+            return Color(red: 0.851, green: 0.722, blue: 0.541)
+        case .trameConfettis:
+            return Color(red: 0.980, green: 0.969, blue: 0.941)
         }
     }
 
     var prefersDarkChrome: Bool {
         switch self {
-        case .terrePromi, .nuitCobalt, .foretSousBois, .neonMidi, .vitrailCathédrale, .vitrailNuit:
+        case .terrePromi, .nuitCobalt, .foretSousBois, .neonMidi,
+             .vitrailCathédrale, .vitrailNuit,
+             .trameObsidienne:
             return true
         default:
             return false
@@ -269,6 +296,43 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
                 Color(red: 0.10, green: 0.26, blue: 0.18),
                 Color(red: 0.16, green: 0.16, blue: 0.20)
             ]
+
+        // Trame pack — 2 couleurs par mood (contour + point),
+        // dupliquées pour satisfaire la signature [Color] à 5 entrées
+        // attendue ailleurs dans l'app. L'attribution réelle se fait
+        // dans VitrailMinimalPromiFieldView via des propriétés dédiées.
+        case .trameJardin:
+            return [
+                Color(red: 0.180, green: 0.369, blue: 0.227),
+                Color(red: 0.910, green: 0.365, blue: 0.239),
+                Color(red: 0.180, green: 0.369, blue: 0.227),
+                Color(red: 0.910, green: 0.365, blue: 0.239),
+                Color(red: 0.180, green: 0.369, blue: 0.227)
+            ]
+        case .trameObsidienne:
+            return [
+                Color(red: 1.000, green: 0.549, blue: 0.259),
+                Color(red: 0.961, green: 0.914, blue: 0.376),
+                Color(red: 1.000, green: 0.549, blue: 0.259),
+                Color(red: 0.961, green: 0.914, blue: 0.376),
+                Color(red: 1.000, green: 0.549, blue: 0.259)
+            ]
+        case .trameAdobe:
+            return [
+                Color(red: 0.290, green: 0.173, blue: 0.102),
+                Color(red: 0.961, green: 0.937, blue: 0.878),
+                Color(red: 0.290, green: 0.173, blue: 0.102),
+                Color(red: 0.961, green: 0.937, blue: 0.878),
+                Color(red: 0.290, green: 0.173, blue: 0.102)
+            ]
+        case .trameConfettis:
+            return [
+                Color(red: 0.169, green: 0.169, blue: 0.169),
+                Color(red: 1.000, green: 0.231, blue: 0.498),
+                Color(red: 1.000, green: 0.824, blue: 0.247),
+                Color(red: 0.102, green: 0.737, blue: 0.612),
+                Color(red: 0.557, green: 0.267, blue: 0.847)
+            ]
         }
     }
 }
@@ -318,7 +382,8 @@ struct PaletteView: View {
         (.cristal, [.auroreFraise, .foretSousBois, .neonMidi]),
         (.mosaicFlat, [.craieMarine, .sableMenthe, .mineralPrune]),
         (.spectrumSoft, [.jardinPromi, .auroreCobalt, .citrusBrume]),
-        (.vitrailChrome, [.vitrailCathédrale, .vitrailAube, .vitrailNuit])
+        (.vitrailChrome, [.vitrailCathédrale, .vitrailAube, .vitrailNuit]),
+        (.trame, [.trameJardin, .trameObsidienne, .trameAdobe, .trameConfettis])
     ]
 
     var body: some View {
@@ -328,10 +393,14 @@ struct PaletteView: View {
                     + proxy.safeAreaInsets.top
                     + proxy.safeAreaInsets.bottom
                 ZStack {
-                    // Layer 0: fond inconditionnel qui empêche toute bande noire
-                    // de transparaître, quelle que soit la façon dont les layers
-                    // du dessus se comportent avec la safe area.
-                    liveSelectedMood.homeBackground
+                    // Layer 0: fond inconditionnel. Pour le pack Trame on
+                    // force un fond de Studio neutre (gris perle) plutôt
+                    // que le background du mood (blanc/noir/sable uni),
+                    // pour que le Studio garde un aspect élégant et que
+                    // les tuiles de preview se détachent visuellement.
+                    (liveSelectedPack == .trame
+                        ? Color(red: 0.93, green: 0.93, blue: 0.94)
+                        : liveSelectedMood.homeBackground)
                         .ignoresSafeArea()
 
                     // Layer 1: aperçu pack × mood, étendu aux safe areas via

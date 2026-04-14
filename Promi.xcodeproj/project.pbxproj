@@ -80,6 +80,7 @@
 		52BF9BF22F894A0000424F02 /* NuéeLifecycleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9BF12F894A0000424F02 /* NuéeLifecycleManager.swift */; };
 		52BF9C0A2F8AAB1600424F02 /* MotionTilt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9C092F8AAB1600424F02 /* MotionTilt.swift */; };
 		52BF9C0D2F8AFD5700424F02 /* Vitrailchromecellsdata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9C0C2F8AFD5700424F02 /* Vitrailchromecellsdata.swift */; };
+		52BF9C0F2F8BD34A00424F02 /* TramePromiField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9C0E2F8BD34900424F02 /* TramePromiField.swift */; };
 		52CF58A12EFA2CD7004C87A0 /* RecoveryResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */; };
 		52CF58AD2EFA3DA9004C87A0 /* DataRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */; };
 		52CF58B12EFA42AD004C87A0 /* RawStoreDataReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */; };
@@ -198,6 +199,7 @@
 		52BF9BF12F894A0000424F02 /* NuéeLifecycleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NuéeLifecycleManager.swift"; sourceTree = "<group>"; };
 		52BF9C092F8AAB1600424F02 /* MotionTilt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionTilt.swift; sourceTree = "<group>"; };
 		52BF9C0C2F8AFD5700424F02 /* Vitrailchromecellsdata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vitrailchromecellsdata.swift; sourceTree = "<group>"; };
+		52BF9C0E2F8BD34900424F02 /* TramePromiField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TramePromiField.swift; sourceTree = "<group>"; };
 		52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryResult.swift; sourceTree = "<group>"; };
 		52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRoot.swift; sourceTree = "<group>"; };
 		52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawStoreDataReader.swift; sourceTree = "<group>"; };
@@ -465,6 +467,7 @@
 				52BF9BED2F89120700424F02 /* Homechromeprimitives.swift */,
 				52BF9C092F8AAB1600424F02 /* MotionTilt.swift */,
 				52BF9C0C2F8AFD5700424F02 /* Vitrailchromecellsdata.swift */,
+				52BF9C0E2F8BD34900424F02 /* TramePromiField.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -776,6 +779,7 @@
 				523FA01C2EFB76A00035CB3F /* ReadOnlyDraftStore.swift in Sources */,
 				523FA0222EFB853F0035CB3F /* ReadOnlyPromiStore.swift in Sources */,
 				52E1A2412EAD14D1007EFAA8 /* CustomIcons.swift in Sources */,
+				52BF9C0F2F8BD34A00424F02 /* TramePromiField.swift in Sources */,
 				523FA00D2EFB35E40035CB3F /* PromiStoreEquatableShims.swift in Sources */,
 				523F9FD32EFAD4ED0035CB3F /* VersionedEnvelope.swift in Sources */,
 				521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */,

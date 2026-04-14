@@ -44,6 +44,7 @@ enum PromiVisualPack: String, CaseIterable, Identifiable {
     case mosaicFlat
     case spectrumSoft
     case vitrailChrome
+    case trame
 
     var id: String { rawValue }
 
@@ -55,6 +56,7 @@ enum PromiVisualPack: String, CaseIterable, Identifiable {
         case .mosaicFlat: return "Mosaïque"
         case .spectrumSoft: return "Spectrum"
         case .vitrailChrome: return "Vitrail"
+        case .trame: return "Trame"
         }
     }
 
@@ -72,6 +74,8 @@ enum PromiVisualPack: String, CaseIterable, Identifiable {
             return "Champ polygonal atmosphérique, gradients soufflés"
         case .vitrailChrome:
             return "Vitraux d'église, plombs chrome liquide, reflets parallax"
+        case .trame:
+            return "Trame dense, contours nets, points au cœur des cellules"
         }
     }
 }
@@ -281,7 +285,13 @@ struct ContentView: View {
 
     private func homeChrome() -> some View {
         let inset = symmetricChromeInset
-        let isDarkField = visualMood.prefersDarkChrome
+        // Chrome × Vitrail affiche toujours un fond de vitrail blanc (les
+        // cellules chrome réelles sont sur fond clair), donc on force le
+        // chrome sombre (icônes + texte noirs) quel que soit le mood, pour
+        // que le titre "Promi" et les glyphs soient lisibles.
+        let isDarkField = visualPack == .vitrailChrome
+            ? false
+            : visualMood.prefersDarkChrome
 
         return ZStack {
             topLeftBrand(topInset: inset, isDarkField: isDarkField)

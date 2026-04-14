@@ -167,6 +167,17 @@ struct PromiFieldRootView: View {
                 onTapPromi: onTapPromi,
                 onTapNuée: onTapNuée
             )
+        case .trame:
+            TramePromiFieldView(
+                mood: mood,
+                size: size,
+                promis: promis,
+                nuées: nuées,
+                languageCode: languageCode,
+                sortOption: sortOption,
+                onTapPromi: onTapPromi,
+                onTapNuée: onTapNuée
+            )
         }
     }
 }
@@ -277,6 +288,8 @@ struct PromiFieldPreviewView: View {
             )
         case .vitrailChrome:
             VitrailChromeStudioPreview(mood: mood, size: size)
+        case .trame:
+            TrameStudioPreview(mood: mood, size: size)
         }
     }
 }
@@ -313,8 +326,20 @@ fileprivate struct VitrailChromeStudioPreview: View {
                 // piochée cycliquement dans mood.swatches.
                 ForEach(Array(cells.enumerated()), id: \.element.id) { idx, vc in
                     let color = swatches[idx % max(swatches.count, 1)]
-                    let pts = vc.polygon.map {
+                    let rawPts = vc.polygon.map {
                         CGPoint(x: $0.x * canvas.width, y: $0.y * canvas.height)
+                    }
+                    // Même dilatation que dans l'app principale pour que
+                    // les cellules apparaissent pleines malgré les ombres
+                    // du chrome qui rétrécissent les polygones détectés.
+                    let cx = vc.centroid.x * canvas.width
+                    let cy = vc.centroid.y * canvas.height
+                    let dilationFactor: CGFloat = 1.12
+                    let pts = rawPts.map { p in
+                        CGPoint(
+                            x: cx + (p.x - cx) * dilationFactor,
+                            y: cy + (p.y - cy) * dilationFactor
+                        )
                     }
                     VitrailCellShape(points: pts)
                         .fill(color)
@@ -339,7 +364,7 @@ fileprivate struct VitrailChromeStudioPreview: View {
 
 // MARK: - Zoomable viewport (Photos-like)
 
-private final class ZoomHostScrollView: UIScrollView {
+final class ZoomHostScrollView: UIScrollView {
     weak var hostedView: UIView?
     private var lastConfiguredBoundsSize: CGSize = .zero
 
@@ -347,14 +372,25 @@ private final class ZoomHostScrollView: UIScrollView {
         super.layoutSubviews()
         guard let hosted = hostedView else { return }
 
-        let currentSize = bounds.size
+        let viewportSize = bounds.size
         let atRestScale = abs(zoomScale - 1.0) < 0.001
 
-        // Only reconfigure when bounds change AND we're at rest scale.
-        if currentSize != .zero && currentSize != lastConfiguredBoundsSize && atRestScale {
-            lastConfiguredBoundsSize = currentSize
-            hosted.frame = CGRect(origin: .zero, size: currentSize)
-            contentSize = currentSize
+        // On demande au SwiftUI sa taille intrinsèque (sizeThatFits), et
+        // on s'assure que le contenu couvre AU MINIMUM la taille du
+        // viewport dans chaque dimension (pour éviter une zone vide
+        // visible quand le contenu SwiftUI est plus petit que l'écran).
+        if viewportSize != .zero && viewportSize != lastConfiguredBoundsSize && atRestScale {
+            lastConfiguredBoundsSize = viewportSize
+            let intrinsic = hosted.sizeThatFits(
+                CGSize(width: CGFloat.greatestFiniteMagnitude,
+                       height: CGFloat.greatestFiniteMagnitude)
+            )
+            let finalSize = CGSize(
+                width: max(intrinsic.width, viewportSize.width),
+                height: max(intrinsic.height, viewportSize.height)
+            )
+            hosted.frame = CGRect(origin: .zero, size: finalSize)
+            contentSize = finalSize
         }
 
         centerContentIfNeeded()
@@ -382,7 +418,7 @@ private final class ZoomHostScrollView: UIScrollView {
     }
 }
 
-private struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
+struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
     let content: Content
 
     init(@ViewBuilder content: () -> Content) {
@@ -397,7 +433,7 @@ private struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
         let scrollView = ZoomHostScrollView()
         scrollView.backgroundColor = .clear
         scrollView.delegate = context.coordinator
-        scrollView.minimumZoomScale = 0.6
+        scrollView.minimumZoomScale = 1.0
         scrollView.maximumZoomScale = 4.0
         scrollView.zoomScale = 1.0
         scrollView.bouncesZoom = true
@@ -693,8 +729,23 @@ struct VitrailChromePromiFieldView: View {
         }
         return source.enumerated().prefix(sortedReal.count).map { idx, base in
             let vc = sortedReal[idx]
-            let pts = vc.polygon.map {
+            let rawPts = vc.polygon.map {
                 CGPoint(x: $0.x * canvas.width, y: $0.y * canvas.height)
+            }
+            // Dilatation du polygone vers l'extérieur pour compenser les
+            // ombres du chrome sur l'image source : la détection OpenCV
+            // s'arrête au bord de la zone blanche, donc les polygones sont
+            // un peu plus petits que la vraie cellule. On étire chaque
+            // sommet depuis le centroïde d'un facteur 1.12, le chrome en
+            // multiply par-dessus masque naturellement le débordement.
+            let cx = vc.centroid.x * canvas.width
+            let cy = vc.centroid.y * canvas.height
+            let dilationFactor: CGFloat = 1.12
+            let pts = rawPts.map { p in
+                CGPoint(
+                    x: cx + (p.x - cx) * dilationFactor,
+                    y: cy + (p.y - cy) * dilationFactor
+                )
             }
             let xs = pts.map(\.x), ys = pts.map(\.y)
             let bounds = CGRect(
@@ -2905,6 +2956,13 @@ fileprivate enum PromiFieldLayoutFactory {
 
     private static func moodBasePalette(for mood: PromiColorMood) -> [Color] {
         switch mood {
+        case .trameJardin, .trameObsidienne, .trameAdobe, .trameConfettis:
+            // Les moods Trame n'utilisent pas cette palette (géométrie
+            // dédiée avec contour + point). Fallback neutre pour satisfaire
+            // le switch exhaustif sans impacter les autres packs.
+            return [
+                Color.gray, Color.gray, Color.gray, Color.gray, Color.gray
+            ]
         case .terrePromi:
             return [
                 Color(red: 0.24, green: 0.18, blue: 0.15),
