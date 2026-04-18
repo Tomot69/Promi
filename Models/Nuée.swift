@@ -11,6 +11,11 @@ nonisolated struct Nuée: Identifiable, Codable, Equatable, Sendable {
     var expiresAt: Date?
     var moodHintRawValue: String?
     var iconGlyph: String?
+    /// ID de la Nuée parente. `nil` = Nuée top-level (affichée dans
+    /// MesNuées). Non-nil = sous-Nuée thématique à l'intérieur d'une
+    /// Nuée intime (affichée dans le detail de la parente, pas dans
+    /// MesNuées). Backward-compatible : JSON sans ce champ → nil.
+    var parentNuéeId: UUID?
     var version: Int
     var lastModified: Date
 
@@ -25,6 +30,7 @@ nonisolated struct Nuée: Identifiable, Codable, Equatable, Sendable {
         expiresAt: Date? = nil,
         moodHintRawValue: String? = nil,
         iconGlyph: String? = nil,
+        parentNuéeId: UUID? = nil,
         version: Int = 1,
         lastModified: Date = Date()
     ) {
@@ -38,13 +44,14 @@ nonisolated struct Nuée: Identifiable, Codable, Equatable, Sendable {
         self.expiresAt = expiresAt
         self.moodHintRawValue = moodHintRawValue
         self.iconGlyph = iconGlyph
+        self.parentNuéeId = parentNuéeId
         self.version = version
         self.lastModified = lastModified
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, name, kind, theme, members, creatorId, createdAt
-        case expiresAt, moodHintRawValue, iconGlyph
+        case expiresAt, moodHintRawValue, iconGlyph, parentNuéeId
         case version, lastModified
     }
 
@@ -60,6 +67,7 @@ nonisolated struct Nuée: Identifiable, Codable, Equatable, Sendable {
         self.expiresAt = try c.decodeIfPresent(Date.self, forKey: .expiresAt)
         self.moodHintRawValue = try c.decodeIfPresent(String.self, forKey: .moodHintRawValue)
         self.iconGlyph = try c.decodeIfPresent(String.self, forKey: .iconGlyph)
+        self.parentNuéeId = try c.decodeIfPresent(UUID.self, forKey: .parentNuéeId)
         self.version = try c.decodeIfPresent(Int.self, forKey: .version) ?? 1
         self.lastModified = try c.decodeIfPresent(Date.self, forKey: .lastModified) ?? Date()
     }
@@ -90,6 +98,10 @@ nonisolated struct NuéeMember: Identifiable, Codable, Equatable, Sendable {
 }
 
 extension Nuée {
+    /// True si c'est une sous-Nuée thématique rattachée à une Intime.
+    var isChildThematic: Bool { parentNuéeId != nil }
+    /// True si c'est une Nuée top-level (affichée dans MesNuées).
+    var isTopLevel: Bool { parentNuéeId == nil }
     var isEphemeral: Bool { expiresAt != nil }
     var isExpired: Bool {
         guard let expiresAt else { return false }

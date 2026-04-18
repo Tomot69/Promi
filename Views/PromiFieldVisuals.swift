@@ -87,12 +87,16 @@ struct PromiFieldRootView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
+    var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     var body: some View {
         GeometryReader { geo in
             ZoomablePromiViewport {
+                // Le pack détermine sa propre taille intrinsèque (qui
+                // peut être plus grande que l'écran quand il y a beaucoup
+                // de Promi). Le ZoomablePromiViewport gère le scroll
+                // et le zoom pour naviguer dans le contenu étendu.
                 packContent(size: geo.size)
-                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
             }
         }
         .ignoresSafeArea()
@@ -103,80 +107,52 @@ struct PromiFieldRootView: View {
         switch pack {
         case .galets:
             GaletsPromiFieldView(
-                mood: mood,
-                size: size,
-                promis: promis,
-                nuées: nuées,
-                languageCode: languageCode,
-                sortOption: sortOption,
-                onTapPromi: onTapPromi,
-                onTapNuée: onTapNuée
+                mood: mood, size: size, promis: promis, nuées: nuées,
+                languageCode: languageCode, sortOption: sortOption,
+                onTapPromi: onTapPromi, onTapNuée: onTapNuée,
+                onLongPressPromi: onLongPressPromi
             )
         case .alveolesSignature:
             AlveolesPromiFieldView(
-                mood: mood,
-                size: size,
-                promis: promis,
-                nuées: nuées,
-                languageCode: languageCode,
-                sortOption: sortOption,
-                onTapPromi: onTapPromi,
-                onTapNuée: onTapNuée
+                mood: mood, size: size, promis: promis, nuées: nuées,
+                languageCode: languageCode, sortOption: sortOption,
+                onTapPromi: onTapPromi, onTapNuée: onTapNuée,
+                onLongPressPromi: onLongPressPromi
             )
         case .mosaicFlat:
             MosaicFlatPromiFieldView(
-                mood: mood,
-                size: size,
-                promis: promis,
-                nuées: nuées,
-                languageCode: languageCode,
-                sortOption: sortOption,
-                onTapPromi: onTapPromi,
-                onTapNuée: onTapNuée
+                mood: mood, size: size, promis: promis, nuées: nuées,
+                languageCode: languageCode, sortOption: sortOption,
+                onTapPromi: onTapPromi, onTapNuée: onTapNuée,
+                onLongPressPromi: onLongPressPromi
             )
         case .spectrumSoft:
             SpectrumSoftPromiFieldView(
-                mood: mood,
-                size: size,
-                promis: promis,
-                nuées: nuées,
-                languageCode: languageCode,
-                sortOption: sortOption,
-                onTapPromi: onTapPromi,
-                onTapNuée: onTapNuée
+                mood: mood, size: size, promis: promis, nuées: nuées,
+                languageCode: languageCode, sortOption: sortOption,
+                onTapPromi: onTapPromi, onTapNuée: onTapNuée,
+                onLongPressPromi: onLongPressPromi
             )
         case .cristal:
             CristalPromiFieldView(
-                mood: mood,
-                size: size,
-                promis: promis,
-                nuées: nuées,
-                languageCode: languageCode,
-                sortOption: sortOption,
-                onTapPromi: onTapPromi,
-                onTapNuée: onTapNuée
+                mood: mood, size: size, promis: promis, nuées: nuées,
+                languageCode: languageCode, sortOption: sortOption,
+                onTapPromi: onTapPromi, onTapNuée: onTapNuée,
+                onLongPressPromi: onLongPressPromi
             )
         case .vitrailChrome:
             VitrailChromePromiFieldView(
-                mood: mood,
-                size: size,
-                promis: promis,
-                nuées: nuées,
-                languageCode: languageCode,
-                sortOption: sortOption,
-                onTapPromi: onTapPromi,
-                onTapNuée: onTapNuée
+                mood: mood, size: size, promis: promis, nuées: nuées,
+                languageCode: languageCode, sortOption: sortOption,
+                onTapPromi: onTapPromi, onTapNuée: onTapNuée,
+                onLongPressPromi: onLongPressPromi
             )
         case .trame:
             TramePromiFieldView(
-                mood: mood,
-                size: size,
-                promis: promis,
-                nuées: nuées,
-                languageCode: languageCode,
-                sortOption: sortOption,
-                onTapPromi: onTapPromi,
-                onTapNuée: onTapNuée
+                mood: mood, size: size, promis: promis, nuées: nuées,
+                languageCode: languageCode, sortOption: sortOption,
+                onTapPromi: onTapPromi, onTapNuée: onTapNuée,
+                onLongPressPromi: onLongPressPromi
             )
         }
     }
@@ -287,9 +263,32 @@ struct PromiFieldPreviewView: View {
                 onTapNuée: { _ in }
             )
         case .vitrailChrome:
-            VitrailChromeStudioPreview(mood: mood, size: size)
+            // Si des Promi sont passés → rendu réel (share/composition).
+            // Sinon → preview Studio (tuiles PaletteView sans Promi).
+            if promis.isEmpty && nuées.isEmpty {
+                VitrailChromeStudioPreview(mood: mood, size: size)
+            } else {
+                VitrailChromeShareContent(
+                    mood: mood,
+                    size: size,
+                    promis: promis,
+                    nuées: nuées,
+                    sortOption: sortOption
+                )
+            }
         case .trame:
-            TrameStudioPreview(mood: mood, size: size)
+            if promis.isEmpty && nuées.isEmpty {
+                TrameStudioPreview(mood: mood, size: size)
+            } else {
+                TrameShareContent(
+                    mood: mood,
+                    size: size,
+                    promis: promis,
+                    nuées: nuées,
+                    languageCode: languageCode,
+                    sortOption: sortOption
+                )
+            }
         }
     }
 }
@@ -420,23 +419,35 @@ final class ZoomHostScrollView: UIScrollView {
 
 struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
     let content: Content
+    let onSingleTap: ((CGPoint) -> Void)?
+    let onLongPress: ((CGPoint) -> Void)?
 
-    init(@ViewBuilder content: () -> Content) {
+    init(
+        onSingleTap: ((CGPoint) -> Void)? = nil,
+        onLongPress: ((CGPoint) -> Void)? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
         self.content = content()
+        self.onSingleTap = onSingleTap
+        self.onLongPress = onLongPress
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(rootView: content)
+        Coordinator(rootView: content, onSingleTap: onSingleTap, onLongPress: onLongPress)
     }
 
     func makeUIView(context: Context) -> ZoomHostScrollView {
         let scrollView = ZoomHostScrollView()
         scrollView.backgroundColor = .clear
         scrollView.delegate = context.coordinator
-        scrollView.minimumZoomScale = 1.0
+        // Le minimum zoom scale est calculé pour que tout le contenu
+        // (y compris l'overscan Voronoï) puisse être vu en dézoomant.
+        // À scale 1.0 = taille native (ce que la home montre par défaut).
+        // En dessous de 1.0 = dézoom, on voit plus de la toile.
+        scrollView.minimumZoomScale = 0.3
         scrollView.maximumZoomScale = 4.0
         scrollView.zoomScale = 1.0
-        scrollView.bouncesZoom = true
+        scrollView.bouncesZoom = false
         scrollView.alwaysBounceVertical = false
         scrollView.alwaysBounceHorizontal = false
         scrollView.showsVerticalScrollIndicator = false
@@ -464,9 +475,43 @@ struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
         doubleTap.delaysTouchesBegan = false
         scrollView.addGestureRecognizer(doubleTap)
 
-        context.coordinator.scrollView = scrollView
-        return scrollView
-    }
+        // Single-tap recognizer (1 doigt, 1 tap). Coexiste avec le pinch
+        // natif du scrollview : 2 doigts → pinch, 1 doigt → tap.
+        // Le tap "fail" si un double-tap se déclenche, pour éviter qu'un
+        // double-tap zoom ouvre aussi la cellule.
+        let singleTap = UITapGestureRecognizer(
+            target: context.coordinator,
+            action: #selector(Coordinator.handleSingleTap(_:))
+        )
+        singleTap.numberOfTapsRequired = 1
+        singleTap.numberOfTouchesRequired = 1
+        singleTap.delaysTouchesBegan = false
+        singleTap.require(toFail: doubleTap)
+        singleTap.require(toFail: scrollView.pinchGestureRecognizer!)
+                singleTap.require(toFail: scrollView.panGestureRecognizer)
+                scrollView.addGestureRecognizer(singleTap)
+
+                // Long-press recognizer (1 doigt, 0.5s) pour le menu de
+                // signalement/blocage sur les Promi reçus d'autres utilisateurs.
+                // Coexiste naturellement avec le pinch : 2 doigts = pinch gagne
+                // immédiatement, 1 doigt maintenu = long-press se déclenche après
+                // la durée minimum. Le single tap require(toFail:) du long-press
+                // n'est PAS nécessaire ici parce que le UILongPressGestureRecognizer
+                // ne "fail" jamais avant sa durée — il se déclenche ou il est
+                // annulé si le doigt bouge trop. Le tap attend déjà le pinch et le
+                // pan, le long-press vit en parallèle sans conflit.
+                let longPress = UILongPressGestureRecognizer(
+                    target: context.coordinator,
+                    action: #selector(Coordinator.handleLongPress(_:))
+                )
+                longPress.minimumPressDuration = 0.5
+                longPress.numberOfTouchesRequired = 1
+                longPress.allowableMovement = 10
+                scrollView.addGestureRecognizer(longPress)
+
+                context.coordinator.scrollView = scrollView
+                return scrollView
+            }
 
     func updateUIView(_ scrollView: ZoomHostScrollView, context: Context) {
         context.coordinator.hostingController.rootView = content
@@ -476,9 +521,13 @@ struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
     final class Coordinator: NSObject, UIScrollViewDelegate {
         let hostingController: UIHostingController<Content>
         weak var scrollView: ZoomHostScrollView?
+        let onSingleTap: ((CGPoint) -> Void)?
+        let onLongPress: ((CGPoint) -> Void)?
 
-        init(rootView: Content) {
-            hostingController = UIHostingController(rootView: rootView)
+        init(rootView: Content, onSingleTap: ((CGPoint) -> Void)?, onLongPress: ((CGPoint) -> Void)?) {
+            self.hostingController = UIHostingController(rootView: rootView)
+            self.onSingleTap = onSingleTap
+            self.onLongPress = onLongPress
             hostingController.view.backgroundColor = .clear
         }
 
@@ -486,12 +535,31 @@ struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
             hostingController.view
         }
 
+        /// Centre le contenu dans le viewport quand il est plus petit
+        /// (après dézoom). Sans ça, le contenu se colle en haut à gauche.
+
+
         func scrollViewDidZoom(_ scrollView: UIScrollView) {
             (scrollView as? ZoomHostScrollView)?.centerContentIfNeeded()
         }
 
         func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
             (scrollView as? ZoomHostScrollView)?.centerContentIfNeeded()
+        }
+
+        @objc
+        func handleSingleTap(_ recognizer: UITapGestureRecognizer) {
+            let point = recognizer.location(in: hostingController.view)
+            onSingleTap?(point)
+        }
+
+        @objc
+        func handleLongPress(_ recognizer: UILongPressGestureRecognizer) {
+            // On ne réagit qu'au .began (pas au .ended/.changed) pour
+            // éviter de déclencher le menu plusieurs fois par geste.
+            guard recognizer.state == .began else { return }
+            let point = recognizer.location(in: hostingController.view)
+            onLongPress?(point)
         }
 
         @objc
@@ -531,6 +599,7 @@ struct GaletsPromiFieldView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
+    var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     var body: some View {
         CommonPromiFieldView(
@@ -542,7 +611,8 @@ struct GaletsPromiFieldView: View {
             languageCode: languageCode,
             sortOption: sortOption,
             onTapPromi: onTapPromi,
-            onTapNuée: onTapNuée
+            onTapNuée: onTapNuée,
+            onLongPressPromi: onLongPressPromi
         )
         .background(mood.homeBackground)
     }
@@ -557,6 +627,7 @@ struct AlveolesPromiFieldView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
+    var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     var body: some View {
         CommonPromiFieldView(
@@ -568,7 +639,8 @@ struct AlveolesPromiFieldView: View {
             languageCode: languageCode,
             sortOption: sortOption,
             onTapPromi: onTapPromi,
-            onTapNuée: onTapNuée
+            onTapNuée: onTapNuée,
+            onLongPressPromi: onLongPressPromi
         )
         .background(mood.homeBackground)
     }
@@ -583,6 +655,7 @@ struct VitrailChromePromiFieldView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
+    var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     @StateObject private var motion = MotionTilt.shared
 
@@ -611,7 +684,30 @@ struct VitrailChromePromiFieldView: View {
         let canvas = CGSize(width: imageWidth, height: imageHeight)
         let remapped = Self.vitrailRemappedCells(from: layout.cells, canvas: canvas)
 
-        return ZoomablePromiViewport {
+        return ZoomablePromiViewport(
+            onSingleTap: { point in
+                for cell in remapped {
+                    guard cell.promotedPromi != nil || cell.promotedNuée != nil else { continue }
+                    if Self.polygon(cell.points, contains: point) {
+                        if let n = cell.promotedNuée { onTapNuée(n) }
+                        else if let p = cell.promotedPromi { onTapPromi(p) }
+                        return
+                    }
+                }
+            },
+            onLongPress: { point in
+                // Long-press : trouver le Promi sous le doigt et déclencher
+                // le menu signalement/blocage (seulement si reçu d'un tiers).
+                for cell in remapped {
+                    guard let promi = cell.promotedPromi, promi.isReceivedFromOther else { continue }
+                    if Self.polygon(cell.points, contains: point) {
+                        Haptics.shared.lightTap()
+                        onLongPressPromi?(promi)
+                        return
+                    }
+                }
+            }
+        ) {
             ZStack(alignment: .topLeading) {
                 // Couche 1 : chrome multiply (plombs sombres qui dessinent la
                 // grille). Placé AVANT les remplissages pour que le contour
@@ -688,16 +784,12 @@ struct VitrailChromePromiFieldView: View {
                                 x: cell.visibleBounds.midX,
                                 y: cell.visibleBounds.midY
                             )
-                            .contentShape(VitrailCellShape(points: cell.points))
-                            .onTapGesture {
-                                if let n = cell.promotedNuée { onTapNuée(n) }
-                                else if let p = cell.promotedPromi { onTapPromi(p) }
-                            }
-                    }
-                }
-            }
-            .frame(width: imageWidth, height: imageHeight)
-            .background(Color.white)
+                            .allowsHitTesting(false)
+                                                }
+                                            }
+                                        }
+                                        .frame(width: imageWidth, height: imageHeight)
+                                        .background(Color.white)
         }
         .frame(width: size.width, height: size.height)
         .background(mood.homeBackground)
@@ -767,6 +859,25 @@ struct VitrailChromePromiFieldView: View {
             )
         }
     }
+
+    /// Ray-casting : teste si `point` est dans le polygone `pts`.
+    /// Utilisé par le tap UIKit du ZoomablePromiViewport pour router
+    /// le tap vers le bon Promi/Nuée sans bloquer le pinch à 2 doigts.
+    fileprivate static func polygon(_ pts: [CGPoint], contains point: CGPoint) -> Bool {
+        guard pts.count >= 3 else { return false }
+        var inside = false
+        var j = pts.count - 1
+        for i in 0..<pts.count {
+            let pi = pts[i]
+            let pj = pts[j]
+            if ((pi.y > point.y) != (pj.y > point.y)) &&
+               (point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x) {
+                inside.toggle()
+            }
+            j = i
+        }
+        return inside
+    }
 }
 
 /// Shape polygonale utilisée pour le hit-test précis des cellules vitrailChrome
@@ -820,6 +931,7 @@ struct MosaicFlatPromiFieldView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
+    var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     var body: some View {
         CommonPromiFieldView(
@@ -831,7 +943,8 @@ struct MosaicFlatPromiFieldView: View {
             languageCode: languageCode,
             sortOption: sortOption,
             onTapPromi: onTapPromi,
-            onTapNuée: onTapNuée
+            onTapNuée: onTapNuée,
+            onLongPressPromi: onLongPressPromi
         )
         .background(mood.homeBackground)
     }
@@ -846,6 +959,7 @@ struct SpectrumSoftPromiFieldView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
+    var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     var body: some View {
         CommonPromiFieldView(
@@ -857,7 +971,8 @@ struct SpectrumSoftPromiFieldView: View {
             languageCode: languageCode,
             sortOption: sortOption,
             onTapPromi: onTapPromi,
-            onTapNuée: onTapNuée
+            onTapNuée: onTapNuée,
+            onLongPressPromi: onLongPressPromi
         )
         .background(mood.homeBackground)
     }
@@ -872,6 +987,7 @@ struct CristalPromiFieldView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
+    var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     var body: some View {
         CommonPromiFieldView(
@@ -883,9 +999,132 @@ struct CristalPromiFieldView: View {
             languageCode: languageCode,
             sortOption: sortOption,
             onTapPromi: onTapPromi,
-            onTapNuée: onTapNuée
+            onTapNuée: onTapNuée,
+            onLongPressPromi: onLongPressPromi
         )
         .background(mood.homeBackground)
+    }
+}
+
+/// Rendu Chrome×Vitrail pour le partage : même contenu que
+/// VitrailChromePromiFieldView mais sans le ZoomablePromiViewport
+/// (pas de scroll, pas de hit-test, pas de motion tilt). Compatible
+/// avec ImageRenderer pour l'export.
+fileprivate struct VitrailChromeShareContent: View {
+    let mood: PromiColorMood
+    let size: CGSize
+    let promis: [PromiItem]
+    let nuées: [Nuée]
+    let sortOption: PromiFieldSortOption
+
+    var body: some View {
+        let layout = PromiFieldLayoutFactory.make(
+            theme: .vitrail,
+            mood: mood,
+            size: size,
+            promis: promis,
+            nuées: nuées,
+            sortOption: sortOption
+        )
+        let imageRatio: CGFloat = 1024.0 / 1536.0
+        let targetHeight = (size.height + 120) * 1.15
+        let imageHeight = targetHeight
+        let imageWidth = targetHeight * imageRatio
+        let canvas = CGSize(width: imageWidth, height: imageHeight)
+        let remapped = VitrailChromePromiFieldView.vitrailRemappedCells(
+            from: layout.cells, canvas: canvas
+        )
+
+        ZStack(alignment: .topLeading) {
+            Image("vitrail_chrome_overlay")
+                .resizable()
+                .frame(width: imageWidth, height: imageHeight)
+                .blendMode(.multiply)
+                .allowsHitTesting(false)
+
+            Image("vitrail_chrome_overlay")
+                .resizable()
+                .frame(width: imageWidth, height: imageHeight)
+                .blendMode(.screen)
+                .opacity(0.7)
+                .allowsHitTesting(false)
+
+            ForEach(remapped) { cell in
+                let isNuée = cell.promotedNuée != nil
+                let isPromi = cell.promotedPromi != nil
+                if isNuée || isPromi {
+                    let shape = VitrailCellShape(points: cell.points)
+                    let b = cell.visibleBounds
+                    let radius = max(b.width, b.height) * 0.70
+                    let swatches = mood.swatches
+                    let swatchCount = max(swatches.count, 1)
+                    let promiSwatchIdx = abs(cell.id.hashValue) % swatchCount
+                    let tint: AnyShapeStyle = isNuée
+                        ? AnyShapeStyle(swatches[swatchCount - 1])
+                        : AnyShapeStyle(swatches[promiSwatchIdx])
+
+                    shape.fill(tint)
+                        .mask(
+                            RadialGradient(
+                                gradient: Gradient(stops: [
+                                    .init(color: .white.opacity(0.95), location: 0.0),
+                                    .init(color: .white.opacity(0.80), location: 0.55),
+                                    .init(color: .white.opacity(0.0),  location: 1.0)
+                                ]),
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: radius
+                            )
+                            .frame(width: b.width, height: b.height)
+                            .position(x: b.midX, y: b.midY)
+                        )
+                        .allowsHitTesting(false)
+                }
+            }
+
+            ForEach(remapped) { cell in
+                if cell.promotedPromi != nil || cell.promotedNuée != nil {
+                    let title: String = cell.promotedNuée?.name
+                        ?? cell.promotedPromi?.title
+                        ?? ""
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.black.opacity(0.85))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: max(cell.visibleBounds.width * 0.8, 40))
+                        .position(
+                            x: cell.visibleBounds.midX,
+                            y: cell.visibleBounds.midY
+                        )
+                        .allowsHitTesting(false)
+                }
+            }
+        }
+        .frame(width: imageWidth, height: imageHeight)
+        .background(Color.white)
+    }
+}
+
+/// Rendu Trame pour le partage : même contenu que TramePromiFieldView
+/// mais sans le ZoomablePromiViewport. Compatible avec ImageRenderer.
+fileprivate struct TrameShareContent: View {
+    let mood: PromiColorMood
+    let size: CGSize
+    let promis: [PromiItem]
+    let nuées: [Nuée]
+    let languageCode: String
+    let sortOption: PromiFieldSortOption
+
+    var body: some View {
+        TramePromiFieldShareView(
+            mood: mood,
+            size: size,
+            promis: promis,
+            nuées: nuées,
+            languageCode: languageCode,
+            sortOption: sortOption
+        )
     }
 }
 
@@ -967,6 +1206,7 @@ fileprivate struct CommonPromiFieldView: View {
     let sortOption: PromiFieldSortOption
     let onTapPromi: (PromiItem) -> Void
     let onTapNuée: (Nuée) -> Void
+    var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     @StateObject private var cache = PromiFieldLayoutCache()
 
@@ -1114,6 +1354,11 @@ fileprivate struct CommonPromiFieldView: View {
             // reads as a clear secondary signal without erasing the cell's
             // native border.
             let haloColor: Color? = {
+                // Promi tenu → halo vert doré (célébration visuelle).
+                if promi.status == .done {
+                    return Color(red: 0.34, green: 0.80, blue: 0.60)
+                }
+                // Promi rattaché à une Nuée → halo couleur swatch.
                 guard let nuéeId = promi.nuéeId,
                       let parentNuée = nuéeLookup[nuéeId] else { return nil }
                 return NuéePalette.color(fromHex: parentNuée.moodHintRawValue)
@@ -1181,6 +1426,11 @@ fileprivate struct CommonPromiFieldView: View {
             // Cristal black border so it reads as a clear secondary
             // signal — same principle as the outer-tier halo.
             let haloColor: Color? = {
+                // Promi tenu → halo vert doré (célébration visuelle).
+                if promi.status == .done {
+                    return Color(red: 0.34, green: 0.80, blue: 0.60)
+                }
+                // Promi rattaché à une Nuée → halo couleur swatch.
                 guard let nuéeId = promi.nuéeId,
                       let parentNuée = nuéeLookup[nuéeId] else { return nil }
                 return NuéePalette.color(fromHex: parentNuée.moodHintRawValue)
@@ -1218,6 +1468,15 @@ fileprivate struct CommonPromiFieldView: View {
                     )
             }
             .buttonStyle(.plain)
+            .onLongPressGesture(minimumDuration: 0.5) {
+                // Long-press = ouvrir le menu de signalement/blocage.
+                // Ne se déclenche que sur les Promi reçus d'un autre
+                // utilisateur (isReceivedFromOther). Pour les Promi
+                // créés par soi-même, le long-press ne fait rien.
+                guard promi.isReceivedFromOther else { return }
+                Haptics.shared.lightTap()
+                onLongPressPromi?(promi)
+            }
         }
     }
 
@@ -1376,27 +1635,44 @@ fileprivate enum PromiFieldThemeConfig {
         mood.prefersDarkChrome ? .lightCentered : .darkCentered
     }
 
+    /// Nombre de cellules Voronoï à générer. La formule fait croître le
+    /// nombre de cellules avec le nombre de Promi+Nuées, avec un padding
+    /// d'idle cells pour l'esthétique. Les plafonds sont relevés
+    /// suffisamment haut pour qu'aucun utilisateur ne les atteigne en
+    /// usage réel — les packs sont effectivement infinis.
+    ///
+    /// Performance : le Voronoï en O(n²) reste < 20ms pour n < 300 sur
+    /// iPhone récent. Au-delà de 300, Cristal passe en async (déjà géré
+    /// dans le cache). Les autres packs restent synchrones et fluides.
     static func baseSiteCount(for theme: PromiFieldTheme, size: CGSize, promiCount: Int) -> Int {
         let area = max(size.width * size.height, 1)
         let density = Int(area / 22_000)
+        // Minimum garanti : chaque Promi/Nuée a sa cellule + idle padding.
+        let needed = promiCount
 
         switch theme {
         case .galets:
-            // Quasi-grid layout: lower count for breathing room, grows with promises.
-            return min(28, max(15, 18 + promiCount))
+            // Quasi-grid layout: lower density for breathing room.
+            // Idle padding = 8 cells autour des Promi.
+            return max(15, needed + 8)
         case .alveoles:
-            return min(70, max(26, density + 14 + promiCount))
+            // Dense honeycomb. Idle padding = density + 14.
+            return max(26, density + 14 + needed)
         case .cristal:
-            // Tier 1 outer compartments. Bumped per user "complexifie" request:
-            // ~18-28 on full home, ~8-12 on Studio preview cards.
+            // Tier 1 outer compartments. Cristal a 3 niveaux (outer /
+            // medium / sub), donc les outer cells sont ~1/3 du total
+            // de Promi. On ajoute un scaling de base + idle.
             let scaled = Int(area / 22_000)
-            return min(28, max(8, scaled + 8 + promiCount / 3))
+            return max(8, scaled + 8 + (needed + 2) / 3)
         case .mosaic:
-            return min(62, max(24, density + 12 + promiCount))
+            // Flat mosaic, medium density.
+            return max(24, density + 12 + needed)
         case .vitrail:
-            return min(62, max(24, density + 12 + promiCount))
+            // Vitrail interne (pas Chrome×Vitrail qui est PNG).
+            return max(24, density + 12 + needed)
         case .spectrum:
-            return min(94, max(38, density + 24 + promiCount * 2))
+            // Très dense, petites cellules. 2× pour l'idle.
+            return max(38, density + 24 + needed * 2)
         }
     }
 
@@ -1438,11 +1714,30 @@ fileprivate enum PromiFieldLayoutFactory {
         let overscanYTop: CGFloat = 36
         let overscanYBottom: CGFloat = 120
 
+        // Scale vertical : quand le nombre de cellules dépasse le seuil
+        // de base (écran rempli à densité normale), on étend le canvas
+        // verticalement pour que les cellules gardent une taille lisible
+        // au lieu d'être compressées. Le viewport est scrollable, donc
+        // l'utilisateur scrolle vers le bas pour voir les nouvelles
+        // cellules — même UX que Photos.app avec beaucoup de photos.
+        let baseIdleCount: CGFloat = {
+            switch theme {
+            case .galets: return 18
+            case .alveoles: return 40
+            case .cristal: return 16
+            case .mosaic: return 36
+            case .vitrail: return 36
+            case .spectrum: return 62
+            }
+        }()
+        let growthFactor = max(1.0, CGFloat(siteCount) / baseIdleCount)
+        let scaledHeight = (safeSize.height + overscanYTop + overscanYBottom) * growthFactor
+
         let bounds = CGRect(
             x: -overscanX,
             y: -overscanYTop,
             width: safeSize.width + overscanX * 2,
-            height: safeSize.height + overscanYTop + overscanYBottom
+            height: scaledHeight
         )
 
         let baseSites = makeStableSites(theme: theme, size: safeSize, count: siteCount)

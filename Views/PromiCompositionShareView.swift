@@ -16,18 +16,42 @@ struct PromiCompositionShareView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var promiStore: PromiStore
+    @EnvironmentObject var nuéeStore: NuéeStore
 
     let pack: PromiVisualPack
     let mood: PromiColorMood
     let sortOption: PromiFieldSortOption
 
+    /// Taille de l'écran home, passée par ContentView. Le champ sera
+    /// rendu à cette taille pour reproduire le même layout Voronoï
+    /// que la home — c'est SA toile, pas une version réduite.
+    let homeSize: CGSize
+
     @State private var hideText = false
-    @State private var showSignature = true
+    /// Alignement du logo promi.app en bas : trailing (défaut) ou leading.
+    /// Le logo est toujours visible, pas supprimable, mais déplaçable.
+    @State private var signatureAlignment: HorizontalAlignment = .trailing
     @State private var selectedTemplate: PromiShareTemplate = .instagramStory
     @State private var shareImage: UIImage?
     @State private var isPreparingShare = false
     @State private var shareItems: [Any] = []
     @State private var showShareSheet = false
+
+    // Crop : zoom + pan pour choisir la zone à partager.
+    // Le champ est rendu à taille fixe, l'utilisateur zoome/pane
+    // dans la fenêtre de preview — ce qui est visible = ce qui est
+    // partagé. Pinch = zoom, drag 1 doigt = pan.
+    @State private var cropScale: CGFloat = 1.0
+    @State private var cropOffset: CGSize = .zero
+    @State private var lastCropScale: CGFloat = 1.0
+    @State private var lastCropOffset: CGSize = .zero
+
+    // Promi individuels à exclure de la composition (non affichés ni
+    // dans la preview ni dans l'export). L'utilisateur toggle via la
+    // liste « Visible / Masqué » dans les contrôles.
+    @State private var excludedPromiIds: Set<UUID> = []
+    @State private var excludedNuéeIds: Set<UUID> = []
+    @State private var showPromiPicker = false
 
 
     private var isEnglish: Bool {
@@ -61,13 +85,29 @@ struct PromiCompositionShareView: View {
             .sheet(isPresented: $showShareSheet) {
                 ShareSheet(items: shareItems)
             }
+            .sheet(isPresented: $showPromiPicker) {
+                SharePromiFilterSheet(
+                    promis: promiStore.promis.filter { $0.status != .done },
+                    nuées: nuéeStore.activeNuées(for: userStore.localUserId),
+                    excludedPromiIds: $excludedPromiIds,
+                    excludedNuéeIds: $excludedNuéeIds,
+                    isEnglish: isEnglish
+                )
+            }
         }
     }
 
     // MARK: - Promis (home-mirrored sorting)
 
     private var visiblePromis: [PromiItem] {
-        promiStore.promis.filter { $0.status != .done }
+        promiStore.promis
+            .filter { $0.status != .done }
+            .filter { !excludedPromiIds.contains($0.id) }
+    }
+
+    private var visibleNuées: [Nuée] {
+        nuéeStore.activeNuées(for: userStore.localUserId)
+            .filter { !excludedNuéeIds.contains($0.id) }
     }
 
     private var sortedPromis: [PromiItem] {
@@ -214,14 +254,29 @@ struct PromiCompositionShareView: View {
                 }
 
                 iconToggle(
-                    icon: "signature",
-                    label: "Promi",
-                    isActive: showSignature
+                    icon: signatureAlignment == .trailing
+                        ? "text.alignright"
+                        : "text.alignleft",
+                    label: "promi.app",
+                    isActive: true
                 ) {
                     Haptics.shared.tinyPop()
                     withAnimation(.spring(response: 0.24, dampingFraction: 0.88)) {
-                        showSignature.toggle()
+                        signatureAlignment = signatureAlignment == .trailing
+                            ? .leading
+                            : .trailing
                     }
+                }
+
+                iconToggle(
+                    icon: "checklist",
+                    label: (excludedPromiIds.isEmpty && excludedNuéeIds.isEmpty)
+                        ? (isEnglish ? "All" : "Tous")
+                        : (isEnglish ? "Filtered" : "Filtré"),
+                    isActive: !excludedPromiIds.isEmpty || !excludedNuéeIds.isEmpty
+                ) {
+                    Haptics.shared.tinyPop()
+                    showPromiPicker = true
                 }
 
                 Spacer()
@@ -372,6 +427,37 @@ struct PromiCompositionShareView: View {
     // via Spacer-free GeometryReader. The composition card is centered
     // and sized to fit the available area with generous margins.
 
+    /// Échelle de base : la toile complète (homeSize) tient dans la
+    /// carte (cardSize). C'est le multiplicateur appliqué quand
+    /// cropScale = 1.0 (vue d'ensemble). cropScale > 1.0 = zoom.
+    /// Échelle de base : la toile (homeSize) REMPLIT la carte (cardSize)
+    /// sans vide. max() garantit que la dimension la plus courte de la
+    /// toile couvre la carte — la dimension la plus longue déborde et
+    /// est clippée. L'utilisateur peut paner pour cadrer la zone souhaitée.
+    private func fitScale(cardSize: CGSize) -> CGFloat {
+        guard homeSize.width > 0, homeSize.height > 0 else { return 1.0 }
+        return max(
+            cardSize.width / homeSize.width,
+            cardSize.height / homeSize.height
+        )
+    }
+
+    /// Offset libre mais borné pour que la toile ne sorte pas
+    /// complètement du cadre. L'utilisateur peut laisser du vide
+    /// sur les bords s'il veut cadrer un coin spécifique.
+    private func clampedOffset(_ raw: CGSize, effectiveScale: CGFloat, cardSize: CGSize) -> CGSize {
+        let apparentW = homeSize.width * effectiveScale
+        let apparentH = homeSize.height * effectiveScale
+        // La toile peut se décaler jusqu'à sa propre largeur/hauteur
+        // dans chaque direction — assez pour explorer tout le champ.
+        let maxX = max(apparentW, cardSize.width) / 2
+        let maxY = max(apparentH, cardSize.height) / 2
+        return CGSize(
+            width:  min(maxX, max(-maxX, raw.width)),
+            height: min(maxY, max(-maxY, raw.height))
+        )
+    }
+
     @ViewBuilder
     private var previewArea: some View {
         GeometryReader { geo in
@@ -381,23 +467,88 @@ struct PromiCompositionShareView: View {
                 height: max(140, geo.size.height - inset * 2)
             )
             let canvas = selectedTemplate.canvasSize(fitting: available)
+            // effective = fitScale × cropScale.
+            // cropScale=1.0 → vue d'ensemble (toile complète).
+            // cropScale=2.0 → zoomé 2× dans la toile.
+            let fit = fitScale(cardSize: canvas)
+            let effective = fit * cropScale
 
-            ZStack {
-                CompositionPreviewCard(
-                    size: canvas,
-                    pack: pack,
-                    mood: mood,
-                    promis: sortedPromis,
-                    languageCode: userStore.selectedLanguage,
-                    sortOption: sortOption,
-                    hideText: hideText,
-                    showSignature: showSignature,
-                    title: isEnglish ? "My Promi" : "Mon Promi",
-                    subtitle: selectedTemplate.previewBadge
-                )
-                .animation(.spring(response: 0.40, dampingFraction: 0.86), value: selectedTemplate)
-                .animation(.spring(response: 0.40, dampingFraction: 0.86), value: hideText)
+            CompositionPreviewCard(
+                size: canvas,
+                fieldSize: homeSize,
+                pack: pack,
+                mood: mood,
+                promis: sortedPromis,
+                nuées: visibleNuées,
+                languageCode: userStore.selectedLanguage,
+                sortOption: sortOption,
+                hideText: hideText,
+                signatureAlignment: signatureAlignment,
+                title: isEnglish ? "My Promi" : "Mon Promi",
+                subtitle: selectedTemplate.previewBadge,
+                fieldScale: effective,
+                fieldOffset: clampedOffset(cropOffset, effectiveScale: effective, cardSize: canvas)
+            )
+            .contentShape(Rectangle())
+            .simultaneousGesture(
+                DragGesture()
+                    .onChanged { value in
+                        let raw = CGSize(
+                            width: lastCropOffset.width + value.translation.width,
+                            height: lastCropOffset.height + value.translation.height
+                        )
+                        cropOffset = clampedOffset(raw, effectiveScale: effective, cardSize: canvas)
+                    }
+                    .onEnded { _ in
+                        cropOffset = clampedOffset(cropOffset, effectiveScale: effective, cardSize: canvas)
+                        lastCropOffset = cropOffset
+                    }
+            )
+            .simultaneousGesture(
+                MagnifyGesture()
+                    .onChanged { value in
+                        // minCrop : échelle à laquelle la toile complète
+                        // tient dans le cadre (sans crop, avec du vide).
+                        // fitScale utilise max() → remplit le cadre.
+                        // min()/max() ratio → vue d'ensemble complète.
+                        let newCrop = max(0.15, min(5.0, lastCropScale * value.magnification))
+                        cropScale = newCrop
+                        let newEffective = fit * newCrop
+                        cropOffset = clampedOffset(cropOffset, effectiveScale: newEffective, cardSize: canvas)
+                    }
+                    .onEnded { _ in
+                        lastCropScale = cropScale
+                        lastCropOffset = cropOffset
+                    }
+            )
+            .overlay(alignment: .bottomTrailing) {
+                if cropScale > 1.01 {
+                    Button {
+                        Haptics.shared.tinyPop()
+                        withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
+                            cropScale = 1.0
+                            cropOffset = .zero
+                            lastCropScale = 1.0
+                            lastCropOffset = .zero
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 9, weight: .bold))
+                            Text("\(Int(cropScale * 100))%")
+                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                        }
+                        .foregroundColor(Color.white.opacity(0.86))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(Color.black.opacity(0.54)))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(8)
+                }
             }
+            .animation(.spring(response: 0.40, dampingFraction: 0.86), value: selectedTemplate)
+            .animation(.spring(response: 0.40, dampingFraction: 0.86), value: hideText)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             .padding(inset)
         }
@@ -425,17 +576,33 @@ struct PromiCompositionShareView: View {
         isPreparingShare = true
 
         let renderSize = selectedTemplate.renderSize
+        let fit = fitScale(cardSize: renderSize)
+        let effective = fit * cropScale
+        let scaleFactor = renderSize.width / 300.0
+        let renderOffset = clampedOffset(
+            CGSize(
+                width: cropOffset.width * scaleFactor,
+                height: cropOffset.height * scaleFactor
+            ),
+            effectiveScale: effective,
+            cardSize: renderSize
+        )
+
         let view = CompositionPreviewCard(
             size: renderSize,
+            fieldSize: homeSize,
             pack: pack,
             mood: mood,
             promis: sortedPromis,
+            nuées: visibleNuées,
             languageCode: userStore.selectedLanguage,
             sortOption: sortOption,
             hideText: hideText,
-            showSignature: showSignature,
+            signatureAlignment: signatureAlignment,
             title: isEnglish ? "My Promi" : "Mon Promi",
-            subtitle: selectedTemplate.previewBadge
+            subtitle: selectedTemplate.previewBadge,
+            fieldScale: cropScale,
+            fieldOffset: renderOffset
         )
         .frame(width: renderSize.width + 12, height: renderSize.height + 12)
 
@@ -482,41 +649,95 @@ struct PromiCompositionShareView: View {
 // has the mood's full colors, not the muted chrome version.
 
 private struct CompositionPreviewCard: View {
+    /// Taille de la fenêtre de crop (= template dimensions).
     let size: CGSize
+    /// Taille réelle du champ Voronoï (= taille écran home).
+    let fieldSize: CGSize
     let pack: PromiVisualPack
     let mood: PromiColorMood
     let promis: [PromiItem]
+    let nuées: [Nuée]
     let languageCode: String
     let sortOption: PromiFieldSortOption
     let hideText: Bool
-    let showSignature: Bool
+    let signatureAlignment: HorizontalAlignment
     let title: String
     let subtitle: String
+    /// Échelle appliquée au champ Voronoï à l'intérieur de la carte.
+    /// Les bordures et overlays restent fixes — seul le champ bouge.
+    var fieldScale: CGFloat = 1.0
+    var fieldOffset: CGSize = .zero
 
-    var body: some View {
-        ZStack(alignment: .topLeading) {
-            ZStack(alignment: .topLeading) {
-                PromiFieldPreviewView(
-                    pack: pack,
-                    mood: mood,
-                    size: size,
-                    promis: promis,
-                    languageCode: languageCode,
-                    sortOption: sortOption
-                )
+   var body: some View {
+        ZStack {
+            // Fond de la carte (visible quand le champ est dézoomé).
+            mood.homeBackground
+                .frame(width: size.width, height: size.height)
 
-                if !hideText {
-                    overlayPlates
+            // Couche 1 : le champ Voronoï. Quand zoomé il déborde et
+            // est clippé par le ZStack. Quand dézoomé il apparaît en
+            // entier avec ses coins arrondis naturels — comme la home
+            // en miniature, positionnable librement dans la carte.
+            PromiFieldPreviewView(
+                pack: pack,
+                mood: mood,
+                size: fieldSize,
+                promis: promis,
+                nuées: nuées,
+                languageCode: languageCode,
+                sortOption: sortOption
+            )
+            .frame(width: fieldSize.width, height: fieldSize.height)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: .black.opacity(0.4), radius: 12, x: 0, y: 6)
+            .scaleEffect(fieldScale, anchor: .center)
+            .offset(fieldOffset)
+
+            // Couche 2 : titre + sous-titre (masquable).
+            if !hideText {
+                VStack {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(title)
+                                .font(.system(size: titleSize, weight: .light))
+                                .foregroundColor(overlayTextColor)
+                            Text(subtitle)
+                                .font(.system(size: subtitleSize, weight: .medium))
+                                .foregroundColor(overlayTextColor.opacity(0.72))
+                        }
+                        .padding(.horizontal, plateHorizontal)
+                        .padding(.vertical, plateVertical)
+                        .background(overlayPlate)
+                        Spacer()
+                    }
+                    .padding(overlayPadding)
+                    Spacer()
                 }
+                .frame(width: size.width, height: size.height)
+            }
+
+            // Couche 3 : promi.app — TOUJOURS visible, jamais masquable.
+            VStack {
+                Spacer()
+                HStack {
+                    if signatureAlignment == .trailing { Spacer() }
+                    Text("promi.app")
+                        .font(.system(size: footerSize, weight: .semibold))
+                        .foregroundColor(overlayTextColor.opacity(0.88))
+                    if signatureAlignment == .leading { Spacer() }
+                }
+                .padding(.horizontal, overlayPadding + 6)
+                .padding(.bottom, overlayPadding + 6)
             }
             .frame(width: size.width, height: size.height)
-            .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
-                    .stroke(Color.white.opacity(0.38), lineWidth: 1)
-            )
-            .padding(6)
         }
+        .frame(width: size.width, height: size.height)
+        .clipShape(RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: cardCornerRadius, style: .continuous)
+                .stroke(Color.white.opacity(0.38), lineWidth: 1)
+        )
+        .padding(6)
         .frame(width: size.width + 12, height: size.height + 12)
         .background(
             RoundedRectangle(cornerRadius: cardCornerRadius + 6, style: .continuous)
@@ -548,17 +769,20 @@ private struct CompositionPreviewCard: View {
 
             Spacer()
 
+            // Logo promi.app : toujours visible, jamais supprimable.
+            // Fond semi-transparent pour garantir la lisibilité à
+            // l'export (ImageRenderer + compression Instagram/X).
             HStack {
-                Spacer()
+                if signatureAlignment == .trailing { Spacer() }
 
-                Text(textFooter)
-                    .font(.system(size: footerSize, weight: .regular))
-                    .foregroundColor(overlayTextColor.opacity(0.78))
-                    .padding(.horizontal, plateHorizontal)
-                    .padding(.vertical, max(8, plateVertical - 2))
-                    .background(overlayPlate)
+                Text("promi.app")
+                    .font(.system(size: footerSize, weight: .semibold))
+                    .foregroundColor(overlayTextColor.opacity(0.88))
+
+                if signatureAlignment == .leading { Spacer() }
             }
-            .padding(overlayPadding)
+            .padding(.horizontal, overlayPadding + 6)
+            .padding(.bottom, overlayPadding + 6)
         }
     }
 
@@ -582,16 +806,8 @@ private struct CompositionPreviewCard: View {
         }
     }
 
-    private var textFooter: String {
-        if !showSignature {
-            if promis.isEmpty { return "" }
-            return "\(promis.count) Promi · \(sortOption.rawValue.lowercased())"
-        }
-        if promis.isEmpty {
-            return "promi.app"
-        }
-        return "\(promis.count) Promi · promi.app"
-    }
+    // textFooter supprimé — le logo promi.app est toujours affiché
+    // directement dans overlayPlates, sans conditionnalité.
 
     // MARK: Sizing (scales with canvas)
 
@@ -728,7 +944,184 @@ private enum PromiShareTemplate: CaseIterable {
 
 // MARK: - Share sheet bridge
 
-private struct ShareSheet: UIViewControllerRepresentable {
+// MARK: - CGSize scaling helper
+
+private extension CGSize {
+    /// Multiplie les deux composantes par un facteur. Sert à transposer
+    /// l'offset de la preview (en points écran) vers l'offset du render
+    /// (en pixels haute-résolution).
+    func scaled(by factor: CGFloat) -> CGSize {
+        CGSize(width: width * factor, height: height * factor)
+    }
+}
+
+// MARK: - Share Promi filter sheet
+
+private struct SharePromiFilterSheet: View {
+    let promis: [PromiItem]
+    let nuées: [Nuée]
+    @Binding var excludedPromiIds: Set<UUID>
+    @Binding var excludedNuéeIds: Set<UUID>
+    let isEnglish: Bool
+    @Environment(\.dismiss) private var dismiss
+
+    private var allHidden: Bool {
+        excludedPromiIds.count >= promis.count && excludedNuéeIds.count >= nuées.count
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.black.opacity(0.96).ignoresSafeArea()
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        // Section Nuées
+                        if !nuées.isEmpty {
+                            sectionHeader(isEnglish ? "NUÉES" : "NUÉES")
+
+                            ForEach(nuées) { nuée in
+                                let isExcluded = excludedNuéeIds.contains(nuée.id)
+                                filterRow(
+                                    icon: nuée.kind == .intimate
+                                        ? "hands.sparkles.fill"
+                                        : "circle.hexagongrid.fill",
+                                    title: nuée.name,
+                                    isExcluded: isExcluded,
+                                    accentColor: NuéePalette.color(fromHex: nuée.moodHintRawValue) ?? Brand.orange
+                                ) {
+                                    if isExcluded {
+                                        excludedNuéeIds.remove(nuée.id)
+                                    } else {
+                                        excludedNuéeIds.insert(nuée.id)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Section Promi
+                        if !promis.isEmpty {
+                            sectionHeader("PROMI")
+                                .padding(.top, nuées.isEmpty ? 0 : 8)
+
+                            ForEach(promis) { promi in
+                                let isExcluded = excludedPromiIds.contains(promi.id)
+                                filterRow(
+                                    icon: nil,
+                                    title: promi.title,
+                                    isExcluded: isExcluded,
+                                    accentColor: Brand.orange
+                                ) {
+                                    if isExcluded {
+                                        excludedPromiIds.remove(promi.id)
+                                    } else {
+                                        excludedPromiIds.insert(promi.id)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 16)
+                    .padding(.bottom, 32)
+                }
+            }
+            .navigationTitle(isEnglish ? "Visible elements" : "Éléments visibles")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(isEnglish ? "Done" : "OK") {
+                        dismiss()
+                    }
+                    .foregroundColor(Brand.orange)
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(allHidden
+                           ? (isEnglish ? "Show all" : "Tout afficher")
+                           : (isEnglish ? "Hide all" : "Tout masquer")
+                    ) {
+                        Haptics.shared.tinyPop()
+                        if allHidden {
+                            excludedPromiIds.removeAll()
+                            excludedNuéeIds.removeAll()
+                        } else {
+                            excludedPromiIds = Set(promis.map(\.id))
+                            excludedNuéeIds = Set(nuées.map(\.id))
+                        }
+                    }
+                    .foregroundColor(Color.white.opacity(0.62))
+                    .font(.system(size: 13))
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+    }
+
+    private func sectionHeader(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 10, weight: .semibold))
+            .tracking(1.0)
+            .foregroundColor(Color.white.opacity(0.46))
+            .padding(.leading, 4)
+    }
+
+    @ViewBuilder
+    private func filterRow(
+        icon: String?,
+        title: String,
+        isExcluded: Bool,
+        accentColor: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button {
+            Haptics.shared.tinyPop()
+            action()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: isExcluded ? "eye.slash" : "eye.fill")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(
+                        isExcluded
+                            ? Color.white.opacity(0.32)
+                            : accentColor.opacity(0.86)
+                    )
+                    .frame(width: 22)
+
+                if let icon {
+                    Image(systemName: icon)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(
+                            isExcluded
+                                ? Color.white.opacity(0.28)
+                                : accentColor.opacity(0.72)
+                        )
+                        .frame(width: 18)
+                }
+
+                Text(title)
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(Color.white.opacity(isExcluded ? 0.38 : 0.88))
+                    .lineLimit(2)
+                    .strikethrough(isExcluded)
+
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.white.opacity(isExcluded ? 0.02 : 0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.white.opacity(isExcluded ? 0.06 : 0.12), lineWidth: 0.6)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
 
     func makeUIViewController(context: Context) -> UIActivityViewController {

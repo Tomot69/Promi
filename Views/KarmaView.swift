@@ -21,6 +21,8 @@ struct KarmaView: View {
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var promiStore: PromiStore
 
+    @State private var showPaywall = false
+
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
 
@@ -55,6 +57,16 @@ struct KarmaView: View {
                         statsBlock
                     }
                     .padding(.bottom, 40)
+                }
+
+                // Promi Plus : collé en bas de l'écran, hors du scroll,
+                // toujours visible comme un footer persistant.
+                if !userStore.isPremium {
+                    VStack(spacing: 0) {
+                        Spacer()
+                        promiPlusCard
+                            .padding(.bottom, 32)
+                    }
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -123,6 +135,59 @@ struct KarmaView: View {
             )
         }
         .padding(.horizontal, 20)
+    }
+
+    // MARK: - Promi Plus card
+
+    @ViewBuilder
+    private var promiPlusCard: some View {
+        let isFrench = !userStore.selectedLanguage.starts(with: "en")
+
+        Button {
+            Haptics.shared.lightTap()
+            showPaywall = true
+        } label: {
+            VStack(spacing: 10) {
+                HStack(spacing: 0) {
+                    Text("Promi")
+                        .foregroundColor(Brand.orange)
+                    Text(" Plus")
+                        .foregroundColor(Color.white.opacity(0.92))
+                }
+                .font(.system(size: 16, weight: .light))
+
+                Text(isFrench
+                     ? "Promi illimités, Nuées illimitées, social complet."
+                     : "Unlimited Promis, unlimited Nuées, full social.")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(Color.white.opacity(0.54))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+
+                Text(isFrench ? "Découvrir →" : "Discover →")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Brand.orange.opacity(0.86))
+                    .padding(.top, 2)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.white.opacity(0.05))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Brand.orange.opacity(0.28), lineWidth: 0.8)
+            )
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 20)
+        .sheet(isPresented: $showPaywall) {
+            PromiPlusPaywallView()
+                .environmentObject(userStore)
+                .environmentObject(promiStore)
+        }
     }
 
     // MARK: - Close button (same chrome as other pages)

@@ -84,6 +84,11 @@ struct TutorialOverlayView: View {
             } else {
                 return screen.width - side - btn - spacer - btn / 2
             }
+
+        case .settingsButton:
+            // Titre "Promi" en haut à gauche, taille light 22pt : le mot
+            // fait environ 56pt de large. Centre = side + ~28pt.
+            return side + 28
         }
     }
 

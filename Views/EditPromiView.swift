@@ -16,6 +16,7 @@ struct EditPromiView: View {
     @EnvironmentObject var promiStore: PromiStore
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var nuéeStore: NuéeStore
+    @EnvironmentObject var karmaStore: KarmaStore
 
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
@@ -32,6 +33,8 @@ struct EditPromiView: View {
     @State private var selectedKind: PromiKind
     @State private var selectedNuéeId: UUID?
     @State private var showValidationAnimation = false
+    @State private var showChallenge = false
+    @State private var showComments = false
     @State private var showDeleteConfirmation = false
 
     init(promi: PromiItem) {
@@ -137,8 +140,12 @@ struct EditPromiView: View {
             }
 
             if showValidationAnimation {
-                PinkyPromiseSlightSlapView(isPresented: $showValidationAnimation)
-                    .transition(.opacity)
+                PromiKeptCelebrationView(
+                    isPresented: $showValidationAnimation,
+                    karmaPercentage: karmaStore.karmaState.percentage,
+                    isFrench: !isEnglish
+                )
+                .transition(.opacity)
             }
         }
         .confirmationDialog(
@@ -152,6 +159,15 @@ struct EditPromiView: View {
                 dismiss()
             }
             Button(isEnglish ? "Cancel" : "Annuler", role: .cancel) {}
+        }
+        .sheet(isPresented: $showChallenge) {
+            PublicChallengeView(promi: promi)
+                .environmentObject(userStore)
+        }
+        .sheet(isPresented: $showComments) {
+            CommentsView(promiId: promi.id)
+                .environmentObject(promiStore)
+                .environmentObject(userStore)
         }
     }
 
@@ -620,22 +636,136 @@ struct EditPromiView: View {
             .disabled(!canSave)
 
             Button(action: toggleStatus) {
-                HStack(spacing: 6) {
-                    Image(systemName: promi.status == .open
-                         ? "checkmark"
-                         : "arrow.uturn.backward")
-                        .font(.system(size: 10, weight: .semibold))
-
-                    Text(promi.status == .open
-                         ? (isEnglish ? "Mark as done" : "Marquer terminé")
-                         : (isEnglish ? "Reopen" : "Réouvrir"))
-                        .font(.system(size: 12, weight: .semibold))
+                if promi.status == .open {
+                    HStack(spacing: 10) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text(isEnglish ? "I kept it" : "Tenu")
+                            .font(.system(size: 16, weight: .medium))
+                    }
+                    .foregroundColor(Brand.orange.opacity(0.92))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 15)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Brand.orange.opacity(0.12))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(Brand.orange.opacity(0.32), lineWidth: 0.8)
+                    )
+                } else {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(isEnglish ? "Reopen" : "Réouvrir")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundColor(Color.white.opacity(0.58))
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity)
                 }
-                .foregroundColor(Color.white.opacity(0.72))
-                .padding(.vertical, 10)
-                .frame(maxWidth: .infinity)
             }
             .buttonStyle(.plain)
+
+            // Défi public — partager le Promi en story avec timer.
+            if promi.status == .open {
+                Button {
+                    Haptics.shared.lightTap()
+                    showChallenge = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(isEnglish ? "Public challenge" : "Défi public")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundColor(Brand.orange.opacity(0.82))
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
+            }
+
+            // ── Social : Bravo + Commentaires ──
+            VStack(spacing: 10) {
+                HStack(spacing: 0) {
+                    // Bravo
+                    Button {
+                        if !promiStore.hasBravo(promiId: promi.id, userId: userStore.localUserId) {
+                            let bravo = Bravo(promiId: promi.id, userId: userStore.localUserId)
+                            promiStore.addBravo(bravo)
+                            Haptics.shared.success()
+                        } else {
+                            Haptics.shared.lightTap()
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            PinkyPromiseGlyph(
+                                isDarkField: true
+                            )
+                            .frame(width: 22, height: 22)
+                            .opacity(promiStore.hasBravo(promiId: promi.id, userId: userStore.localUserId) ? 1.0 : 0.7)
+                            Text(isEnglish ? "Bravo" : "Bravo")
+                                .font(.system(size: 14, weight: .medium))
+                            if promiStore.getBravosCount(for: promi.id) > 0 {
+                                Text("\(promiStore.getBravosCount(for: promi.id))")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(Color.white.opacity(0.52))
+                            }
+                        }
+                        .foregroundColor(
+                            promiStore.hasBravo(promiId: promi.id, userId: userStore.localUserId)
+                                ? Brand.orange
+                                : Color.white.opacity(0.72)
+                        )
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.white.opacity(0.05))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Color.white.opacity(0.10), lineWidth: 0.6)
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer().frame(width: 10)
+
+                    // Commentaires
+                    Button {
+                        Haptics.shared.lightTap()
+                        showComments = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "bubble.left")
+                                .font(.system(size: 18, weight: .medium))
+                            Text(isEnglish ? "Comments" : "Commentaires")
+                                .font(.system(size: 14, weight: .medium))
+                            if promiStore.getCommentsCount(for: promi.id) > 0 {
+                                Text("\(promiStore.getCommentsCount(for: promi.id))")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(Color.white.opacity(0.52))
+                            }
+                        }
+                        .foregroundColor(Color.white.opacity(0.72))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.white.opacity(0.05))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Color.white.opacity(0.10), lineWidth: 0.6)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.top, 8)
         }
         .padding(.horizontal, 22)
         .padding(.top, 8)
@@ -716,20 +846,34 @@ struct EditPromiView: View {
     }
 
     private func toggleStatus() {
-        Haptics.shared.lightTap()
-
         if promi.status == .open {
+            // Haptic satisfaisante : ronronnement court puis success
+            let generator = UINotificationFeedbackGenerator()
+            generator.prepare()
+            generator.notificationOccurred(.success)
+            // Deuxième micro-vibration décalée pour le "ronronnement"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                let impact = UIImpactFeedbackGenerator(style: .soft)
+                impact.impactOccurred(intensity: 0.6)
+            }
+
             promiStore.markAsDone(promi)
+            NotificationManager.shared.cancelReminders(for: promi.id)
 
             withAnimation(.easeOut(duration: 0.3)) {
                 showValidationAnimation = true
             }
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) {
                 dismiss()
             }
         } else {
+            Haptics.shared.lightTap()
             promiStore.markAsOpen(promi)
+            // Reprogrammer les rappels — le Promi est rouvert.
+            NotificationManager.shared.scheduleReminders(
+                for: promi, language: userStore.selectedLanguage
+            )
             dismiss()
         }
     }

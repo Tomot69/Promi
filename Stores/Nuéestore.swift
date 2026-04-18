@@ -124,6 +124,24 @@ final class NuéeStore: ObservableObject {
         return nuée(with: nuéeId)
     }
 
+    /// Sous-Nuées thématiques rattachées à une Nuée intime parente.
+    /// Triées par date de création descendante (plus récentes en haut).
+    func childNuées(of parentId: UUID) -> [Nuée] {
+        nuées
+            .filter { $0.parentNuéeId == parentId }
+            .sorted { $0.createdAt > $1.createdAt }
+    }
+
+    /// Nuées top-level uniquement (pas les sous-thématiques). Utilisé
+    /// par MesNuéesView pour ne montrer que les Nuées de premier niveau.
+    func topLevelNuées(for userId: String) -> [Nuée] {
+        nuées.filter { $0.isTopLevel && $0.includes(userId: userId) }
+    }
+
+    func topLevelActiveNuées(for userId: String) -> [Nuée] {
+        topLevelNuées(for: userId).filter { !$0.isExpired }
+    }
+
     // MARK: - Persistence
 
     private func loadNuées() {

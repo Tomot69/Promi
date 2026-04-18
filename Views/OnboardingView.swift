@@ -9,7 +9,9 @@ import SwiftUI
 private struct PromiOnboardingSlide: Identifiable {
     enum Shape {
         case concept   // 3 voronoi-like blobs — the "engagement zones" metaphor
+        case social    // the send→receive→keep→bravo flow
         case karma     // a scale / a star — the karma metaphor
+        case nuées     // thematic + intimate Nuées — two orbs, one enclosing a smaller
         case premium   // a soft pink + orange + black composition
         case account   // local storage metaphor — 3 blocks nesting
     }
@@ -247,80 +249,132 @@ struct OnboardingView: View {
     // MARK: Canonical slide content (French)
 
     private static let frenchSlides: [PromiOnboardingSlide] = [
-        PromiOnboardingSlide(
-            title: "Un Promi, c’est quoi ?",
-            body: "Une promesse. À soi-même, ou à quelqu’un. Précise dans le temps, ou simplement en l’air.",
-            examples: [
-                "« Je t’emmène à la mer »",
-                "« Je te rends ton chargeur jaune lundi 18h »",
-                "« J’appelle Maman samedi matin »",
-                "« Je me remets au piano »"
-            ],
-            shape: .concept
-        ),
-        PromiOnboardingSlide(
-            title: "Votre Karma, c’est vous.",
-            body: "Chaque Promi tenu renforce votre parole. Chaque Promi oublié la fragilise.",
-            examples: [
-                "90–100 %  —  t’es une légende",
-                "70–89 %    —  solide, régulier",
-                "50–69 %    —  ça va, ça vient",
-                "moins de 50 %  —  on en reparle ?"
-            ],
-            shape: .karma
-        ),
-        PromiOnboardingSlide(
-            title: "Promi Premium",
-            body: "Un jour, pour celles et ceux qui veulent aller plus loin : partage, groupes, rappels intelligents. Pour l’instant, tout est gratuit.",
-            examples: [],
-            shape: .premium
-        ),
-        PromiOnboardingSlide(
-            title: "Votre espace, local.",
-            body: "Vos Promi restent sur votre appareil. Pas de compte, pas de serveur, pas de publicité. Juste vous et vos promesses.",
-            examples: [],
-            shape: .account
-        )
-    ]
+            PromiOnboardingSlide(
+                title: "Un Promi, c'est quoi ?",
+                body: "Une promesse. À soi-même, ou à quelqu'un. Précise dans le temps, ou simplement en l'air.",
+                examples: [
+                    "« Je t'emmène à la mer »",
+                    "« Je te rends ton chargeur jaune lundi 18h »",
+                    "« J'appelle Maman samedi matin »",
+                    "« Je me remets au piano »"
+                ],
+                shape: .concept
+            ),
+            PromiOnboardingSlide(
+                title: "Comment ça marche ?",
+                body: "Promi, c'est un contrat social. Tu envoies une promesse, l'autre la reçoit, et quand elle est tenue, il le dit.",
+                examples: [
+                    "1. Tu crées un Promi → tu l'envoies à quelqu'un",
+                    "2. Il le reçoit dans sa toile → il sait ce que tu as promis",
+                    "3. Tu le tiens → tu le marques comme tenu",
+                    "4. Il te bravo → ton Karma monte"
+                ],
+                shape: .social
+            ),
+            PromiOnboardingSlide(
+                title: "Votre Karma, c'est vous.",
+                body: "Chaque Promi tenu renforce votre parole. Chaque Promi oublié la fragilise.",
+                examples: [
+                    "90–100 %  —  ta parole vaut signature",
+                    "70–89 %    —  fiable, tu tiens",
+                    "50–69 %    —  ça va, ça vient",
+                    "moins de 50 %  —  on en reparle ?"
+                ],
+                shape: .karma
+            ),
+            PromiOnboardingSlide(
+                title: "Les Nuées, vos cercles.",
+                body: "Une Nuée réunit plusieurs personnes qui se promettent des choses ensemble. *Thématique* pour fédérer un groupe autour d'un sujet. Ou *Intime* pour créer un cercle proche et libre — famille, amis, couple — où chacun peut lancer ses propres thèmes.",
+                examples: [
+                    "Amis proches  →  « Weekend Lisbonne »  +  « 30 ans Léo »",
+                    "Famille  →  « Vacances été »  +  « Noël à Lyon »",
+                    "Thématique ouverte  —  « Sport 2026 » avec des amis sportifs",
+                    "Thématique ouverte  —  « Projet studio » avec vos collaborateurs"
+                ],
+                shape: .nuées
+            ),
+            PromiOnboardingSlide(
+                title: "Promi Plus",
+                body: "Pour celles et ceux qui veulent aller plus loin. Promi et Nuées illimités, social complet, rappels intelligents.",
+                examples: [
+                    "5 Promi / jour gratuits — Plus = illimité",
+                    "2 Nuées gratuites — Plus = illimité",
+                    "2,99 € / mois ou 19,99 € / an"
+                ],
+                shape: .premium
+            ),
+            PromiOnboardingSlide(
+                title: "Votre espace, local.",
+                body: "Vos Promi restent sur votre appareil. Pas de compte, pas de serveur, pas de publicité. Juste vous et vos promesses.",
+                examples: [],
+                shape: .account
+            )
+        ]
 
     // MARK: Canonical slide content (English)
 
     private static let englishSlides: [PromiOnboardingSlide] = [
-        PromiOnboardingSlide(
-            title: "What’s a Promi?",
-            body: "A promise. To yourself, or to someone. Sometimes with a precise moment. Sometimes just floating in the air.",
-            examples: [
-                "“I’ll take you to the sea”",
-                "“I’ll return your yellow charger Monday at 6”",
-                "“I’ll call Mom Saturday morning”",
-                "“I’ll get back to the piano”"
-            ],
-            shape: .concept
-        ),
-        PromiOnboardingSlide(
-            title: "Your Karma is you.",
-            body: "Every Promi kept strengthens your word. Every Promi forgotten weakens it.",
-            examples: [
-                "90–100 %  —  you’re a legend",
-                "70–89 %    —  solid and steady",
-                "50–69 %    —  it goes, it comes",
-                "under 50 %  —  let’s have that talk"
-            ],
-            shape: .karma
-        ),
-        PromiOnboardingSlide(
-            title: "Promi Premium",
-            body: "One day, for those who want to go further: sharing, groups, smart reminders. For now, everything is free.",
-            examples: [],
-            shape: .premium
-        ),
-        PromiOnboardingSlide(
-            title: "Your space, local.",
-            body: "Your Promis stay on your device. No account, no server, no ads. Just you and your promises.",
-            examples: [],
-            shape: .account
-        )
-    ]
+            PromiOnboardingSlide(
+                title: "What's a Promi?",
+                body: "A promise. To yourself, or to someone. Sometimes with a precise moment. Sometimes just floating in the air.",
+                examples: [
+                                "\"I'll take you to the sea\"",
+                                "\"I'll return your yellow charger Monday at 6\"",
+                                "\"I'll call Mom Saturday morning\"",
+                                "\"I'll get back to the piano\""
+                            ],
+                shape: .concept
+            ),
+            PromiOnboardingSlide(
+                title: "How does it work?",
+                body: "Promi is a social contract. You send a promise, the other receives it, and when it's kept, they acknowledge it.",
+                examples: [
+                    "1. You create a Promi → you send it to someone",
+                    "2. They receive it → they see what you promised",
+                    "3. You keep it → you mark it as done",
+                    "4. They bravo you → your Karma goes up"
+                ],
+                shape: .social
+            ),
+            PromiOnboardingSlide(
+                title: "Your Karma is you.",
+                body: "Every Promi kept strengthens your word. Every Promi forgotten weakens it.",
+                examples: [
+                    "90–100 %  —  your word is signature",
+                    "70–89 %    —  reliable, you keep them",
+                    "50–69 %    —  it goes, it comes",
+                    "under 50 %  —  let's have that talk"
+                ],
+                shape: .karma
+            ),
+            PromiOnboardingSlide(
+                title: "Nuées are your circles.",
+                body: "A Nuée brings together several people who make promises to each other. *Thematic* to rally a group around a subject. Or *Intimate* to create a close and free circle — family, friends, partner — where anyone can start their own themes.",
+                examples: [
+                                "Close friends  →  \"Lisbon weekend\"  +  \"Leo's birthday\"",
+                                "Family  →  \"Summer holidays\"  +  \"Christmas in Lyon\"",
+                                "Open thematic  —  \"Sport 2026\" with workout friends",
+                                "Open thematic  —  \"Studio project\" with collaborators"
+                            ],
+                shape: .nuées
+            ),
+            PromiOnboardingSlide(
+                title: "Promi Plus",
+                body: "For those who want to go further. Unlimited Promis and Nuées, full social, smart reminders.",
+                examples: [
+                    "5 Promis / day free — Plus = unlimited",
+                    "2 Nuées free — Plus = unlimited",
+                    "€2.99 / month or €19.99 / year"
+                ],
+                shape: .premium
+            ),
+            PromiOnboardingSlide(
+                title: "Your space, local.",
+                body: "Your Promis stay on your device. No account, no server, no ads. Just you and your promises.",
+                examples: [],
+                shape: .account
+            )
+        ]
 }
 
 // MARK: - Slide view
@@ -351,7 +405,9 @@ private struct PromiOnboardingSlideView: View {
                     .padding(.horizontal, 28)
 
                 // Body: full text, no line limit, no truncation.
-                Text(slide.body)
+                // Markdown supporté : *mot* → italique (ex. "Thématique"
+                // et "Intime" dans la slide Nuées).
+                Text(attributedBody)
                     .font(.system(size: 15, weight: .regular))
                     .foregroundColor(Color.white.opacity(0.74))
                     .multilineTextAlignment(.center)
@@ -367,6 +423,14 @@ private struct PromiOnboardingSlideView: View {
             }
             .frame(maxWidth: .infinity)
         }
+    }
+
+    // MARK: Body with Markdown support (*italic*)
+
+    /// Parse le body comme Markdown pour supporter les italiques via *mot*.
+    /// Fallback silencieux sur la string brute si le Markdown est invalide.
+    private var attributedBody: AttributedString {
+        (try? AttributedString(markdown: slide.body)) ?? AttributedString(slide.body)
     }
 
     // MARK: Title with Promi orange accent
@@ -413,6 +477,49 @@ private struct PromiOnboardingSlideView: View {
     @ViewBuilder
     private func onboardingShape(for shape: PromiOnboardingSlide.Shape) -> some View {
         switch shape {
+        case .social:
+            // 4 étapes du contrat social Promi, de gauche à droite :
+            // envoyer → recevoir → tenir → bravo. Même langage visuel
+            // que les autres slides (formes géométriques en aplat).
+            HStack(spacing: 10) {
+                // 1. Envoyer (orange = action)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color(red: 1.0, green: 0.42, blue: 0.08).opacity(0.92))
+                    .frame(width: 44, height: 52)
+                    .overlay(
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.92))
+                    )
+                // 2. Recevoir (bleu = l'autre)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color(red: 0.14, green: 0.46, blue: 0.96).opacity(0.92))
+                    .frame(width: 44, height: 52)
+                    .overlay(
+                        Image(systemName: "tray.and.arrow.down")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.92))
+                    )
+                // 3. Tenir (vert = accompli)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color(red: 0.10, green: 0.75, blue: 0.48).opacity(0.92))
+                    .frame(width: 44, height: 52)
+                    .overlay(
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.92))
+                    )
+                // 4. Bravo (noir = karma)
+                Circle()
+                    .fill(Color.black.opacity(0.92))
+                    .frame(width: 52, height: 52)
+                    .overlay(
+                        Image(systemName: "hands.clap")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.92))
+                    )
+            }
+
         case .concept:
             ZStack {
                 // Orange solid rectangle = precise Promi: a pinned moment with
@@ -491,6 +598,26 @@ private struct PromiOnboardingSlideView: View {
                 Circle()
                     .fill(Color.black.opacity(0.92))
                     .frame(width: 68, height: 68)
+            }
+
+        case .nuées:
+            // Même langage visuel que les autres slides : carrés arrondis
+            // en aplat, composition qui évoque le sujet sans le sur-expliquer.
+            // Violet = cercle intime (famille, amis proches). Émeraude =
+            // cercle thématique ouvert. Cercle noir ambre au centre = le
+            // Promi qui circule entre les cercles.
+            ZStack {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color(red: 0.48, green: 0.34, blue: 0.78).opacity(0.92))
+                    .frame(width: 102, height: 120)
+                    .offset(x: -28, y: -6)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color(red: 0.24, green: 0.64, blue: 0.48).opacity(0.92))
+                    .frame(width: 96, height: 84)
+                    .offset(x: 28, y: 30)
+                Circle()
+                    .fill(Color.black.opacity(0.92))
+                    .frame(width: 64, height: 64)
             }
         }
     }

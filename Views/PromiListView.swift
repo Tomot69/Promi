@@ -477,9 +477,14 @@ struct PromiListView: View {
                         .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
                         .frame(width: 76, height: 76)
 
-                    Image(systemName: emptyIcon)
-                        .font(.system(size: 24, weight: .light))
-                        .foregroundColor(Color.white.opacity(0.68))
+                    if selectedSegment == .active {
+                        PinkyPromiseGlyph(isDarkField: true)
+                            .frame(width: 36, height: 36)
+                    } else {
+                        Image(systemName: "checkmark.seal")
+                            .font(.system(size: 24, weight: .light))
+                            .foregroundColor(Color.white.opacity(0.68))
+                    }
                 }
 
                 Text(emptyTitle)
@@ -496,13 +501,6 @@ struct PromiListView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private var emptyIcon: String {
-        switch selectedSegment {
-        case .active: return "sparkles"
-        case .done:   return "checkmark.seal"
-        }
     }
 
     private var emptyTitle: String {
@@ -729,14 +727,23 @@ private struct PromiListRowCard: View {
     @ViewBuilder
     private var titleBlock: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(fullPromiTitle)
-                .font(.system(size: 22, weight: .light))
-                .foregroundColor(Color.white.opacity(0.94))
-                .multilineTextAlignment(.leading)
+            HStack(spacing: 8) {
+                if promi.status == .done {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(red: 0.34, green: 0.80, blue: 0.60).opacity(0.86))
+                }
+                Text(fullPromiTitle)
+                    .font(.system(size: 22, weight: .light))
+                    .foregroundColor(Color.white.opacity(promi.status == .done ? 0.78 : 0.94))
+                    .multilineTextAlignment(.leading)
+            }
 
-            Text(importanceLabel)
+            Text(promi.status == .done
+                 ? (languageCode.starts(with: "en") ? "Promise kept" : "Promesse tenue")
+                 : importanceLabel)
                 .font(.system(size: 11, weight: .regular))
-                .foregroundColor(Color.white.opacity(0.56))
+                .foregroundColor(Color.white.opacity(promi.status == .done ? 0.62 : 0.56))
         }
     }
 

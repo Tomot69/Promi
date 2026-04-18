@@ -7,6 +7,7 @@ struct PromiApp: App {
     @StateObject private var karmaStore = KarmaStore()
     @StateObject private var draftStore = DraftStore()
     @StateObject private var nuéeStore = NuéeStore()
+    @StateObject private var contactsStore = ContactsStore()
 
     @State private var isShowingSplash = true
 
@@ -18,6 +19,7 @@ struct PromiApp: App {
                 .environmentObject(karmaStore)
                 .environmentObject(draftStore)
                 .environmentObject(nuéeStore)
+                .environmentObject(contactsStore)
                 .onAppear {
                     ReadPathBootstrapper.applyIfEnabled(
                         defaults: .standard,
@@ -26,10 +28,15 @@ struct PromiApp: App {
                     )
 
                     // Reconcile local notifications for ephemeral Nuées.
-                    // Runs on every launch — idempotent, replaces stale
-                    // notifications and schedules new ones as needed.
                     let userNuées = nuéeStore.nuées(for: userStore.localUserId)
                     NuéeLifecycleManager.reconcileNotifications(for: userNuées)
+
+                    // Notifications Promi : permission + reprogrammation.
+                    NotificationManager.shared.requestPermission()
+                    NotificationManager.shared.rescheduleAll(
+                        promis: promiStore.promis,
+                        language: userStore.selectedLanguage
+                    )
 
                     guard isShowingSplash else { return }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.15) {
@@ -47,8 +54,22 @@ struct PromiApp: App {
             SplashScreenView()
         } else if !userStore.hasChosenLanguage {
             LanguageSelectionView()
+        } else if userStore.mustShowTermsAcceptance {
+            // Étape légale obligatoire : acceptation des CGU et
+            // Politique de confidentialité avant tout accès au reste
+            // de l'app. Re-présenté automatiquement si la version
+            // des CGU est incrémentée plus tard.
+            TermsAcceptanceView()
+        } else if !userStore.hasCompletedAppleSignIn {
+            // Étape 4 du flow : Sign in with Apple (avant l'onboarding).
+            // L'utilisateur peut se connecter ou passer en local-only.
+            AppleSignInView()
         } else if !userStore.hasCompletedOnboarding {
             OnboardingView()
+        } else if !userStore.hasChosenUsername {
+            // Étape 5 : choix du nom d'utilisateur (après onboarding,
+            // avant le tuto qui est déclenché depuis ContentView).
+            UsernameSetupView()
         } else {
             ContentView()
         }

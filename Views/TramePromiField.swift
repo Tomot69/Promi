@@ -93,7 +93,12 @@ enum TrameGeometry {
     /// sont distribués. Plus grand = cellules plus hautes à l'écran.
     static let aspectRatio: CGFloat = 2.1
 
-    private static let siteCount = 500
+    /// Nombre de cellules. Relevé à 1000 pour que le pack soit
+    /// effectivement infini — personne n'atteindra 1000 Promi+Nuées
+    /// en usage réel. La génération Voronoï reste < 0.5s grâce au
+    /// Sutherland-Hodgman clipping et ne se fait qu'une seule fois
+    /// (static let).
+    private static let siteCount = 1000
     private static let seed: UInt64 = 0x50_72_6F_6D_69_21_21_21 // "Promi!!!"
 
     private static func generateCells() -> [TrameCell] {
@@ -341,7 +346,8 @@ fileprivate struct TrameCellShape: Shape {
         let languageCode: String
         let sortOption: PromiFieldSortOption
         let onTapPromi: (PromiItem) -> Void
-        let onTapNuée: (Nuée) -> Void
+            let onTapNuée: (Nuée) -> Void
+            var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
         var body: some View {
                 // Canvas largement plus grand que l'écran pour remplir toutes
@@ -354,27 +360,62 @@ fileprivate struct TrameCellShape: Shape {
                 let bgColor = TrameMood.background(for: mood)
                 let strokeColor = TrameMood.stroke(for: mood)
 
-                return ZoomablePromiViewport {
-                    TrameCanvasLayer(
-                        mood: mood,
-                        canvasWidth: canvasWidth,
-                        canvasHeight: canvasHeight,
-                        assignments: assignments,
-                        bgColor: bgColor,
-                        strokeColor: strokeColor
-                    )
-                    .overlay(
-                        TrameLabelsLayer(
+            return ZoomablePromiViewport(
+                        onSingleTap: { point in
+                            for cell in TrameGeometry.shared {
+                                guard assignments[cell.id] != nil else { continue }
+                                let pts = cell.polygon.map { p in
+                                    CGPoint(
+                                        x: p.x * canvasWidth,
+                                        y: (p.y / TrameGeometry.aspectRatio) * canvasHeight
+                                    )
+                                }
+                                if Self.polygon(pts, contains: point) {
+                                    switch assignments[cell.id]! {
+                                    case .promi(let p): onTapPromi(p)
+                                    case .nuée(let n):  onTapNuée(n)
+                                    }
+                                    return
+                                }
+                            }
+                        },
+                        onLongPress: { point in
+                            for cell in TrameGeometry.shared {
+                                guard let item = assignments[cell.id] else { continue }
+                                if case .promi(let promi) = item, promi.isReceivedFromOther {
+                                    let pts = cell.polygon.map { p in
+                                        CGPoint(
+                                            x: p.x * canvasWidth,
+                                            y: (p.y / TrameGeometry.aspectRatio) * canvasHeight
+                                        )
+                                    }
+                                    if Self.polygon(pts, contains: point) {
+                                        Haptics.shared.lightTap()
+                                        onLongPressPromi?(promi)
+                                        return
+                                    }
+                                }
+                            }
+                        }
+                    ) {
+                        TrameCanvasLayer(
+                            mood: mood,
                             canvasWidth: canvasWidth,
                             canvasHeight: canvasHeight,
                             assignments: assignments,
-                            strokeColor: strokeColor,
-                            onTapPromi: onTapPromi,
-                            onTapNuée: onTapNuée
+                            bgColor: bgColor,
+                            strokeColor: strokeColor
                         )
-                    )
-                    .frame(width: canvasWidth, height: canvasHeight)
-                }
+                        .overlay(
+                            TrameLabelsLayer(
+                                canvasWidth: canvasWidth,
+                                canvasHeight: canvasHeight,
+                                assignments: assignments,
+                                strokeColor: strokeColor
+                            )
+                        )
+                        .frame(width: canvasWidth, height: canvasHeight)
+                    }
                 .frame(width: size.width, height: size.height)
                 .background(bgColor)
                 .ignoresSafeArea()
@@ -382,26 +423,43 @@ fileprivate struct TrameCellShape: Shape {
 
             /// Calcule l'assignation Promis/Nuées → cellules triées par proximité
             /// au centre. Nuées en premier (prioritaires), puis Promis.
-            fileprivate static func makeAssignments(
+        static func makeAssignments(
                 promis: [PromiItem],
                 nuées: [Nuée]
             ) -> [Int: TrameItem] {
-                // Centre de l'espace logique : (0.5, 0.75) — pas (0.5, 0.5) —
-                        // parce qu'on travaille maintenant en ratio 1×1.5.
                 let centerY = TrameGeometry.aspectRatio / 2
-                        let sortedCells = TrameGeometry.shared.sorted { a, b in
-                            let da = (a.centroid.x - 0.5) * (a.centroid.x - 0.5)
-                                   + (a.centroid.y - centerY) * (a.centroid.y - centerY)
-                            let db = (b.centroid.x - 0.5) * (b.centroid.x - 0.5)
-                                   + (b.centroid.y - centerY) * (b.centroid.y - centerY)
-                            return da < db
-                        }
+                let sortedCells = TrameGeometry.shared.sorted { a, b in
+                    let da = (a.centroid.x - 0.5) * (a.centroid.x - 0.5)
+                           + (a.centroid.y - centerY) * (a.centroid.y - centerY)
+                    let db = (b.centroid.x - 0.5) * (b.centroid.x - 0.5)
+                           + (b.centroid.y - centerY) * (b.centroid.y - centerY)
+                    return da < db
+                }
                 let items = nuées.map(TrameItem.nuée) + promis.map(TrameItem.promi)
                 var assignments: [Int: TrameItem] = [:]
                 for (idx, item) in items.enumerated() where idx < sortedCells.count {
                     assignments[sortedCells[idx].id] = item
                 }
                 return assignments
+            }
+
+            /// Ray-casting : teste si `point` est à l'intérieur du polygone `pts`.
+            /// Sert au hit-test du tap UIKit, les gestures SwiftUI ayant été
+            /// retirés des cellules pour laisser le pinch à 2 doigts passer.
+            fileprivate static func polygon(_ pts: [CGPoint], contains point: CGPoint) -> Bool {
+                guard pts.count >= 3 else { return false }
+                var inside = false
+                var j = pts.count - 1
+                for i in 0..<pts.count {
+                    let pi = pts[i]
+                    let pj = pts[j]
+                    if ((pi.y > point.y) != (pj.y > point.y)) &&
+                       (point.x < (pj.x - pi.x) * (point.y - pi.y) / (pj.y - pi.y) + pi.x) {
+                        inside.toggle()
+                    }
+                    j = i
+                }
+                return inside
             }
         }
 
@@ -498,13 +556,11 @@ fileprivate struct TrameCellShape: Shape {
 
         // MARK: - Sous-vue : Labels + hit-test
 
-        fileprivate struct TrameLabelsLayer: View {
-            let canvasWidth: CGFloat
-            let canvasHeight: CGFloat
-            let assignments: [Int: TrameItem]
-            let strokeColor: Color
-            let onTapPromi: (PromiItem) -> Void
-            let onTapNuée: (Nuée) -> Void
+fileprivate struct TrameLabelsLayer: View {
+    let canvasWidth: CGFloat
+    let canvasHeight: CGFloat
+    let assignments: [Int: TrameItem]
+    let strokeColor: Color
 
             var body: some View {
                 ZStack(alignment: .topLeading) {
@@ -533,31 +589,26 @@ fileprivate struct TrameCellShape: Shape {
                     let width = xMax - xMin
 
                     VStack(spacing: 2) {
-                        // Icône SF Symbol uniquement pour les Nuées (tag/lock.heart
-                        // selon le kind). Les Promis n'ont pas d'icône, juste leur
-                        // titre textuel.
-                        if case .nuée(let n) = item {
-                            Image(systemName: n.displayIconGlyph)
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(strokeColor)
+                                if case .nuée(let n) = item {
+                                    Image(systemName: n.displayIconGlyph)
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundStyle(strokeColor)
+                                }
+                                Text(Self.titleFor(item))
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(strokeColor)
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.6)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .frame(maxWidth: max(width * 0.8, 24))
+                            .position(x: midX, y: midY)
+                            // Pas de gesture : le tap UIKit du ZoomablePromiViewport fait
+                            // le hit-test polygone et déclenche le bon callback. Comme ça
+                            // le pinch à 2 doigts passe natif même au-dessus d'une cellule
+                            // occupée.
+                            .allowsHitTesting(false)
                         }
-                        Text(Self.titleFor(item))
-                            .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(strokeColor)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.6)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: max(width * 0.8, 24))
-                    .position(x: midX, y: midY)
-                    .contentShape(TrameCellShape(points: pts))
-                    .onTapGesture {
-                        switch item {
-                        case .promi(let p): onTapPromi(p)
-                        case .nuée(let n):  onTapNuée(n)
-                        }
-                    }
-                }
 
                         private static func titleFor(_ item: TrameItem) -> String {
                             switch item {
@@ -568,7 +619,7 @@ fileprivate struct TrameCellShape: Shape {
                     }
 
     /// Union type minimal pour distinguer un Promi d'une Nuée assignés à une cellule.
-    fileprivate enum TrameItem {
+    enum TrameItem {
         case promi(PromiItem)
         case nuée(Nuée)
     }
@@ -578,6 +629,47 @@ fileprivate struct TrameCellShape: Shape {
 /// vue, dimensionnés pour une tuile de ~294×168, sans scroll ni zoom.
 /// Affiche un aperçu représentatif du mood en cadrant une zone centrale
 /// de l'espace logique [0,1] × [0, aspectRatio].
+/// Rendu Trame pour le partage : même contenu que TramePromiFieldView
+/// mais sans le ZoomablePromiViewport. Compatible avec ImageRenderer
+/// pour l'export de la composition.
+struct TramePromiFieldShareView: View {
+    let mood: PromiColorMood
+    let size: CGSize
+    let promis: [PromiItem]
+    let nuées: [Nuée]
+    let languageCode: String
+    let sortOption: PromiFieldSortOption
+
+    var body: some View {
+        let canvasHeight = (size.height + 120) * 1.4
+        let canvasWidth = size.width * 1.4
+        let assignments = TramePromiFieldView.makeAssignments(
+            promis: promis, nuées: nuées
+        )
+        let bgColor = TrameMood.background(for: mood)
+        let strokeColor = TrameMood.stroke(for: mood)
+
+        TrameCanvasLayer(
+            mood: mood,
+            canvasWidth: canvasWidth,
+            canvasHeight: canvasHeight,
+            assignments: assignments,
+            bgColor: bgColor,
+            strokeColor: strokeColor
+        )
+        .overlay(
+            TrameLabelsLayer(
+                canvasWidth: canvasWidth,
+                canvasHeight: canvasHeight,
+                assignments: assignments,
+                strokeColor: strokeColor
+            )
+        )
+        .frame(width: canvasWidth, height: canvasHeight)
+        .background(bgColor)
+    }
+}
+
 struct TrameStudioPreview: View {
     let mood: PromiColorMood
     let size: CGSize

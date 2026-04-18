@@ -77,22 +77,27 @@ struct MesNuéesView: View {
 
     /// All active Nuées for the current user, filtered by search query
     /// and sorted by the selected sort option.
+    /// Active Nuées top-level (pas les sous-thématiques, qui sont
+    /// visibles à l'intérieur de leur Nuée intime parente).
     private var activeNuées: [Nuée] {
         let base = nuéeStore.activeNuées(for: userStore.localUserId)
+            .filter { $0.isTopLevel }
         return filterAndSort(base)
     }
 
-    /// All expired Nuées for the current user, filtered by search query
-    /// and sorted by the selected sort option.
+    /// Expired Nuées top-level.
     private var expiredNuées: [Nuée] {
         let base = nuéeStore.expiredNuées(for: userStore.localUserId)
+            .filter { $0.isTopLevel }
         return filterAndSort(base)
     }
 
-    /// True when there are any Nuées at all (before search filter).
+    /// True when there are any top-level Nuées at all (before search).
     private var hasAnyNuées: Bool {
         let totalActive = nuéeStore.activeNuées(for: userStore.localUserId)
+            .filter { $0.isTopLevel }
         let totalExpired = nuéeStore.expiredNuées(for: userStore.localUserId)
+            .filter { $0.isTopLevel }
         return !totalActive.isEmpty || !totalExpired.isEmpty
     }
 

@@ -15,6 +15,9 @@
 		521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */; };
 		521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC62EAD3E49009D2334 /* EditPromiView.swift */; };
 		521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */; };
+		521B1BA92F93FD5900BFF3E7 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521B1BA82F93FD5900BFF3E7 /* NotificationManager.swift */; };
+		521B1BAB2F93FF1200BFF3E7 /* PublicChallengeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521B1BAA2F93FF1200BFF3E7 /* PublicChallengeView.swift */; };
+		521B1BAD2F942B2B00BFF3E7 /* PromiKeptCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521B1BAC2F942B2B00BFF3E7 /* PromiKeptCelebrationView.swift */; };
 		523F9FBD2EFACAEE0035CB3F /* ShadowWritePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FBC2EFACAEE0035CB3F /* ShadowWritePolicy.swift */; };
 		523F9FBF2EFACB020035CB3F /* ShadowPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FBE2EFACB020035CB3F /* ShadowPaths.swift */; };
 		523F9FC12EFACB1A0035CB3F /* ShadowStoreWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 523F9FC02EFACB1A0035CB3F /* ShadowStoreWriter.swift */; };
@@ -58,6 +61,17 @@
 		5251CA1C2EFA0F8D000C59CB /* AuditEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA1B2EFA0F8D000C59CB /* AuditEvent.swift */; };
 		5251CA1E2EFA0F9E000C59CB /* AuditLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA1D2EFA0F9E000C59CB /* AuditLogger.swift */; };
 		5251CA242EFA1AE7000C59CB /* RecoveryReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251CA232EFA1AE7000C59CB /* RecoveryReader.swift */; };
+		5260F8A12F8EFB270037F9D2 /* PromiContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8A02F8EFB270037F9D2 /* PromiContact.swift */; };
+		5260F8A32F8EFB580037F9D2 /* ContactsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8A22F8EFB580037F9D2 /* ContactsStore.swift */; };
+		5260F8A52F8EFEE10037F9D2 /* ContactPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8A42F8EFEE10037F9D2 /* ContactPickerView.swift */; };
+		5260F8A72F8FAE0E0037F9D2 /* LegalConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8A62F8FAE0E0037F9D2 /* LegalConstants.swift */; };
+		5260F8A92F8FAEF70037F9D2 /* TermsAcceptanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8A82F8FAEF70037F9D2 /* TermsAcceptanceView.swift */; };
+		5260F8AB2F8FAF190037F9D2 /* LegalDocumentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8AA2F8FAF190037F9D2 /* LegalDocumentsView.swift */; };
+		5260F8AD2F8FAF4F0037F9D2 /* LegalTexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8AC2F8FAF4F0037F9D2 /* LegalTexts.swift */; };
+		5260F8AF2F916C180037F9D2 /* ReportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8AE2F916C180037F9D2 /* ReportSheet.swift */; };
+		5260F8B12F916C600037F9D2 /* BlockedUsersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8B02F916C600037F9D2 /* BlockedUsersView.swift */; };
+		5260F8B32F92573E0037F9D2 /* QuotaConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8B22F92573E0037F9D2 /* QuotaConstants.swift */; };
+		5260F8B52F9257E60037F9D2 /* PromiPlusPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8B42F9257E60037F9D2 /* PromiPlusPaywallView.swift */; };
 		526C00FC2EFCB77800FA6D41 /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C00FB2EFCB77800FA6D41 /* FeatureFlags.swift */; };
 		526C00FF2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C00FE2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift */; };
 		526C01092EFCBB5500FA6D41 /* ReadPathActivationGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C01082EFCBB5500FA6D41 /* ReadPathActivationGate.swift */; };
@@ -81,6 +95,8 @@
 		52BF9C0A2F8AAB1600424F02 /* MotionTilt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9C092F8AAB1600424F02 /* MotionTilt.swift */; };
 		52BF9C0D2F8AFD5700424F02 /* Vitrailchromecellsdata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9C0C2F8AFD5700424F02 /* Vitrailchromecellsdata.swift */; };
 		52BF9C0F2F8BD34A00424F02 /* TramePromiField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9C0E2F8BD34900424F02 /* TramePromiField.swift */; };
+		52BF9C832F8EEA6600424F02 /* AppleSignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9C822F8EEA6600424F02 /* AppleSignInView.swift */; };
+		52BF9C852F8EEABB00424F02 /* UsernameSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF9C842F8EEABB00424F02 /* UsernameSetupView.swift */; };
 		52CF58A12EFA2CD7004C87A0 /* RecoveryResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */; };
 		52CF58AD2EFA3DA9004C87A0 /* DataRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */; };
 		52CF58B12EFA42AD004C87A0 /* RawStoreDataReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */; };
@@ -133,6 +149,9 @@
 		521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalIntensityGaugeView.swift; sourceTree = "<group>"; };
 		521AFCC62EAD3E49009D2334 /* EditPromiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPromiView.swift; sourceTree = "<group>"; };
 		521AFCC82EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinkyPromiseSlightSlapView.swift; sourceTree = "<group>"; };
+		521B1BA82F93FD5900BFF3E7 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		521B1BAA2F93FF1200BFF3E7 /* PublicChallengeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicChallengeView.swift; sourceTree = "<group>"; };
+		521B1BAC2F942B2B00BFF3E7 /* PromiKeptCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiKeptCelebrationView.swift; sourceTree = "<group>"; };
 		523F9FBC2EFACAEE0035CB3F /* ShadowWritePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowWritePolicy.swift; sourceTree = "<group>"; };
 		523F9FBE2EFACB020035CB3F /* ShadowPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowPaths.swift; sourceTree = "<group>"; };
 		523F9FC02EFACB1A0035CB3F /* ShadowStoreWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShadowStoreWriter.swift; sourceTree = "<group>"; };
@@ -176,6 +195,17 @@
 		5251CA1B2EFA0F8D000C59CB /* AuditEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditEvent.swift; sourceTree = "<group>"; };
 		5251CA1D2EFA0F9E000C59CB /* AuditLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuditLogger.swift; sourceTree = "<group>"; };
 		5251CA232EFA1AE7000C59CB /* RecoveryReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryReader.swift; sourceTree = "<group>"; };
+		5260F8A02F8EFB270037F9D2 /* PromiContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiContact.swift; sourceTree = "<group>"; };
+		5260F8A22F8EFB580037F9D2 /* ContactsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsStore.swift; sourceTree = "<group>"; };
+		5260F8A42F8EFEE10037F9D2 /* ContactPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPickerView.swift; sourceTree = "<group>"; };
+		5260F8A62F8FAE0E0037F9D2 /* LegalConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalConstants.swift; sourceTree = "<group>"; };
+		5260F8A82F8FAEF70037F9D2 /* TermsAcceptanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsAcceptanceView.swift; sourceTree = "<group>"; };
+		5260F8AA2F8FAF190037F9D2 /* LegalDocumentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalDocumentsView.swift; sourceTree = "<group>"; };
+		5260F8AC2F8FAF4F0037F9D2 /* LegalTexts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegalTexts.swift; sourceTree = "<group>"; };
+		5260F8AE2F916C180037F9D2 /* ReportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportSheet.swift; sourceTree = "<group>"; };
+		5260F8B02F916C600037F9D2 /* BlockedUsersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockedUsersView.swift; sourceTree = "<group>"; };
+		5260F8B22F92573E0037F9D2 /* QuotaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotaConstants.swift; sourceTree = "<group>"; };
+		5260F8B42F9257E60037F9D2 /* PromiPlusPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiPlusPaywallView.swift; sourceTree = "<group>"; };
 		5269800E2EFD6FD2002A2AC9 /* Promi.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Promi.xctestplan; sourceTree = "<group>"; };
 		526C00FB2EFCB77800FA6D41 /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
 		526C00FE2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadPathBootstrapper.swift; sourceTree = "<group>"; };
@@ -200,6 +230,8 @@
 		52BF9C092F8AAB1600424F02 /* MotionTilt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionTilt.swift; sourceTree = "<group>"; };
 		52BF9C0C2F8AFD5700424F02 /* Vitrailchromecellsdata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vitrailchromecellsdata.swift; sourceTree = "<group>"; };
 		52BF9C0E2F8BD34900424F02 /* TramePromiField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TramePromiField.swift; sourceTree = "<group>"; };
+		52BF9C822F8EEA6600424F02 /* AppleSignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInView.swift; sourceTree = "<group>"; };
+		52BF9C842F8EEABB00424F02 /* UsernameSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameSetupView.swift; sourceTree = "<group>"; };
 		52CF58A02EFA2CD7004C87A0 /* RecoveryResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryResult.swift; sourceTree = "<group>"; };
 		52CF58AC2EFA3DA9004C87A0 /* DataRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataRoot.swift; sourceTree = "<group>"; };
 		52CF58B02EFA42AD004C87A0 /* RawStoreDataReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawStoreDataReader.swift; sourceTree = "<group>"; };
@@ -430,6 +462,7 @@
 			isa = PBXGroup;
 			children = (
 				5298959F2EAC4D87000F57F8 /* LocalizationManager.swift */,
+				521B1BA82F93FD5900BFF3E7 /* NotificationManager.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -468,6 +501,16 @@
 				52BF9C092F8AAB1600424F02 /* MotionTilt.swift */,
 				52BF9C0C2F8AFD5700424F02 /* Vitrailchromecellsdata.swift */,
 				52BF9C0E2F8BD34900424F02 /* TramePromiField.swift */,
+				52BF9C822F8EEA6600424F02 /* AppleSignInView.swift */,
+				52BF9C842F8EEABB00424F02 /* UsernameSetupView.swift */,
+				5260F8A42F8EFEE10037F9D2 /* ContactPickerView.swift */,
+				5260F8A82F8FAEF70037F9D2 /* TermsAcceptanceView.swift */,
+				5260F8AA2F8FAF190037F9D2 /* LegalDocumentsView.swift */,
+				5260F8AE2F916C180037F9D2 /* ReportSheet.swift */,
+				5260F8B02F916C600037F9D2 /* BlockedUsersView.swift */,
+				5260F8B42F9257E60037F9D2 /* PromiPlusPaywallView.swift */,
+				521B1BAA2F93FF1200BFF3E7 /* PublicChallengeView.swift */,
+				521B1BAC2F942B2B00BFF3E7 /* PromiKeptCelebrationView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -481,6 +524,7 @@
 				521AFCC22EAD39F7009D2334 /* DraftStore.swift */,
 				52BF9BE12F882B7100424F02 /* Nuéestore.swift */,
 				52BF9BF12F894A0000424F02 /* NuéeLifecycleManager.swift */,
+				5260F8A22F8EFB580037F9D2 /* ContactsStore.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -496,6 +540,10 @@
 				52BF9BDF2F882B4C00424F02 /* Nuée.swift */,
 				52BF9BE92F884E5900424F02 /* Nuéepalette.swift */,
 				52BF9BEF2F89460C00424F02 /* NuéeDraft.swift */,
+				5260F8A02F8EFB270037F9D2 /* PromiContact.swift */,
+				5260F8A62F8FAE0E0037F9D2 /* LegalConstants.swift */,
+				5260F8AC2F8FAF4F0037F9D2 /* LegalTexts.swift */,
+				5260F8B22F92573E0037F9D2 /* QuotaConstants.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -634,9 +682,9 @@
 		52D3F0432EABF4630048149B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = NO;
+				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 2610;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					52D3F04A2EABF4630048149B = {
 						CreatedOnToolsVersion = 26.0.1;
@@ -703,6 +751,7 @@
 				523F9FDD2EFADA670035CB3F /* CanonicalStoreWritePolicy.swift in Sources */,
 				5251CA102EF9FCA9000C59CB /* AddCommentUseCase.swift in Sources */,
 				520E36BF2F85180E0057DD70 /* PromiCompositionShareView.swift in Sources */,
+				5260F8A12F8EFB270037F9D2 /* PromiContact.swift in Sources */,
 				52D3F08B2EABFD070048149B /* FloatingButton.swift in Sources */,
 				523F9FF72EFB04870035CB3F /* DraftsPaths.swift in Sources */,
 				523FA0052EFB2FE30035CB3F /* PromiStoreMigrator.swift in Sources */,
@@ -712,18 +761,24 @@
 				523F9FBD2EFACAEE0035CB3F /* ShadowWritePolicy.swift in Sources */,
 				529895AC2EAC57B7000F57F8 /* IconButton.swift in Sources */,
 				529895A02EAC4D87000F57F8 /* LocalizationManager.swift in Sources */,
+				5260F8B12F916C600037F9D2 /* BlockedUsersView.swift in Sources */,
 				52D3F0772EABF8CA0048149B /* PromiStore.swift in Sources */,
 				52D3F0912EABFD6F0048149B /* CommentsView.swift in Sources */,
+				5260F8AD2F8FAF4F0037F9D2 /* LegalTexts.swift in Sources */,
 				52D3F0712EABF8620048149B /* Reaction.swift in Sources */,
 				5251CA0A2EF9FC6E000C59CB /* MarkDoneUseCase.swift in Sources */,
+				5260F8AF2F916C180037F9D2 /* ReportSheet.swift in Sources */,
 				523FA0132EFB5A870035CB3F /* ReadPathRouter.swift in Sources */,
 				52D3F07D2EABFA0A0048149B /* LanguageSelectionView.swift in Sources */,
 				52CF58B12EFA42AD004C87A0 /* RawStoreDataReader.swift in Sources */,
+				5260F8A52F8EFEE10037F9D2 /* ContactPickerView.swift in Sources */,
+				5260F8B52F9257E60037F9D2 /* PromiPlusPaywallView.swift in Sources */,
 				5251CA182EFA0F65000C59CB /* AppFilePaths.swift in Sources */,
 				529895A42EAC511B000F57F8 /* PinkyPromiseAnimationView.swift in Sources */,
 				526C01092EFCBB5500FA6D41 /* ReadPathActivationGate.swift in Sources */,
 				52F5241D2EF9B13C007B30D5 /* PersistenceError.swift in Sources */,
 				5251C9DF2EF9E989000C59CB /* BravoKey.swift in Sources */,
+				52BF9C832F8EEA6600424F02 /* AppleSignInView.swift in Sources */,
 				521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */,
 				521AFCC72EAD3E49009D2334 /* EditPromiView.swift in Sources */,
 				5251C9FB2EF9F76C000C59CB /* ReactionRules.swift in Sources */,
@@ -732,7 +787,9 @@
 				523FA0112EFB5A680035CB3F /* MigratedFilesReader.swift in Sources */,
 				5251CA1E2EFA0F9E000C59CB /* AuditLogger.swift in Sources */,
 				520E36BB2F83BA4F0057DD70 /* PromiFieldVisuals.swift in Sources */,
+				521B1BAB2F93FF1200BFF3E7 /* PublicChallengeView.swift in Sources */,
 				52CF58A12EFA2CD7004C87A0 /* RecoveryResult.swift in Sources */,
+				521B1BAD2F942B2B00BFF3E7 /* PromiKeptCelebrationView.swift in Sources */,
 				52D3F0952EABFDB10048149B /* SettingsView.swift in Sources */,
 				5251C9F82EF9F756000C59CB /* ReactionType.swift in Sources */,
 				5251CA002EF9FC07000C59CB /* UseCaseIDs.swift in Sources */,
@@ -753,11 +810,15 @@
 				52BF9BE22F882B7100424F02 /* Nuéestore.swift in Sources */,
 				523F9FED2EFAFB200035CB3F /* LegacyPromiStoreReader.swift in Sources */,
 				521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */,
+				5260F8A72F8FAE0E0037F9D2 /* LegalConstants.swift in Sources */,
+				52BF9C852F8EEABB00424F02 /* UsernameSetupView.swift in Sources */,
 				52D3F0752EABF8A60048149B /* UserStore.swift in Sources */,
 				523F9FC12EFACB1A0035CB3F /* ShadowStoreWriter.swift in Sources */,
 				52D3F0692EABF6320048149B /* Brand.swift in Sources */,
+				5260F8B32F92573E0037F9D2 /* QuotaConstants.swift in Sources */,
 				52F524322EF9BA2F007B30D5 /* PromiTitle.swift in Sources */,
 				529895A62EAC56BF000F57F8 /* PromiValidationAnimationView.swift in Sources */,
+				5260F8AB2F8FAF190037F9D2 /* LegalDocumentsView.swift in Sources */,
 				52BF9C0A2F8AAB1600424F02 /* MotionTilt.swift in Sources */,
 				5251CA0E2EF9FC99000C59CB /* AddBravoUseCase.swift in Sources */,
 				52BF9BE02F882B4C00424F02 /* Nuée.swift in Sources */,
@@ -777,14 +838,17 @@
 				520E36BD2F8517DD0057DD70 /* PromiListView.swift in Sources */,
 				52D3F0792EABF9000048149B /* KarmaStore.swift in Sources */,
 				523FA01C2EFB76A00035CB3F /* ReadOnlyDraftStore.swift in Sources */,
+				5260F8A92F8FAEF70037F9D2 /* TermsAcceptanceView.swift in Sources */,
 				523FA0222EFB853F0035CB3F /* ReadOnlyPromiStore.swift in Sources */,
 				52E1A2412EAD14D1007EFAA8 /* CustomIcons.swift in Sources */,
 				52BF9C0F2F8BD34A00424F02 /* TramePromiField.swift in Sources */,
+				521B1BA92F93FD5900BFF3E7 /* NotificationManager.swift in Sources */,
 				523FA00D2EFB35E40035CB3F /* PromiStoreEquatableShims.swift in Sources */,
 				523F9FD32EFAD4ED0035CB3F /* VersionedEnvelope.swift in Sources */,
 				521AFCC92EAD3E7F009D2334 /* PinkyPromiseSlightSlapView.swift in Sources */,
 				523F9FCF2EFAD4720035CB3F /* JSONStoreError.swift in Sources */,
 				526C00FC2EFCB77800FA6D41 /* FeatureFlags.swift in Sources */,
+				5260F8A32F8EFB580037F9D2 /* ContactsStore.swift in Sources */,
 				529895B22EAC6181000F57F8 /* TutorialOverlayView.swift in Sources */,
 				52D3F07B2EABF9DF0048149B /* SplashScreenView.swift in Sources */,
 				52D3F0892EABFB780048149B /* BravoButton.swift in Sources */,
@@ -850,6 +914,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = B77VBMD9BF;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -873,6 +938,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -913,6 +979,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = B77VBMD9BF;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -929,6 +996,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -939,9 +1007,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Promi/Promi.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B77VBMD9BF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Pour prendre des photos";
@@ -974,9 +1042,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Promi/Promi.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B77VBMD9BF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Pour prendre des photos";
@@ -1010,7 +1078,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B77VBMD9BF;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
@@ -1032,7 +1099,6 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B77VBMD9BF;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;

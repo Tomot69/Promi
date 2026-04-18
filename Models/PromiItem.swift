@@ -21,6 +21,29 @@ struct PromiItem: Identifiable, Codable, Equatable {
     /// name keeps the accent for consistency with the Nuée model.
     var nuéeId: UUID?
 
+    /// Identifiants des PromiContact destinataires de ce Promi (multi-
+    /// destinataires possibles : un Promi peut s'adresser à plusieurs
+    /// personnes nommément). Sert de remplacement structuré au champ
+    /// `assignee` (string libre, conservé pour la rétrocompat).
+    /// Backward-compatible : JSON sans le champ → tableau vide. Les
+    /// IDs sont les `id` locaux du ContactsStore (UUID strings) ; ils
+    /// resteront valides quand chaque contact gagnera son appleUserId.
+    var recipientContactIds: [String]
+
+    /// ID local (PromiContact.id) de l'utilisateur qui a envoyé ce Promi.
+    /// `nil` = Promi créé par l'utilisateur courant pour lui-même (cas
+    /// actuel par défaut, pré-CloudKit). Quand CloudKit sera actif,
+    /// les Promi reçus via sync auront ce champ rempli — c'est sur cette
+    /// valeur que reposent le blocage et le signalement.
+    var senderContactId: String?
+
+    /// ID Apple stable de l'expéditeur (fourni par Sign in with Apple).
+    /// `nil` tant que la sync sociale n'est pas active. Dès que CloudKit
+    /// est branché, ce champ est rempli automatiquement à la réception.
+    /// Sert de pont fiable pour reconcilier les contacts locaux avec
+    /// les vrais utilisateurs Apple.
+    var senderAppleUserId: String?
+
     init(
         id: UUID = UUID(),
         title: String,
@@ -34,7 +57,10 @@ struct PromiItem: Identifiable, Codable, Equatable {
         createdAt: Date = Date(),
         completedAt: Date? = nil,
         postponedUntil: Date? = nil,
-        nuéeId: UUID? = nil
+        nuéeId: UUID? = nil,
+        recipientContactIds: [String] = [],
+        senderContactId: String? = nil,
+        senderAppleUserId: String? = nil
     ) {
         self.id = id
         self.title = PromiItem.normalizedTitle(from: title)
@@ -49,6 +75,9 @@ struct PromiItem: Identifiable, Codable, Equatable {
         self.completedAt = completedAt
         self.postponedUntil = postponedUntil
         self.nuéeId = nuéeId
+        self.recipientContactIds = recipientContactIds
+        self.senderContactId = senderContactId
+        self.senderAppleUserId = senderAppleUserId
     }
 
     enum CodingKeys: String, CodingKey {
@@ -65,6 +94,9 @@ struct PromiItem: Identifiable, Codable, Equatable {
         case completedAt
         case postponedUntil
         case nuéeId = "nueeId"
+        case recipientContactIds
+        case senderContactId
+        case senderAppleUserId
     }
 
     init(from decoder: Decoder) throws {
@@ -83,6 +115,21 @@ struct PromiItem: Identifiable, Codable, Equatable {
         postponedUntil = try container.decodeIfPresent(Date.self, forKey: .postponedUntil)
         // Backward-compatible: missing in old JSON → nil. Personal Promi.
         nuéeId = try container.decodeIfPresent(UUID.self, forKey: .nuéeId)
+        // Backward-compatible: missing in old JSON → []. Personal Promi
+        // ou Promi pré-Phase 6 sans destinataires structurés.
+        recipientContactIds = try container.decodeIfPresent([String].self, forKey: .recipientContactIds) ?? []
+        // Backward-compatible: missing → nil. Promi pré-CloudKit ou
+        // créé par l'utilisateur lui-même (cas par défaut).
+        senderContactId = try container.decodeIfPresent(String.self, forKey: .senderContactId)
+        senderAppleUserId = try container.decodeIfPresent(String.self, forKey: .senderAppleUserId)
+    }
+
+    /// True si ce Promi a été reçu d'un autre utilisateur (sync CloudKit
+    /// future). Pour les Promi créés par l'utilisateur courant pour
+    /// lui-même, retourne false. Sert à déterminer si les actions
+    /// "bloquer / signaler l'expéditeur" sont disponibles.
+    var isReceivedFromOther: Bool {
+        senderContactId != nil || senderAppleUserId != nil
     }
 
     static let requiredPrefix = "Promi "

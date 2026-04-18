@@ -28,6 +28,9 @@ struct NuéeDetailView: View {
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var promiStore: PromiStore
     @EnvironmentObject var nuéeStore: NuéeStore
+    @EnvironmentObject var contactsStore: ContactsStore
+    @EnvironmentObject var draftStore: DraftStore
+    @EnvironmentObject var karmaStore: KarmaStore
 
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
@@ -39,6 +42,8 @@ struct NuéeDetailView: View {
 
     @State private var showDeleteConfirmation = false
     @State private var showLeaveConfirmation = false
+    @State private var showAddPromi = false
+    @State private var showCreateThematic = false
 
 
     private var currentPack: PromiVisualPack {
@@ -93,6 +98,26 @@ struct NuéeDetailView: View {
                 .padding(.trailing, 20)
                 .padding(.top, 16)
         }
+        .sheet(item: $selectedChildNuée) { child in
+            // Drill-down dans la sous-thématique : même NuéeDetailView
+            // qui s'ouvre récursivement. La vue affichera les Promis de
+            // cette thématique, sans la section Thématiques (puisque
+            // child.kind == .thematic, la condition `if nuée.kind == .intimate`
+            // sera false).
+            NuéeDetailView(nuéeId: child.id)
+        }
+        .sheet(isPresented: $showAddPromi) {
+            // Promi pré-attaché à cette Nuée. Le champ NUÉE sera déjà
+            // sélectionné sur cette Nuée, pas besoin de le chercher.
+            AddPromiView(preselectedNuéeId: nuéeId)
+        }
+        .sheet(isPresented: $showCreateThematic) {
+            CreateNuéeView(
+                parentNuéeId: nuéeId,
+                preselectedKind: .thematic,
+                preselectedMemberIds: memberIdsForThematic
+            )
+        }
         .confirmationDialog(
             isEnglish ? "Delete this Nuée?" : "Supprimer cette Nuée ?",
             isPresented: $showDeleteConfirmation,
@@ -134,7 +159,12 @@ struct NuéeDetailView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     nuéeHeader(nuée)
                     membersSection(nuée)
+                    if nuée.kind == .intimate {
+                        thematicsSection
+                    }
+                    karmaSection(nuée)
                     promisSection
+                    contextActions(for: nuée)
                     if nuée.isExpired {
                         archivedNotice
                     }
@@ -290,6 +320,156 @@ struct NuéeDetailView: View {
 
     // MARK: Promis section
 
+    // MARK: Karma podium (pré-CloudKit : seulement soi-même)
+
+    @ViewBuilder
+    private func karmaSection(_ nuée: Nuée) -> some View {
+        let karma = karmaStore.karmaState.percentage
+        let displayName = userStore.displayName
+
+        VStack(alignment: .leading, spacing: 10) {
+            sectionLabel("KARMA")
+
+            HStack(spacing: 14) {
+                // Position
+                Text("1")
+                    .font(.system(size: 18, weight: .light, design: .monospaced))
+                    .foregroundColor(Brand.orange.opacity(0.82))
+                    .frame(width: 24)
+
+                // Avatar
+                ZStack {
+                    Circle()
+                        .fill(karmaColor(karma).opacity(0.72))
+                        .frame(width: 32, height: 32)
+                    Text(String(displayName.prefix(1)).uppercased())
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.92))
+                }
+
+                // Nom + score
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(displayName)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white.opacity(0.88))
+                    Text("\(karma)%")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(karmaColor(karma).opacity(0.82))
+                }
+
+                Spacer()
+
+                // Badge rang
+                Text(karmaRank(karma, isFrench: !isEnglish))
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.58))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule().fill(karmaColor(karma).opacity(0.16))
+                    )
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(chromeCard)
+        }
+    }
+
+    private func karmaColor(_ karma: Int) -> Color {
+        if karma >= 90 { return Brand.karmaExcellent }
+        else if karma >= 70 { return Brand.karmaGood }
+        else if karma >= 50 { return Brand.karmaAverage }
+        else { return Brand.karmaPoor }
+    }
+
+    private func karmaRank(_ karma: Int, isFrench: Bool) -> String {
+        if karma >= 90 { return isFrench ? "signature" : "signature" }
+        else if karma >= 70 { return isFrench ? "fiable" : "reliable" }
+        else if karma >= 50 { return isFrench ? "variable" : "variable" }
+        else { return isFrench ? "à prouver" : "to prove" }
+    }
+
+    // MARK: Child thematics (Intime only)
+
+    private var thematicsSection: some View {
+        let children = nuéeStore.childNuées(of: nuéeId)
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                sectionLabel(isEnglish ? "THEMATICS" : "THÉMATIQUES")
+                Spacer()
+                if !children.isEmpty {
+                    Text("\(children.count)")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.62))
+                }
+            }
+
+            if children.isEmpty {
+                Text(isEnglish
+                     ? "no thematic yet — create one below"
+                     : "aucune thématique — crée-en une ci-dessous")
+                    .font(.system(size: 12, weight: .regular))
+                    .italic()
+                    .foregroundColor(Color.white.opacity(0.46))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(chromeCard)
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(children) { child in
+                        thematicRow(child)
+                    }
+                }
+            }
+        }
+    }
+
+    @State private var selectedChildNuée: Nuée?
+
+    @ViewBuilder
+    private func thematicRow(_ child: Nuée) -> some View {
+        let childPromis = promiStore.promis.filter { $0.nuéeId == child.id }
+        let badgeColor = NuéePalette.color(fromHex: child.moodHintRawValue) ?? Brand.orange
+
+        Button {
+            Haptics.shared.lightTap()
+            selectedChildNuée = child
+        } label: {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(badgeColor.opacity(0.72))
+                    .frame(width: 8, height: 8)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(child.name)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color.white.opacity(0.92))
+                    if let theme = child.theme, !theme.isEmpty {
+                        Text(theme)
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.46))
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer()
+
+                Text("\(childPromis.count)")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.52))
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(Color.white.opacity(0.34))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(chromeCard)
+        }
+        .buttonStyle(.plain)
+    }
+
     private var promisSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline) {
@@ -329,11 +509,17 @@ struct NuéeDetailView: View {
                 .frame(width: 6, height: 6)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(promi.title)
-                    .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(Color.white.opacity(promi.status == .done ? 0.54 : 0.92))
-                    .lineLimit(2)
-                    .strikethrough(promi.status == .done)
+                HStack(spacing: 6) {
+                    if promi.status == .done {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Brand.karmaGood.opacity(0.82))
+                    }
+                    Text(promi.title)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundColor(Color.white.opacity(promi.status == .done ? 0.72 : 0.92))
+                        .lineLimit(2)
+                }
 
                 if let assignee = promi.assignee, !assignee.isEmpty {
                     Text(isEnglish ? "for \(assignee)" : "pour \(assignee)")
@@ -347,6 +533,82 @@ struct NuéeDetailView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(chromeCard)
+    }
+
+    // MARK: Context actions (add Promi, create thematic)
+
+    @ViewBuilder
+    private func contextActions(for nuée: Nuée) -> some View {
+        if !nuée.isExpired {
+            VStack(spacing: 10) {
+                // Toutes les Nuées : ajouter un Promi pré-attaché.
+                Button {
+                    Haptics.shared.lightTap()
+                    showAddPromi = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Brand.orange.opacity(0.86))
+                        Text(isEnglish
+                             ? "Add a Promi to this Nuée"
+                             : "Ajouter un Promi à cette Nuée")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color.white.opacity(0.88))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(Color.white.opacity(0.38))
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Brand.orange.opacity(0.08))
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Brand.orange.opacity(0.28), lineWidth: 0.6)
+                        }
+                    )
+                }
+                .buttonStyle(.plain)
+
+                // Nuées Intimes seulement : créer une thématique dans le
+                // cercle intime, pré-remplie avec les membres du groupe.
+                if nuée.kind == .intimate {
+                    Button {
+                        Haptics.shared.lightTap()
+                        showCreateThematic = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "circle.hexagongrid.fill")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color.white.opacity(0.72))
+                            Text(isEnglish
+                                 ? "Create a thematic for this group"
+                                 : "Créer une thématique pour ce groupe")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color.white.opacity(0.88))
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundColor(Color.white.opacity(0.38))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.white.opacity(0.05))
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+                            }
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
     }
 
     // MARK: Archived notice
@@ -480,6 +742,18 @@ struct NuéeDetailView: View {
     }
 
     // MARK: Helpers
+
+    /// Récupère les IDs des membres de la Nuée courante pour les
+    /// pré-remplir dans le CreateNuéeView (thématique dans un cercle
+    /// intime). Exclut le créateur (il sera ajouté automatiquement).
+    private var memberIdsForThematic: Set<String> {
+        guard let nuée = currentNuée else { return [] }
+        return Set(
+            nuée.members
+                .filter { $0.id != userStore.localUserId }
+                .map(\.id)
+        )
+    }
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)

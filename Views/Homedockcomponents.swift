@@ -13,12 +13,14 @@ struct BottomDockRow: View {
     @Binding var isAddMenuExpanded: Bool
     let isDarkField: Bool
     let draftCount: Int
+    let isPremium: Bool
     let onOpenKarma: () -> Void
     let onOpenStudio: () -> Void
     let onOpenComposition: () -> Void
     let onNewPromi: () -> Void
     let onNewNuée: () -> Void
     let onOpenDrafts: () -> Void
+    let onOpenPaywall: () -> Void
 
     private let baseSize: CGFloat = 46
     private let centerSize: CGFloat = 54
@@ -54,9 +56,11 @@ struct BottomDockRow: View {
                 isDarkField: isDarkField,
                 size: centerSize,
                 draftCount: draftCount,
+                isPremium: isPremium,
                 onNewPromi: onNewPromi,
                 onNewNuée: onNewNuée,
-                onOpenDrafts: onOpenDrafts
+                onOpenDrafts: onOpenDrafts,
+                onOpenPaywall: onOpenPaywall
             )
 
             Spacer(minLength: 8)
@@ -100,9 +104,11 @@ struct DockAddControl: View {
     let isDarkField: Bool
     let size: CGFloat
     let draftCount: Int
+    let isPremium: Bool
     let onNewPromi: () -> Void
     let onNewNuée: () -> Void
     let onOpenDrafts: () -> Void
+    let onOpenPaywall: () -> Void
 
     private let menuWidth: CGFloat = 230
 
@@ -112,6 +118,7 @@ struct DockAddControl: View {
                 AddActionMenu(
                     draftCount: draftCount,
                     isDarkField: isDarkField,
+                    isPremium: isPremium,
                     onNewPromi: {
                         withAnimation(.spring(response: 0.24, dampingFraction: 0.88)) {
                             isExpanded = false
@@ -129,6 +136,12 @@ struct DockAddControl: View {
                             isExpanded = false
                         }
                         onOpenDrafts()
+                    },
+                    onOpenPaywall: {
+                        withAnimation(.spring(response: 0.24, dampingFraction: 0.88)) {
+                            isExpanded = false
+                        }
+                        onOpenPaywall()
                     }
                 )
                 .frame(width: menuWidth)
@@ -263,9 +276,11 @@ struct CompactSortMenu: View {
 struct AddActionMenu: View {
     let draftCount: Int
     let isDarkField: Bool
+    let isPremium: Bool
     let onNewPromi: () -> Void
     let onNewNuée: () -> Void
     let onOpenDrafts: () -> Void
+    let onOpenPaywall: () -> Void
 
     private var draftLabel: String {
         draftCount > 1 ? "Brouillons" : "Brouillon"
@@ -283,6 +298,43 @@ struct AddActionMenu: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // Promi Plus (seulement si pas encore Premium)
+            if !isPremium {
+                Button(action: {
+                    Haptics.shared.lightTap()
+                    onOpenPaywall()
+                }) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Brand.orange.opacity(0.92))
+                            .frame(width: 16)
+
+                        HStack(spacing: 0) {
+                            Text("Promi")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(Brand.orange.opacity(0.92))
+                            Text(" Plus")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.86))
+                        }
+
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Brand.orange.opacity(0.06))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Brand.orange.opacity(0.18), lineWidth: 0.6)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
             menuRow(
                 title: "Nouveau Promi",
                 subtitle: "Créer une promesse maintenant",

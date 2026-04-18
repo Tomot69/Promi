@@ -31,6 +31,7 @@ struct CreateNuéeView: View {
     @EnvironmentObject var promiStore: PromiStore
     @EnvironmentObject var nuéeStore: NuéeStore
     @EnvironmentObject var draftStore: DraftStore
+    @EnvironmentObject var contactsStore: ContactsStore
 
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
@@ -39,6 +40,13 @@ struct CreateNuéeView: View {
     private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
 
     let editingDraft: NuéeDraft?
+    /// ID de la Nuée parente quand on crée une thématique depuis une
+    /// Nuée intime. Quand non-nil : le mode est verrouillé sur
+    /// .thematic (pas de picker), le header affiche le nom de la
+    /// parente, et la nouvelle Nuée sera rattachée comme enfant.
+    let parentNuéeId: UUID?
+    let preselectedKind: NuéeKind?
+    let preselectedMemberIds: Set<String>
 
     @State private var name: String
     @State private var theme: String
@@ -48,14 +56,30 @@ struct CreateNuéeView: View {
     @State private var expirationDate: Date
     @State private var showDraftConfirmation = false
 
-    init(editingDraft: NuéeDraft? = nil) {
+    // Membres sélectionnés via le ContactPickerView (Phase 6). Les IDs
+    // sont des PromiContact.id (UUID strings). Au moment de créer la
+    // Nuée, ils sont convertis en NuéeMember via PromiContact.asNuéeMember().
+    @State private var selectedMemberIds: Set<String> = []
+    @State private var showMemberPicker = false
+    @State private var showPaywall = false
+
+    init(
+        editingDraft: NuéeDraft? = nil,
+        parentNuéeId: UUID? = nil,
+        preselectedKind: NuéeKind? = nil,
+        preselectedMemberIds: Set<String> = []
+    ) {
         self.editingDraft = editingDraft
+        self.parentNuéeId = parentNuéeId
+        self.preselectedKind = preselectedKind
+        self.preselectedMemberIds = preselectedMemberIds
         _name = State(initialValue: editingDraft?.name ?? "")
         _theme = State(initialValue: editingDraft?.theme ?? "")
-        _selectedKind = State(initialValue: editingDraft?.kind ?? .thematic)
+        _selectedKind = State(initialValue: preselectedKind ?? editingDraft?.kind ?? .thematic)
         _selectedSwatchHex = State(initialValue: editingDraft?.moodHintRawValue ?? NuéePalette.swatches[0].hex)
         _isEphemeral = State(initialValue: editingDraft?.expiresAt != nil)
         _expirationDate = State(initialValue: editingDraft?.expiresAt ?? (Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()))
+        _selectedMemberIds = State(initialValue: preselectedMemberIds)
     }
 
 
@@ -82,7 +106,9 @@ struct CreateNuéeView: View {
     /// True if the user has typed anything — triggers draft confirmation
     /// on close instead of silent dismiss.
     private var hasChanges: Bool {
-        !cleanName.isEmpty || !theme.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !cleanName.isEmpty
+        || !theme.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        || !selectedMemberIds.isEmpty
     }
 
     // MARK: Body
@@ -102,10 +128,18 @@ struct CreateNuéeView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 22) {
                         nameSection
-                        kindSection
+                        // Si on crée une thématique pour une Nuée intime
+                        // parente, le mode est verrouillé — pas de choix
+                        // Thématique/Intime, juste un rappel du contexte.
+                        if parentNuéeId != nil {
+                            parentContextBanner
+                        } else {
+                            kindSection
+                        }
+                        membersSection
                         themeSection
-                        moodSection
                         durationSection
+                        moodSection
 
                         Spacer(minLength: 24)
                     }
@@ -264,6 +298,172 @@ struct CreateNuéeView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: Section: Members ("With whom")
+    //
+    // Pour l'instant, ajout manuel de membres par nom. Chaque membre se voit
+    // attribuer un UUID local ; le displayName est la seule donnée persistée.
+    // Quand Sign in with Apple sera actif (Phase 6), ces IDs locaux seront
+    // remplacés/réconciliés par de vrais Apple user IDs via un mapping.
+    // L'invitation réelle (notifier l'autre utilisateur qu'il peut rejoindre)
+    // nécessite CloudKit et arrive après Apple Dev paid.
+
+    private var membersSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionLabel(isEnglish ? "WITH WHOM" : "AVEC QUI")
+
+            Text(isEnglish
+                 ? "optional — pick from your contacts or add new ones"
+                 : "optionnel — choisis dans tes contacts ou ajoutes-en")
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(Color.white.opacity(0.52))
+
+            Button {
+                Haptics.shared.lightTap()
+                showMemberPicker = true
+            } label: {
+                HStack(spacing: 10) {
+                    if selectedMemberIds.isEmpty {
+                        Image(systemName: "person.crop.circle.badge.plus")
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.42))
+                        Text(isEnglish ? "Add people" : "Ajouter des personnes")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.46))
+                    } else {
+                        memberAvatarStack
+                        Text(memberSummary)
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.92))
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.42))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.white.opacity(0.04))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PromiPlusPaywallView()
+                .environmentObject(userStore)
+                .environmentObject(promiStore)
+        }
+        .sheet(isPresented: $showMemberPicker) {
+            ContactPickerView(
+                selection: $selectedMemberIds,
+                priorityContactIds: [], // pas de Nuée parente ici
+                title: isEnglish ? "With whom?" : "Avec qui ?"
+            )
+            .environmentObject(userStore)
+            .environmentObject(contactsStore)
+        }
+    }
+
+    /// Pastilles empilées (max 4) + "+N" pour les membres sélectionnés.
+    private var memberAvatarStack: some View {
+        let members = selectedMembers.prefix(4)
+        let extra = max(0, selectedMembers.count - 4)
+        return HStack(spacing: -8) {
+            ForEach(Array(members.enumerated()), id: \.element.id) { _, contact in
+                ZStack {
+                    Circle()
+                        .fill(Brand.orange.opacity(0.86))
+                        .frame(width: 24, height: 24)
+                    Circle()
+                        .stroke(Color.black.opacity(0.38), lineWidth: 1)
+                        .frame(width: 24, height: 24)
+                    Text(initialOf(contact.displayName))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.96))
+                }
+            }
+            if extra > 0 {
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.18))
+                        .frame(width: 24, height: 24)
+                    Text("+\(extra)")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.86))
+                }
+            }
+        }
+    }
+
+    private var memberSummary: String {
+        let names = selectedMembers.map(\.displayName)
+        switch names.count {
+        case 0: return ""
+        case 1: return names[0]
+        case 2: return "\(names[0]) & \(names[1])"
+        default:
+            return isEnglish
+                ? "\(names.count) people"
+                : "\(names.count) personnes"
+        }
+    }
+
+    private var selectedMembers: [PromiContact] {
+        contactsStore.contactsByRecency.filter { selectedMemberIds.contains($0.id) }
+    }
+
+    private func initialOf(_ name: String) -> String {
+        guard let firstChar = name.trimmingCharacters(in: .whitespaces).first else {
+            return "?"
+        }
+        return String(firstChar).uppercased()
+    }
+
+    // MARK: Parent context banner (thématique dans une Intime)
+
+    @ViewBuilder
+    private var parentContextBanner: some View {
+        let parentName = parentNuéeId.flatMap { nuéeStore.nuée(with: $0)?.name } ?? "—"
+        VStack(alignment: .leading, spacing: 8) {
+            sectionLabel(isEnglish ? "TYPE" : "TYPE")
+
+            HStack(spacing: 10) {
+                Image(systemName: "circle.hexagongrid.fill")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(Brand.orange.opacity(0.86))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(isEnglish ? "Thematic" : "Thématique")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.92))
+                    Text(isEnglish
+                         ? "inside \(parentName)"
+                         : "dans \(parentName)")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(Color.white.opacity(0.54))
+                }
+
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.white.opacity(0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Brand.orange.opacity(0.38), lineWidth: 0.8)
+            )
+        }
     }
 
     // MARK: Section: Theme (optional)
@@ -538,6 +738,19 @@ struct CreateNuéeView: View {
 
     private func createNuée() {
         guard canCreate else { return }
+
+        // Quota free tier : pour les Nuées top-level uniquement (les
+        // sous-thématiques rattachées à une Intime ne comptent pas —
+        // elles vivent à l'intérieur d'une Nuée déjà payée).
+        if parentNuéeId == nil {
+            let currentTopLevel = nuéeStore.topLevelNuées(for: userStore.localUserId).count
+            guard userStore.canCreateNuée(currentTopLevelCount: currentTopLevel) else {
+                Haptics.shared.lightTap()
+                showPaywall = true
+                return
+            }
+        }
+
         Haptics.shared.success()
 
         let creator = NuéeMember(
@@ -553,12 +766,16 @@ struct CreateNuéeView: View {
             theme: theme.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 ? nil
                 : theme.trimmingCharacters(in: .whitespacesAndNewlines),
-            members: [creator],
+            // Créateur en premier, puis membres ajoutés convertis depuis
+            // le ContactsStore en NuéeMember (en attente d'acceptation
+            // une fois la connexion réseau active).
+            members: [creator] + selectedMembers.map { $0.asNuéeMember() },
             creatorId: userStore.localUserId,
             createdAt: Date(),
             expiresAt: isEphemeral ? expirationDate : nil,
             moodHintRawValue: selectedSwatchHex,
-            iconGlyph: nil
+            iconGlyph: nil,
+            parentNuéeId: parentNuéeId
         )
 
         nuéeStore.create(nuée)
@@ -579,5 +796,68 @@ struct CreateNuéeView: View {
         )
         draftStore.saveNuéeDraft(draft)
         dismiss()
+    }
+}
+
+// MARK: - FlowingChipsLayout
+//
+// Layout simple qui dispose les enfants horizontalement en les faisant
+// passer à la ligne quand ils dépassent la largeur disponible. Utilisé
+// pour afficher les membres ajoutés sous forme de chips qui s'enroulent
+// naturellement, sans ScrollView horizontal.
+
+struct FlowingChipsLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var totalHeight: CGFloat = 0
+        var rowWidth: CGFloat = 0
+        var rowHeight: CGFloat = 0
+
+        for sv in subviews {
+            let size = sv.sizeThatFits(.unspecified)
+            if rowWidth + size.width > maxWidth && rowWidth > 0 {
+                totalHeight += rowHeight + spacing
+                rowWidth = 0
+                rowHeight = 0
+            }
+            rowWidth += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        totalHeight += rowHeight
+        return CGSize(width: maxWidth, height: totalHeight)
+    }
+
+    func placeSubviews(
+        in bounds: CGRect,
+        proposal: ProposedViewSize,
+        subviews: Subviews,
+        cache: inout ()
+    ) {
+        let maxX = bounds.maxX
+        var x = bounds.minX
+        var y = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for sv in subviews {
+            let size = sv.sizeThatFits(.unspecified)
+            if x + size.width > maxX && x > bounds.minX {
+                x = bounds.minX
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            sv.place(
+                at: CGPoint(x: x, y: y),
+                anchor: .topLeading,
+                proposal: ProposedViewSize(size)
+            )
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
     }
 }

@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var promiStore: PromiStore
+    @EnvironmentObject var contactsStore: ContactsStore
 
     @AppStorage("promi.visualPack") private var visualPackRawValue: String =
         PromiVisualPack.alveolesSignature.rawValue
@@ -13,6 +14,11 @@ struct SettingsView: View {
     @State private var showLanguagePicker = false
     @State private var showStudio = false
     @State private var showReplayOnboarding = false
+    @State private var showUsernameEditor = false
+    @State private var showTerms = false
+    @State private var showPrivacy = false
+    @State private var showBlockedUsers = false
+    @State private var showPaywall = false
 
 
     private var currentPack: PromiVisualPack {
@@ -46,6 +52,13 @@ struct SettingsView: View {
                         header
                             .padding(.top, 8)
 
+                        sectionLabel(isFrench ? "TOI" : "YOU")
+                            .padding(.top, 14)
+
+                        usernameRow
+                        appleAccountRow
+                        promiPlusRow
+
                         sectionLabel(isFrench ? "APPLICATION" : "APP")
                             .padding(.top, 14)
 
@@ -57,6 +70,11 @@ struct SettingsView: View {
 
                         replayOnboardingRow
 
+                        sectionLabel(isFrench ? "SÉCURITÉ" : "SAFETY")
+                            .padding(.top, 14)
+
+                        blockedUsersRow
+
                         sectionLabel(isFrench ? "BIENTÔT" : "COMING SOON")
                             .padding(.top, 14)
 
@@ -64,10 +82,13 @@ struct SettingsView: View {
                             title: isFrench ? "Notifications" : "Notifications",
                             caption: isFrench ? "rappels intelligents" : "smart reminders"
                         )
-                        comingSoonRow(
-                            title: "Promi Premium",
-                            caption: isFrench ? "partage, groupes, karma avancé" : "sharing, groups, advanced karma"
-                        )
+
+                        sectionLabel(isFrench ? "LÉGAL" : "LEGAL")
+                            .padding(.top, 14)
+
+                        termsRow
+                        privacyRow
+                        aboutEditorRow
 
                         footer
                             .padding(.top, 24)
@@ -91,6 +112,28 @@ struct SettingsView: View {
         }
         .fullScreenCover(isPresented: $showReplayOnboarding) {
             OnboardingView()
+        }
+        .sheet(isPresented: $showUsernameEditor) {
+            UsernameEditSheet()
+                .environmentObject(userStore)
+        }
+        .sheet(isPresented: $showTerms) {
+            LegalDocumentsView(document: .terms)
+                .environmentObject(userStore)
+        }
+        .sheet(isPresented: $showPrivacy) {
+            LegalDocumentsView(document: .privacy)
+                .environmentObject(userStore)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PromiPlusPaywallView()
+                .environmentObject(userStore)
+                .environmentObject(promiStore)
+        }
+        .sheet(isPresented: $showBlockedUsers) {
+            BlockedUsersView()
+                .environmentObject(userStore)
+                .environmentObject(contactsStore)
         }
     }
 
@@ -124,6 +167,44 @@ struct SettingsView: View {
     }
 
     // MARK: Rows
+
+    private var usernameRow: some View {
+        SettingsRow(
+            title: isFrench ? "Nom" : "Name",
+            value: userStore.username.isEmpty
+                ? (isFrench ? "à choisir" : "set name")
+                : userStore.username,
+            accent: Color.white.opacity(0.82),
+            enabled: true
+        ) {
+            Haptics.shared.lightTap()
+            showUsernameEditor = true
+        }
+    }
+
+    /// Affiche le statut de connexion Apple. Pour l'instant désactivé
+    /// (compte Apple Dev requis pour activer la capability "Sign in with
+    /// Apple"). Quand `hasCompletedAppleSignIn` est vrai mais sans
+    /// `appleUserId`, c'est qu'on a passé le placeholder ; sinon c'est
+    /// que l'utilisateur s'est vraiment connecté.
+    private var appleAccountRow: some View {
+        let isConnected = userStore.appleUserId != nil
+        let valueText: String = {
+            if isConnected {
+                return userStore.appleEmail ?? (isFrench ? "connecté" : "connected")
+            }
+            return isFrench ? "bientôt" : "coming soon"
+        }()
+        return SettingsRow(
+            title: isFrench ? "Compte Apple" : "Apple account",
+            value: valueText,
+            accent: isConnected
+                ? Brand.orange.opacity(0.92)
+                : Color.white.opacity(0.42),
+            enabled: false
+        ) {}
+        .opacity(isConnected ? 1.0 : 0.54)
+    }
 
     private var languageRow: some View {
         SettingsRow(
@@ -175,6 +256,68 @@ struct SettingsView: View {
             enabled: false
         ) {}
         .opacity(0.54)
+    }
+
+    private var promiPlusRow: some View {
+        SettingsRow(
+            title: "Promi Plus",
+            value: userStore.isPremium
+                ? (isFrench ? "actif" : "active")
+                : (isFrench ? "découvrir" : "discover"),
+            accent: Brand.orange.opacity(0.92),
+            enabled: true
+        ) {
+            Haptics.shared.lightTap()
+            showPaywall = true
+        }
+    }
+
+    private var blockedUsersRow: some View {
+        let count = contactsStore.blockedContacts.count
+        return SettingsRow(
+            title: isFrench ? "Utilisateurs bloqués" : "Blocked users",
+            value: count == 0
+                ? (isFrench ? "aucun" : "none")
+                : "\(count)",
+            accent: count > 0 ? Brand.karmaPoor : Color.white.opacity(0.62),
+            enabled: true
+        ) {
+            Haptics.shared.lightTap()
+            showBlockedUsers = true
+        }
+    }
+
+    private var termsRow: some View {
+        SettingsRow(
+            title: isFrench ? "Conditions d’utilisation" : "Terms of use",
+            value: "v\(LegalConstants.currentTermsVersion)",
+            accent: Color.white.opacity(0.62),
+            enabled: true
+        ) {
+            Haptics.shared.lightTap()
+            showTerms = true
+        }
+    }
+
+    private var privacyRow: some View {
+        SettingsRow(
+            title: isFrench ? "Confidentialité" : "Privacy",
+            value: isFrench ? "données locales" : "local data",
+            accent: Color.white.opacity(0.62),
+            enabled: true
+        ) {
+            Haptics.shared.lightTap()
+            showPrivacy = true
+        }
+    }
+
+    private var aboutEditorRow: some View {
+        SettingsRow(
+            title: isFrench ? "Éditeur" : "Publisher",
+            value: LegalConstants.editorName,
+            accent: Color.white.opacity(0.42),
+            enabled: false
+        ) {}
     }
 
     // MARK: Footer
@@ -271,5 +414,150 @@ private struct SettingsRow: View {
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
+    }
+}
+
+// MARK: - Username edit sheet
+//
+// Petit sheet présenté depuis Settings pour modifier le nom d'utilisateur.
+// Mêmes codes visuels que UsernameSetupView (chrome pleine page, champ
+// centré, bouton Continuer orange) en version compacte.
+
+private struct UsernameEditSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var userStore: UserStore
+
+    @AppStorage("promi.visualPack")
+    private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
+
+    @AppStorage("promi.visualMood")
+    private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
+
+    @State private var typedName: String = ""
+    @FocusState private var isFieldFocused: Bool
+
+    private var isFrench: Bool {
+        !userStore.selectedLanguage.lowercased().starts(with: "en")
+    }
+
+    private var canSave: Bool {
+        let trimmed = typedName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed != userStore.username
+    }
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            // Fond sombre uni (le sheet est compact, pas la peine du
+            // chrome mood-aware complet — on garde simple et lisible).
+            Color.black.opacity(0.96).ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                Spacer().frame(height: 12)
+
+                VStack(spacing: 10) {
+                    Text(isFrench ? "Ton nom" : "Your name")
+                        .font(.system(size: 24, weight: .light))
+                        .foregroundColor(Color.white.opacity(0.94))
+
+                    Text(isFrench
+                         ? "Apparaît dans tes Promi et Nuées partagés."
+                         : "Appears in your shared Promis and Nuées.")
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundColor(Color.white.opacity(0.58))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+
+                TextField(
+                    isFrench ? "Prénom ou surnom" : "First name or nickname",
+                    text: $typedName
+                )
+                .font(.system(size: 17, weight: .regular))
+                .foregroundColor(Color.white.opacity(0.96))
+                .multilineTextAlignment(.center)
+                .focused($isFieldFocused)
+                .submitLabel(.done)
+                .onSubmit { save() }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.white.opacity(0.06))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.16), lineWidth: 0.6)
+                )
+                .padding(.horizontal, 32)
+
+                Spacer()
+
+                Button {
+                    save()
+                } label: {
+                    Text(isFrench ? "Enregistrer" : "Save")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(
+                            canSave
+                                ? Color.white.opacity(0.94)
+                                : Color.white.opacity(0.38)
+                        )
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 15)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(
+                                    canSave
+                                        ? Brand.orange.opacity(0.92)
+                                        : Color.white.opacity(0.08)
+                                )
+                        )
+                }
+                .disabled(!canSave)
+                .buttonStyle(.plain)
+                .padding(.horizontal, 32)
+                .padding(.bottom, 24)
+            }
+
+            Button {
+                Haptics.shared.lightTap()
+                dismiss()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(Color.white.opacity(0.86))
+                    Text(isFrench ? "Fermer" : "Close")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.92))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(Color.white.opacity(0.08))
+                )
+                .overlay(
+                    Capsule(style: .continuous)
+                        .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+                )
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 20)
+            .padding(.top, 16)
+        }
+        .onAppear {
+            typedName = userStore.username
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                isFieldFocused = true
+            }
+        }
+    }
+
+    private func save() {
+        guard canSave else { return }
+        Haptics.shared.success()
+        userStore.setUsername(typedName)
+        dismiss()
     }
 }

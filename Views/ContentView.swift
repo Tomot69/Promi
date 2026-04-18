@@ -88,6 +88,7 @@ struct ContentView: View {
     @EnvironmentObject var karmaStore: KarmaStore
     @EnvironmentObject var draftStore: DraftStore
     @EnvironmentObject var nuéeStore: NuéeStore
+    @EnvironmentObject var contactsStore: ContactsStore
 
     @State private var showAddPromi = false
     @State private var showSettings = false
@@ -101,6 +102,9 @@ struct ContentView: View {
     @State private var selectedSort: PromiFieldSortOption = .inspiration
     @State private var selectedPromi: PromiItem?
     @State private var selectedNuée: Nuée?
+    @State private var reportPromi: PromiItem?
+    @State private var showPaywall = false
+    @State private var homeFieldSize: CGSize = .zero
     @State private var isSortMenuExpanded = false
     @State private var isAddMenuExpanded = false
 
@@ -176,13 +180,27 @@ struct ContentView: View {
             PromiCompositionShareView(
                 pack: visualPack,
                 mood: visualMood,
-                sortOption: selectedSort
+                sortOption: selectedSort,
+                homeSize: homeFieldSize
             )
             .environmentObject(userStore)
             .environmentObject(promiStore)
         }
         .sheet(item: $selectedPromi) { promi in
             EditPromiView(promi: promi)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PromiPlusPaywallView()
+                .environmentObject(userStore)
+                .environmentObject(promiStore)
+        }
+        .sheet(item: $reportPromi) { promi in
+            ReportSheet(
+                promi: promi,
+                senderName: contactsStore.contact(id: promi.senderContactId ?? "")?.displayName ?? "?"
+            )
+            .environmentObject(userStore)
+            .environmentObject(contactsStore)
         }
         .sheet(item: $selectedNuée) { nuée in
             NuéeDetailView(nuéeId: nuée.id)
@@ -248,7 +266,8 @@ struct ContentView: View {
     }
 
     private var fieldLayer: some View {
-        PromiFieldRootView(
+        GeometryReader { geo in
+            PromiFieldRootView(
             pack: visualPack,
             mood: visualMood,
             promis: sortedPromis,
@@ -262,8 +281,15 @@ struct ContentView: View {
             onTapNuée: { nuée in
                 closeFloatingMenusIfNeeded()
                 selectedNuée = nuée
+            },
+            onLongPressPromi: { promi in
+                closeFloatingMenusIfNeeded()
+                reportPromi = promi
             }
         )
+        .onAppear { homeFieldSize = geo.size }
+        .onChange(of: geo.size) { homeFieldSize = $0 }
+        }
     }
 
     private var dismissLayer: some View {
@@ -411,6 +437,7 @@ struct ContentView: View {
                 isAddMenuExpanded: $isAddMenuExpanded,
                 isDarkField: isDarkField,
                 draftCount: draftStore.totalDraftCount,
+                isPremium: userStore.isPremium,
                 onOpenKarma: {
                     closeFloatingMenusIfNeeded()
                     Haptics.shared.lightTap()
@@ -440,6 +467,11 @@ struct ContentView: View {
                     closeFloatingMenusIfNeeded()
                     Haptics.shared.tinyPop()
                     showDrafts = true
+                },
+                onOpenPaywall: {
+                    closeFloatingMenusIfNeeded()
+                    Haptics.shared.lightTap()
+                    showPaywall = true
                 }
             )
             .padding(.horizontal, sideInset)

@@ -44,24 +44,28 @@ class KarmaStore: ObservableObject {
         objectWillChange.send()
     }
     
+    /// Commentaire affiché sous le score de Karma. Suit le même ton que
+    /// les exemples de l'onboarding (sobre, clinique, complice au plus bas).
+    /// Strictement aligné avec les formulations de la slide Karma de
+    /// l'onboarding pour cohérence narrative bout-en-bout.
     func getRoast(language: String) -> String {
         let karma = karmaState.percentage
-        
+
         if language.starts(with: "en") {
-            if karma >= 90 { return "Legend status unlocked" }
-            else if karma >= 70 { return "Solid, keep it up" }
-            else if karma >= 50 { return "Room for improvement" }
-            else { return "Let's be honest..." }
+            if karma >= 90 { return "Your word is signature" }
+            else if karma >= 70 { return "Reliable, you keep them" }
+            else if karma >= 50 { return "It goes, it comes" }
+            else { return "Not gonna lie — time to make this right" }
         } else if language.starts(with: "es") {
-            if karma >= 90 { return "Eres una leyenda" }
-            else if karma >= 70 { return "Sólido, sigue así" }
-            else if karma >= 50 { return "Hay margen de mejora" }
-            else { return "Seamos honestos..." }
+            if karma >= 90 { return "Tu palabra es firma" }
+            else if karma >= 70 { return "Fiable, los cumples" }
+            else if karma >= 50 { return "Va y viene" }
+            else { return "No nos vamos a mentir — toca recuperar" }
         } else {
-            if karma >= 90 { return "Statut légende débloqué" }
-            else if karma >= 70 { return "Solide, continue" }
-            else if karma >= 50 { return "Peut mieux faire" }
-            else { return "Soyons honnêtes..." }
+            if karma >= 90 { return "Ta parole vaut signature" }
+            else if karma >= 70 { return "Fiable, tu tiens" }
+            else if karma >= 50 { return "Ça va, ça vient" }
+            else { return "On va pas se mentir — y'a du boulot" }
         }
     }
     

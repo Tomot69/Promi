@@ -13,6 +13,8 @@ struct AddPromiView: View {
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var draftStore: DraftStore
     @EnvironmentObject var nuéeStore: NuéeStore
+    @EnvironmentObject var contactsStore: ContactsStore
+    @EnvironmentObject var karmaStore: KarmaStore
 
     @AppStorage("promi.visualPack")
     private var visualPackRawValue: String = PromiVisualPack.alveolesSignature.rawValue
@@ -21,14 +23,16 @@ struct AddPromiView: View {
     private var visualMoodRawValue: String = PromiColorMood.terrePromi.rawValue
 
     let editingDraft: PromiDraft?
+    let preselectedNuéeId: UUID?
 
     @State private var titleSuffix: String
     @State private var dueDate: Date
     @State private var assignee: String
     @State private var intensity: Int
 
-    init(editingDraft: PromiDraft? = nil) {
+    init(editingDraft: PromiDraft? = nil, preselectedNuéeId: UUID? = nil) {
         self.editingDraft = editingDraft
+        self.preselectedNuéeId = preselectedNuéeId
         let stripped: String = {
             guard let t = editingDraft?.title else { return "" }
             let trimmed = t.trimmingCharacters(in: .whitespaces)
@@ -41,11 +45,20 @@ struct AddPromiView: View {
         _dueDate = State(initialValue: editingDraft?.dueDate ?? (Calendar.current.date(byAdding: .hour, value: 2, to: Date()) ?? Date()))
         _assignee = State(initialValue: editingDraft?.assignee ?? "")
         _intensity = State(initialValue: editingDraft?.intensity ?? 50)
+        _selectedNuéeId = State(initialValue: preselectedNuéeId)
     }
     @State private var selectedKind: PromiKind = .precise
-    @State private var selectedNuéeId: UUID? = nil
+    @State private var selectedNuéeId: UUID?
     @State private var showValidationAnimation = false
     @State private var showExitConfirmation = false
+
+    // Sélection multi-destinataires structurée (Phase 6). Ouvre
+    // ContactPickerView en sheet. L'ancien champ texte `assignee` est
+    // conservé et rempli automatiquement avec les noms concaténés
+    // pour la rétrocompat (display, draft, save).
+    @State private var selectedRecipientIds: Set<String> = []
+    @State private var showRecipientPicker = false
+    @State private var showPaywall = false
 
     private var currentPack: PromiVisualPack {
         PromiVisualPack(rawValue: visualPackRawValue) ?? .alveolesSignature
@@ -90,7 +103,13 @@ struct AddPromiView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 22) {
+                        // Promi est social par vocation. L'info la plus
+                        // importante après le contenu ("ce que tu promets"),
+                        // c'est à qui la promesse s'adresse. Donc POUR QUI
+                        // remonte en 2e position, juste sous le titre, avant
+                        // le mode/date qui sont des précisions techniques.
                         titleField
+                        recipientBlock
                         kindSelector
 
                         // Le bloc qui suit le sélecteur dépend du kind :
@@ -108,7 +127,6 @@ struct AddPromiView: View {
                             floatingBlock
                         }
 
-                        recipientBlock
                         nuéeBlock
                         intensityBlock
 
@@ -431,20 +449,123 @@ struct AddPromiView: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionLabel(isEnglish ? "For whom" : "Pour qui")
 
-            TextField(
-                "",
-                text: $assignee,
-                prompt: Text(isEnglish ? "Someone…" : "Quelqu’un…")
-                    .foregroundColor(Color.white.opacity(0.36))
-            )
-            .textInputAutocapitalization(.words)
-            .font(.system(size: 16, weight: .regular))
-            .foregroundColor(Color.white.opacity(0.92))
-            .tint(Brand.orange)
-            .padding(.vertical, 14)
-            .padding(.horizontal, 16)
-            .background(chromeCard(radius: 16))
+            Button {
+                Haptics.shared.lightTap()
+                showRecipientPicker = true
+            } label: {
+                HStack(spacing: 10) {
+                    if selectedRecipientIds.isEmpty {
+                        Image(systemName: "person.crop.circle.badge.plus")
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.42))
+                        Text(isEnglish ? "Someone…" : "Quelqu’un…")
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.36))
+                    } else {
+                        // Pastilles d'initiales empilées + résumé textuel.
+                        recipientAvatarStack
+                        Text(recipientSummary)
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.92))
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.42))
+                }
+                .padding(.vertical, 14)
+                .padding(.horizontal, 16)
+                .background(chromeCard(radius: 16))
+            }
+            .buttonStyle(.plain)
         }
+        .sheet(isPresented: $showPaywall) {
+            PromiPlusPaywallView()
+                .environmentObject(userStore)
+                .environmentObject(promiStore)
+        }
+        .sheet(isPresented: $showRecipientPicker) {
+            ContactPickerView(
+                selection: $selectedRecipientIds,
+                priorityContactIds: priorityContactIdsForPicker,
+                title: isEnglish ? "For whom?" : "Pour qui ?"
+            )
+            .environmentObject(userStore)
+            .environmentObject(contactsStore)
+        }
+    }
+
+    /// Membres de la Nuée actuellement sélectionnée (mode hybride : ils
+    /// remontent en haut du picker). Vide si pas de Nuée choisie ou si
+    /// aucun membre n'est dans le ContactsStore.
+    private var priorityContactIdsForPicker: [String] {
+        guard let nuéeId = selectedNuéeId,
+              let nuée = nuéeStore.nuée(with: nuéeId)
+        else { return [] }
+        // On filtre les members de la Nuée qui ont un ID match dans le
+        // ContactsStore. Pour les nouveaux contacts ajoutés via Nuée
+        // (Phase 6), l'ID Nuée membre = l'ID PromiContact.
+        let memberIds = Set(nuée.members.map(\.id))
+        return contactsStore.contactsByRecency
+            .filter { memberIds.contains($0.id) }
+            .map(\.id)
+    }
+
+    /// Vue empilée de pastilles avec initiales pour les destinataires
+    /// sélectionnés. Limite à 3 pastilles + "+N" si plus.
+    private var recipientAvatarStack: some View {
+        let recipients = selectedRecipients.prefix(3)
+        let extra = max(0, selectedRecipients.count - 3)
+        return HStack(spacing: -8) {
+            ForEach(Array(recipients.enumerated()), id: \.element.id) { _, contact in
+                ZStack {
+                    Circle()
+                        .fill(Brand.orange.opacity(0.86))
+                        .frame(width: 24, height: 24)
+                    Circle()
+                        .stroke(Color.black.opacity(0.38), lineWidth: 1)
+                        .frame(width: 24, height: 24)
+                    Text(initial(of: contact.displayName))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.96))
+                }
+            }
+            if extra > 0 {
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.18))
+                        .frame(width: 24, height: 24)
+                    Text("+\(extra)")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(Color.white.opacity(0.86))
+                }
+            }
+        }
+    }
+
+    /// Résumé texte des destinataires : "Léo", "Léo & Maman", "Léo +2".
+    private var recipientSummary: String {
+        let names = selectedRecipients.map(\.displayName)
+        switch names.count {
+        case 0: return ""
+        case 1: return names[0]
+        case 2: return "\(names[0]) & \(names[1])"
+        default: return "\(names[0]) +\(names.count - 1)"
+        }
+    }
+
+    /// PromiContact correspondant à `selectedRecipientIds`, dans l'ordre
+    /// du tri par récence (= ordre cohérent avec ce qu'on voit dans le picker).
+    private var selectedRecipients: [PromiContact] {
+        contactsStore.contactsByRecency.filter { selectedRecipientIds.contains($0.id) }
+    }
+
+    private func initial(of name: String) -> String {
+        guard let firstChar = name.trimmingCharacters(in: .whitespaces).first else {
+            return "?"
+        }
+        return String(firstChar).uppercased()
     }
 
     // MARK: - Nuée block (optional — attach this Promi to a Nuée)
@@ -673,6 +794,13 @@ struct AddPromiView: View {
     private func createPromi() {
         guard !cleanSuffix.isEmpty else { return }
 
+        // Quota free tier : vérification avant création.
+        guard userStore.canCreatePromi else {
+            Haptics.shared.lightTap()
+            showPaywall = true
+            return
+        }
+
         let effectiveDueDate: Date = {
             switch selectedKind {
             case .precise:
@@ -684,18 +812,53 @@ struct AddPromiView: View {
             }
         }()
 
+        // Pour rétrocompat : on remplit aussi le champ `assignee` legacy
+        // avec un résumé texte des noms structurés. Comme ça les vieux
+        // écrans qui lisent `assignee` continuent d'afficher quelque chose.
+        let recipientNames = contactsStore.contactsByRecency
+            .filter { selectedRecipientIds.contains($0.id) }
+            .map(\.displayName)
+        let assigneeFallback: String? = {
+            if !recipientNames.isEmpty {
+                return recipientNames.joined(separator: ", ")
+            }
+            return cleanAssignee.isEmpty ? nil : cleanAssignee
+        }()
+
+        // Touche les contacts sélectionnés pour les remonter en récence.
+        for id in selectedRecipientIds {
+            if let c = contactsStore.contact(id: id) {
+                contactsStore.touch(c)
+            }
+        }
+
         let newPromi = PromiItem(
             title: cleanTitle,
             dueDate: effectiveDueDate,
             importance: intensity > 70 ? .urgent : (intensity > 40 ? .normal : .low),
-            assignee: cleanAssignee.isEmpty ? nil : cleanAssignee,
+            assignee: assigneeFallback,
             intensity: intensity,
             kind: selectedKind,
-            nuéeId: selectedNuéeId
+            nuéeId: selectedNuéeId,
+            recipientContactIds: Array(selectedRecipientIds)
         )
 
         promiStore.addPromi(newPromi)
-
+        karmaStore.updateKarma(basedOn: promiStore.promis)
+        userStore.recordPromiCreation()
+        NotificationManager.shared.scheduleReminders(
+            for: newPromi,
+            language: userStore.selectedLanguage
+        )
+        NotificationManager.shared.scheduleReminders(
+            for: newPromi,
+            language: userStore.selectedLanguage
+        )
+        NotificationManager.shared.scheduleReminders(
+            for: newPromi,
+            language: userStore.selectedLanguage
+        )
+        
         withAnimation(.easeOut(duration: 0.28)) {
             showValidationAnimation = true
         }

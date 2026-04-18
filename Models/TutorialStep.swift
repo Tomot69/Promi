@@ -19,6 +19,7 @@ enum TutorialTarget {
     case karmaButton      // eye in bottom dock, 2nd from left
     case promiListButton  // pinky promise in bottom dock, center
     case studioButton     // 2×2 grid in bottom dock, 4th from left
+    case settingsButton   // "Promi" title top-left (opens Settings)
 }
 
 enum ArrowDirection {
@@ -98,6 +99,16 @@ enum TutorialContent {
                 position: .bottomTrailing,
                 arrowDirection: .down,
                 target: .studioButton
+            ),
+            TutorialStep(
+                id: 5,
+                title: fr ? "Réglages" : "Settings",
+                message: fr
+                    ? "Appuie sur Promi pour ton nom, ta langue, ton compte"
+                    : "Tap Promi for your name, language, account",
+                position: .topLeading,
+                arrowDirection: .up,
+                target: .settingsButton
             )
         ]
     }
