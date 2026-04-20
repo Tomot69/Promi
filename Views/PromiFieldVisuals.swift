@@ -769,7 +769,6 @@ struct VitrailChromePromiFieldView: View {
                                         .frame(width: imageWidth, height: imageHeight)
                                         .background(Color.white)
         }
-        .frame(width: size.width, height: size.height)
         .background(mood.homeBackground)
         .ignoresSafeArea()
         .onAppear { motion.subscribe() }
@@ -1006,7 +1005,7 @@ fileprivate struct VitrailChromeShareContent: View {
             sortOption: sortOption
         )
         let imageRatio: CGFloat = 1024.0 / 1536.0
-        let targetHeight = (size.height + 120) * 1.15
+        let targetHeight = (size.height + 120) * 1.4
         let imageHeight = targetHeight
         let imageWidth = targetHeight * imageRatio
         let canvas = CGSize(width: imageWidth, height: imageHeight)
