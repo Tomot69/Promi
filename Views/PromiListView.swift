@@ -345,6 +345,8 @@ struct PromiListView: View {
                                     PromiListRowCard(
                                         promi: promi,
                                         languageCode: userStore.selectedLanguage,
+                                        bravoCount: promiStore.getBravosCount(for: promi.id),
+                                        commentCount: promiStore.getCommentsCount(for: promi.id),
                                         onOpen: {
                                             Haptics.shared.lightTap()
                                             dismiss()
@@ -644,6 +646,8 @@ private enum PromiListSegment {
 private struct PromiListRowCard: View {
     let promi: PromiItem
     let languageCode: String
+    let bravoCount: Int
+    let commentCount: Int
     let onOpen: () -> Void
     let onToggleDone: () -> Void
 
@@ -762,6 +766,30 @@ private struct PromiListRowCard: View {
             }
 
             Spacer()
+
+            // Social (bravo + commentaires)
+            if bravoCount > 0 || commentCount > 0 {
+                HStack(spacing: 8) {
+                    if bravoCount > 0 {
+                        HStack(spacing: 3) {
+                            PinkyPromiseGlyph(isDarkField: true)
+                                .frame(width: 12, height: 12)
+                            Text("\(bravoCount)")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(Brand.orange.opacity(0.76))
+                        }
+                    }
+                    if commentCount > 0 {
+                        HStack(spacing: 3) {
+                            Image(systemName: "text.bubble")
+                                .font(.system(size: 10, weight: .medium))
+                            Text("\(commentCount)")
+                                .font(.system(size: 11, weight: .medium))
+                        }
+                        .foregroundColor(Color.white.opacity(0.52))
+                    }
+                }
+            }
 
             intensityPill
         }

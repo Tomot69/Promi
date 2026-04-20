@@ -383,7 +383,7 @@ struct PaletteView: View {
         (.mosaicFlat, [.craieMarine, .sableMenthe, .mineralPrune]),
         (.spectrumSoft, [.jardinPromi, .auroreCobalt, .citrusBrume]),
         (.vitrailChrome, [.vitrailCathédrale, .vitrailAube, .vitrailNuit]),
-        (.trame, [.trameJardin, .trameObsidienne, .trameAdobe, .trameConfettis])
+        (.trame, [.trameConfettis, .trameObsidienne, .trameAdobe, .trameJardin])
     ]
 
     var body: some View {

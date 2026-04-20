@@ -20,6 +20,8 @@ struct PromiItem: Identifiable, Codable, Equatable {
     /// for cross-platform serialization safety, while the Swift property
     /// name keeps the accent for consistency with the Nuée model.
     var nuéeId: UUID?
+    /// True si ce Promi a été créé entre 00:00 et 00:05.
+    var isMidnightPromi: Bool = false
 
     /// Identifiants des PromiContact destinataires de ce Promi (multi-
     /// destinataires possibles : un Promi peut s'adresser à plusieurs

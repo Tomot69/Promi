@@ -374,46 +374,28 @@ final class ZoomHostScrollView: UIScrollView {
         let viewportSize = bounds.size
         let atRestScale = abs(zoomScale - 1.0) < 0.001
 
-        // On demande au SwiftUI sa taille intrinsèque (sizeThatFits), et
-        // on s'assure que le contenu couvre AU MINIMUM la taille du
-        // viewport dans chaque dimension (pour éviter une zone vide
-        // visible quand le contenu SwiftUI est plus petit que l'écran).
         if viewportSize != .zero && viewportSize != lastConfiguredBoundsSize && atRestScale {
             lastConfiguredBoundsSize = viewportSize
             let intrinsic = hosted.sizeThatFits(
                 CGSize(width: CGFloat.greatestFiniteMagnitude,
                        height: CGFloat.greatestFiniteMagnitude)
             )
+            // Le contenu doit être assez grand pour remplir l'écran
+            // même au dézoom maximum. Sinon UIScrollView n'a plus
+            // de place pour scroller → snap au coin → "attraction".
+            let minScale = max(minimumZoomScale, 0.1)
             let finalSize = CGSize(
-                width: max(intrinsic.width, viewportSize.width),
-                height: max(intrinsic.height, viewportSize.height)
+                width: max(intrinsic.width, viewportSize.width, viewportSize.width / minScale),
+                height: max(intrinsic.height, viewportSize.height, viewportSize.height / minScale)
             )
             hosted.frame = CGRect(origin: .zero, size: finalSize)
             contentSize = finalSize
+
+            // Démarrer centré dans le grand canvas
+            let startX = (finalSize.width - viewportSize.width) / 2
+            let startY = (finalSize.height - viewportSize.height) / 2
+            contentOffset = CGPoint(x: startX, y: startY)
         }
-
-        centerContentIfNeeded()
-    }
-
-    /// Simple symmetric centering — when zoomed out, the content
-    /// centers in the full viewport. No reserved zones for dock or
-    /// status bar — the Voronoï extends edge-to-edge and the chrome
-    /// overlays on top. Exactly how Photos.app centers its content.
-    func centerContentIfNeeded() {
-        guard hostedView != nil else { return }
-
-        let scaledW = contentSize.width * zoomScale
-        let scaledH = contentSize.height * zoomScale
-
-        let horizontalInset = max(0, (bounds.width - scaledW) / 2)
-        let verticalInset = max(0, (bounds.height - scaledH) / 2)
-
-        contentInset = UIEdgeInsets(
-            top: verticalInset,
-            left: horizontalInset,
-            bottom: verticalInset,
-            right: horizontalInset
-        )
     }
 }
 
@@ -447,7 +429,8 @@ struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
         scrollView.minimumZoomScale = 0.3
         scrollView.maximumZoomScale = 4.0
         scrollView.zoomScale = 1.0
-        scrollView.bouncesZoom = false
+        scrollView.bouncesZoom = true
+        scrollView.bounces = true
         scrollView.alwaysBounceVertical = false
         scrollView.alwaysBounceHorizontal = false
         scrollView.showsVerticalScrollIndicator = false
@@ -539,13 +522,8 @@ struct ZoomablePromiViewport<Content: View>: UIViewRepresentable {
         /// (après dézoom). Sans ça, le contenu se colle en haut à gauche.
 
 
-        func scrollViewDidZoom(_ scrollView: UIScrollView) {
-            (scrollView as? ZoomHostScrollView)?.centerContentIfNeeded()
-        }
-
-        func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-            (scrollView as? ZoomHostScrollView)?.centerContentIfNeeded()
-        }
+        func scrollViewDidZoom(_ scrollView: UIScrollView) { }
+        func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) { }
 
         @objc
         func handleSingleTap(_ recognizer: UITapGestureRecognizer) {
@@ -885,16 +863,16 @@ struct VitrailChromePromiFieldView: View {
 fileprivate struct VitrailCellShape: Shape {
     let points: [CGPoint]
     func path(in rect: CGRect) -> Path {
-        var p = Path()
+        var p =  Path()
         guard let first = points.first else { return p }
         p.move(to: first)
         for pt in points.dropFirst() { p.addLine(to: pt) }
         p.closeSubpath()
         return p
-    }
-}
+            }
+        }
 
-fileprivate struct VitrailChromeCellView: View {
+    fileprivate struct VitrailChromeCellView: View {
     let cell: PromiFieldCell
     let clampedTilt: CGSize
 
@@ -974,6 +952,7 @@ struct SpectrumSoftPromiFieldView: View {
             onTapNuée: onTapNuée,
             onLongPressPromi: onLongPressPromi
         )
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .background(mood.homeBackground)
     }
 }
@@ -1354,9 +1333,14 @@ fileprivate struct CommonPromiFieldView: View {
             // reads as a clear secondary signal without erasing the cell's
             // native border.
             let haloColor: Color? = {
-                // Promi tenu → halo vert doré (célébration visuelle).
+                // Promi tenu → halo vert doré.
                 if promi.status == .done {
                     return Color(red: 0.34, green: 0.80, blue: 0.60)
+                }
+                // Promi de minuit → halo bleuté temporaire (24h).
+                if promi.isMidnightPromi,
+                   Date().timeIntervalSince(promi.createdAt) < 86400 {
+                    return Color(red: 0.28, green: 0.52, blue: 0.96)
                 }
                 // Promi rattaché à une Nuée → halo couleur swatch.
                 guard let nuéeId = promi.nuéeId,
@@ -1426,9 +1410,14 @@ fileprivate struct CommonPromiFieldView: View {
             // Cristal black border so it reads as a clear secondary
             // signal — same principle as the outer-tier halo.
             let haloColor: Color? = {
-                // Promi tenu → halo vert doré (célébration visuelle).
+                // Promi tenu → halo vert doré.
                 if promi.status == .done {
                     return Color(red: 0.34, green: 0.80, blue: 0.60)
+                }
+                // Promi de minuit → halo bleuté temporaire (24h).
+                if promi.isMidnightPromi,
+                   Date().timeIntervalSince(promi.createdAt) < 86400 {
+                    return Color(red: 0.28, green: 0.52, blue: 0.96)
                 }
                 // Promi rattaché à une Nuée → halo couleur swatch.
                 guard let nuéeId = promi.nuéeId,
@@ -1710,7 +1699,13 @@ fileprivate enum PromiFieldLayoutFactory {
             promiCount: promis.count + nuées.count
         )
 
-        let overscanX: CGFloat = theme == .spectrum ? 90 : 54
+        let overscanX: CGFloat = {
+            switch theme {
+            case .spectrum: return 90
+            case .cristal:  return 240
+            default:        return 54
+            }
+        }()
         let overscanYTop: CGFloat = 36
         let overscanYBottom: CGFloat = 120
 
@@ -3438,20 +3433,20 @@ fileprivate struct PromiCellCenteredLabelView: View {
                 .foregroundColor(primaryColor)
                 .lineLimit(maxTitleLines)
                 .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.42)
+                .minimumScaleFactor(0.3)
                 .allowsTightening(true)
-                .fixedSize(horizontal: false, vertical: true)
 
             Text(dateText)
                 .font(.system(size: secondarySize, weight: .medium, design: .rounded))
                 .foregroundColor(secondaryColor)
                 .lineLimit(1)
-                .minimumScaleFactor(0.5)
+                .minimumScaleFactor(0.4)
                 .monospacedDigit()
                 .allowsTightening(true)
         }
         .padding(.horizontal, horizontalPadding)
-        .frame(width: textWidth, height: textHeight, alignment: .center)
+        .frame(maxWidth: textWidth, maxHeight: textHeight, alignment: .center)
+        .minimumScaleFactor(0.3)
         .position(x: frame.midX, y: frame.midY)
     }
 
@@ -3498,21 +3493,21 @@ fileprivate struct PromiCellCenteredLabelView: View {
     }
 
     private var textWidth: CGFloat {
-        max(38, min(frame.width * 0.82, frame.width - 10))
+        max(32, min(frame.width * 0.72, frame.width - 12))
     }
 
     private var textHeight: CGFloat {
-        max(28, min(frame.height * 0.78, frame.height - 6))
+        max(24, min(frame.height * 0.68, frame.height - 10))
     }
 
     private var titleSize: CGFloat {
-        let candidate = min(frame.width * 0.16, frame.height * 0.22)
-        return max(11, min(candidate, 30))
+        let candidate = min(frame.width * 0.14, frame.height * 0.18)
+        return max(9, min(candidate, 26))
     }
 
     private var secondarySize: CGFloat {
-        let candidate = min(frame.width * 0.068, frame.height * 0.090)
-        return max(8, min(candidate, 13))
+        let candidate = min(frame.width * 0.060, frame.height * 0.078)
+        return max(7, min(candidate, 12))
     }
 
     // MARK: Colors
@@ -3563,6 +3558,7 @@ fileprivate struct NuéeCellIconLabel: View {
         }
         .padding(.horizontal, horizontalPadding)
         .frame(width: textWidth, height: textHeight, alignment: .center)
+        .clipped()
         .position(x: frame.midX, y: frame.midY)
     }
 

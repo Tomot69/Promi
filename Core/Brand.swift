@@ -30,4 +30,40 @@ struct Brand {
     static let karmaGood = Color.blue
     static let karmaAverage = Color.orange
     static let karmaPoor = Color.red
+    
+    /// Karma threshold just crossed — used by the field pulse easter egg.
+        static func karmaJustCrossedThreshold(old: Int, new: Int) -> Int? {
+            let thresholds = [50, 75, 100]
+            for t in thresholds {
+                if old < t && new >= t { return t }
+            }
+            return nil
+        }
+}
+
+// MARK: - Shake detection via UIWindow override
+
+extension Notification.Name {
+    static let promiShakeDetected = Notification.Name("promiShakeDetected")
+}
+
+struct ShakeDetectorView: UIViewRepresentable {
+    func makeUIView(context: Context) -> ShakeDetectingUIView { ShakeDetectingUIView() }
+    func updateUIView(_ uiView: ShakeDetectingUIView, context: Context) {}
+}
+
+class ShakeDetectingUIView: UIView {
+    override var canBecomeFirstResponder: Bool { true }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        becomeFirstResponder()
+    }
+
+    override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+        super.motionEnded(motion, with: event)
+        if motion == .motionShake {
+            NotificationCenter.default.post(name: .promiShakeDetected, object: nil)
+        }
+    }
 }

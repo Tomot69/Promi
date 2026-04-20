@@ -11,6 +11,29 @@ import Combine
 // MARK: - Promi Store
 class PromiStore: ObservableObject {
     @Published var promis: [PromiItem] = []
+    /// Seed pour le layout Voronoï — changer ce seed réorganise la toile.
+    @Published var layoutSeed: Int = UserDefaults.standard.integer(forKey: "promi.layoutSeed")
+    @Published var lastShakeDate: Date = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "promi.lastShake"))
+    @Published var shakeCountInWindow: Int = 0
+
+    func shakeToReorganize() -> Bool {
+        let now = Date()
+        // Cooldown 24h après 2 shakes dans les 5 dernières minutes
+        if shakeCountInWindow >= 2 {
+            if now.timeIntervalSince(lastShakeDate) < 86400 { return false }
+            shakeCountInWindow = 0
+        }
+        // Reset compteur si > 5 min depuis le dernier shake
+        if now.timeIntervalSince(lastShakeDate) > 300 {
+            shakeCountInWindow = 0
+        }
+        layoutSeed = Int.random(in: 0...999999)
+        shakeCountInWindow += 1
+        lastShakeDate = now
+        UserDefaults.standard.set(layoutSeed, forKey: "promi.layoutSeed")
+        UserDefaults.standard.set(now.timeIntervalSince1970, forKey: "promi.lastShake")
+        return true
+    }
     @Published var bravos: [Bravo] = []
     @Published var comments: [Comment] = []
     

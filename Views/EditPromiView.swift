@@ -143,7 +143,8 @@ struct EditPromiView: View {
                 PromiKeptCelebrationView(
                     isPresented: $showValidationAnimation,
                     karmaPercentage: karmaStore.karmaState.percentage,
-                    isFrench: !isEnglish
+                    isFrench: !isEnglish,
+                    totalKept: promiStore.promis.filter { $0.status == .done }.count
                 )
                 .transition(.opacity)
             }
@@ -635,36 +636,22 @@ struct EditPromiView: View {
             .buttonStyle(.plain)
             .disabled(!canSave)
 
-            Button(action: toggleStatus) {
-                if promi.status == .open {
-                    HStack(spacing: 10) {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 14, weight: .semibold))
+           Button(action: toggleStatus) {
+                HStack(spacing: 6) {
+                    if promi.status == .open {
                         Text(isEnglish ? "I kept it" : "Tenu")
-                            .font(.system(size: 16, weight: .medium))
-                    }
-                    .foregroundColor(Brand.orange.opacity(0.92))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Brand.orange.opacity(0.12))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(Brand.orange.opacity(0.32), lineWidth: 0.8)
-                    )
-                } else {
-                    HStack(spacing: 6) {
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(Brand.orange.opacity(0.88))
+                    } else {
                         Image(systemName: "arrow.uturn.backward")
                             .font(.system(size: 10, weight: .semibold))
                         Text(isEnglish ? "Reopen" : "Réouvrir")
                             .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(Color.white.opacity(0.58))
                     }
-                    .foregroundColor(Color.white.opacity(0.58))
-                    .padding(.vertical, 10)
-                    .frame(maxWidth: .infinity)
                 }
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
             }
             .buttonStyle(.plain)
 
@@ -859,6 +846,8 @@ struct EditPromiView: View {
 
             promiStore.markAsDone(promi)
             NotificationManager.shared.cancelReminders(for: promi.id)
+            // Bonus karma minuit : mettre à jour immédiatement
+            karmaStore.updateKarma(basedOn: promiStore.promis)
 
             withAnimation(.easeOut(duration: 0.3)) {
                 showValidationAnimation = true

@@ -9,6 +9,7 @@ struct PromiKeptCelebrationView: View {
     @Binding var isPresented: Bool
     var karmaPercentage: Int = 0
     var isFrench: Bool = true
+    var totalKept: Int = 0
 
     @State private var splitOffset: CGFloat = 32
     @State private var haloScale: CGFloat = 0.6
@@ -18,8 +19,27 @@ struct PromiKeptCelebrationView: View {
     @State private var bgOpacity: Double = 0
     @State private var globalOpacity: Double = 1.0
 
+    private var isMilestone: Bool {
+        [100, 500, 1000].contains(totalKept)
+    }
+
+    private var milestoneColor: Color {
+        switch totalKept {
+        case 1000: return Color(red: 1.0, green: 0.84, blue: 0.0)    // doré
+        case 500:  return Color(red: 0.78, green: 0.78, blue: 0.82)   // argenté
+        case 100:  return Color.white                                  // blanc
+        default:   return Brand.orange
+        }
+    }
+
     private var celebrationLine: String {
-        if karmaPercentage >= 90 {
+        if totalKept == 1000 {
+            return isFrench ? "légende." : "legend."
+        } else if totalKept == 500 {
+            return isFrench ? "demi-millier. respect." : "five hundred. respect."
+        } else if totalKept == 100 {
+            return isFrench ? "centième. rien ne t'arrête." : "one hundredth. unstoppable."
+        } else if karmaPercentage >= 90 {
             return isFrench ? "signature." : "signature."
         } else if karmaPercentage >= 70 {
             return isFrench ? "solide." : "solid."
@@ -42,51 +62,55 @@ struct PromiKeptCelebrationView: View {
                 Spacer()
 
                 ZStack {
-                    // Halo
                     Circle()
                         .fill(
                             RadialGradient(
                                 colors: [
-                                    Brand.orange.opacity(0.28),
-                                    Brand.orange.opacity(0.06),
+                                    (isMilestone ? milestoneColor : Brand.orange).opacity(0.18),
+                                    (isMilestone ? milestoneColor : Brand.orange).opacity(0.04),
                                     Color.clear
                                 ],
                                 center: .center,
-                                startRadius: 4,
-                                endRadius: 72
+                                startRadius: 2,
+                                endRadius: 64
                             )
                         )
-                        .frame(width: 144, height: 144)
+                        .frame(width: 128, height: 128)
                         .scaleEffect(haloScale)
                         .opacity(haloOpacity)
 
-                    // Moitié gauche
+                    Circle()
+                        .stroke((isMilestone ? milestoneColor : Brand.orange).opacity(isMilestone ? 0.28 : 0.14), lineWidth: isMilestone ? 1.0 : 0.6)
+                        .frame(width: 80, height: 80)
+                        .scaleEffect(haloScale)
+                        .opacity(haloOpacity)
+
                     PinkyPromiseGlyph(isDarkField: true)
-                        .frame(width: 56, height: 56)
-                        .clipShape(Rectangle().offset(x: -14))
+                        .frame(width: 48, height: 48)
+                        .clipShape(Rectangle().offset(x: -12))
                         .offset(x: -splitOffset)
                         .opacity(glyphOpacity)
 
-                    // Moitié droite
                     PinkyPromiseGlyph(isDarkField: true)
-                        .frame(width: 56, height: 56)
-                        .clipShape(Rectangle().offset(x: 14))
+                        .frame(width: 48, height: 48)
+                        .clipShape(Rectangle().offset(x: 12))
                         .offset(x: splitOffset)
                         .opacity(glyphOpacity)
                 }
 
-                VStack(spacing: 6) {
-                    Text(isFrench ? "Tenu" : "Kept")
-                        .font(.system(size: 22, weight: .light))
-                        .foregroundColor(.white.opacity(0.92))
-                        .tracking(0.8)
+                VStack(spacing: 8) {
+                    Text(isFrench ? "Tenu." : "Kept.")
+                        .font(.system(size: 20, weight: .light))
+                        .foregroundColor(.white.opacity(0.90))
+                        .tracking(1.0)
+                        .opacity(textOpacity)
 
                     Text(celebrationLine)
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundColor(Brand.orange.opacity(0.72))
-                        .tracking(0.4)
+                        .font(.system(size: 12, weight: isMilestone ? .medium : .regular))
+                        .foregroundColor((isMilestone ? milestoneColor : Brand.orange).opacity(isMilestone ? 0.82 : 0.62))
+                        .tracking(0.3)
+                        .opacity(textOpacity)
                 }
-                .opacity(textOpacity)
 
                 Spacer()
             }
@@ -116,7 +140,6 @@ struct PromiKeptCelebrationView: View {
             haloScale = 1.1
             haloOpacity = 0.4
         }
-        // Fondu global
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.4) {
             withAnimation(.easeInOut(duration: 0.6)) {
                 globalOpacity = 0

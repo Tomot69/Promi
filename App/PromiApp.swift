@@ -14,6 +14,7 @@ struct PromiApp: App {
     var body: some Scene {
         WindowGroup {
             rootView
+                .background(ShakeDetectorView())
                 .environmentObject(userStore)
                 .environmentObject(promiStore)
                 .environmentObject(karmaStore)

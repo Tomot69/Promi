@@ -416,7 +416,6 @@ fileprivate struct TrameCellShape: Shape {
                         )
                         .frame(width: canvasWidth, height: canvasHeight)
                     }
-                .frame(width: size.width, height: size.height)
                 .background(bgColor)
                 .ignoresSafeArea()
             }
@@ -588,20 +587,23 @@ fileprivate struct TrameLabelsLayer: View {
                     let midY = (yMin + yMax) / 2
                     let width = xMax - xMin
 
+                    let height = yMax - yMin
+
                     VStack(spacing: 2) {
                                 if case .nuée(let n) = item {
                                     Image(systemName: n.displayIconGlyph)
-                                        .font(.system(size: 10, weight: .medium))
+                                        .font(.system(size: min(10, width * 0.10), weight: .medium))
                                         .foregroundStyle(strokeColor)
                                 }
                                 Text(Self.titleFor(item))
-                                    .font(.system(size: 9, weight: .semibold))
+                                    .font(.system(size: min(9, width * 0.12), weight: .semibold))
                                     .foregroundStyle(strokeColor)
-                                    .lineLimit(2)
-                                    .minimumScaleFactor(0.6)
+                                    .lineLimit(height > 40 ? 2 : 1)
+                                    .minimumScaleFactor(0.3)
                                     .multilineTextAlignment(.center)
+                                    .allowsTightening(true)
                             }
-                            .frame(maxWidth: max(width * 0.8, 24))
+                            .frame(maxWidth: max(width * 0.7, 20), maxHeight: max(height * 0.6, 14))
                             .position(x: midX, y: midY)
                             // Pas de gesture : le tap UIKit du ZoomablePromiViewport fait
                             // le hit-test polygone et déclenche le bon callback. Comme ça

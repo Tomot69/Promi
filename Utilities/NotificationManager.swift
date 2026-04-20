@@ -113,4 +113,22 @@ final class NotificationManager {
             scheduleReminders(for: promi, language: language)
         }
     }
+
+    func scheduleMidnightCelebration(promiTitle: String, language: String) {
+        let isFrench = !language.lowercased().starts(with: "en")
+        let content = UNMutableNotificationContent()
+        content.title = isFrench ? "Promi de minuit" : "Midnight Promi"
+        content.body = isFrench
+            ? "\"\(promiTitle)\" — promesse nocturne, karma qui twist."
+            : "\"\(promiTitle)\" — a midnight promise, karma twist."
+        content.sound = .default
+        content.threadIdentifier = "promi-midnight"
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 2, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "midnight-\(UUID().uuidString.prefix(8))",
+            content: content,
+            trigger: trigger
+        )
+        UNUserNotificationCenter.current().add(request)
+    }
 }

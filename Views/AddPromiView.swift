@@ -832,7 +832,7 @@ struct AddPromiView: View {
             }
         }
 
-        let newPromi = PromiItem(
+        var newPromi = PromiItem(
             title: cleanTitle,
             dueDate: effectiveDueDate,
             importance: intensity > 70 ? .urgent : (intensity > 40 ? .normal : .low),
@@ -842,7 +842,18 @@ struct AddPromiView: View {
             nuéeId: selectedNuéeId,
             recipientContactIds: Array(selectedRecipientIds)
         )
-
+        
+        // Easter egg : Promi de minuit (00:00–00:05)
+                let hour = Calendar.current.component(.hour, from: Date())
+                let minute = Calendar.current.component(.minute, from: Date())
+        if hour == 0 && minute < 5 {
+                    newPromi.isMidnightPromi = true
+                    NotificationManager.shared.scheduleMidnightCelebration(
+                        promiTitle: newPromi.title,
+                        language: userStore.selectedLanguage
+                    )
+                }
+        
         promiStore.addPromi(newPromi)
         karmaStore.updateKarma(basedOn: promiStore.promis)
         userStore.recordPromiCreation()

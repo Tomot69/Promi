@@ -105,6 +105,9 @@ struct ContentView: View {
     @State private var reportPromi: PromiItem?
     @State private var showPaywall = false
     @State private var homeFieldSize: CGSize = .zero
+    @State private var pinkyPulseActive = false
+    @State private var karmaPulseIntensity: CGFloat = 0
+    @State private var shakeDetected = false
     @State private var isSortMenuExpanded = false
     @State private var isAddMenuExpanded = false
 
@@ -205,6 +208,24 @@ struct ContentView: View {
         .sheet(item: $selectedNuée) { nuée in
             NuéeDetailView(nuéeId: nuée.id)
         }
+        .onChange(of: karmaStore.karmaState.percentage) { oldVal, newVal in
+            if let threshold = Brand.karmaJustCrossedThreshold(old: oldVal, new: newVal) {
+                let intensity: CGFloat = threshold == 100 ? 1.0 : (threshold == 75 ? 0.6 : 0.35)
+                karmaPulseIntensity = intensity
+                let soft = UIImpactFeedbackGenerator(style: .soft)
+                soft.impactOccurred(intensity: 0.3)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    karmaPulseIntensity = 0
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .promiShakeDetected)) { _ in
+            guard visualPackRawValue != PromiVisualPack.vitrailChrome.rawValue else { return }
+            if promiStore.shakeToReorganize() {
+                Haptics.shared.success()
+                shakeDetected.toggle()
+            }
+        }
         .onAppear(perform: handleOnAppear)
     }
 
@@ -289,6 +310,13 @@ struct ContentView: View {
         )
         .onAppear { homeFieldSize = geo.size }
         .onChange(of: geo.size) { homeFieldSize = $0 }
+        .overlay(
+            Circle()
+                .fill(Brand.orange.opacity(0.06 * karmaPulseIntensity))
+                .scaleEffect(1.0 + karmaPulseIntensity * 0.3)
+                .allowsHitTesting(false)
+                .animation(.easeOut(duration: 1.2), value: karmaPulseIntensity)
+        )
         }
     }
 
@@ -353,27 +381,30 @@ struct ContentView: View {
     private func topLeftBrand(topInset: CGFloat, isDarkField: Bool) -> some View {
         VStack {
             HStack {
-                Button(action: {
-                    closeFloatingMenusIfNeeded()
-                    Haptics.shared.lightTap()
-                    showSettings = true
-                }) {
-                    Text("Promi")
-                        .font(.system(size: 22, weight: .light))
-                        .foregroundColor(isDarkField ? .white.opacity(0.94) : .black.opacity(0.84))
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 4)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .simultaneousGesture(
-                    LongPressGesture(minimumDuration: 0.45)
-                        .onEnded { _ in
-                            closeFloatingMenusIfNeeded()
-                            Haptics.shared.tinyPop()
-                            showDrafts = true
+                Text("Promi")
+                    .font(.system(size: 22, weight: .light))
+                    .foregroundColor(isDarkField ? .white.opacity(0.94) : .black.opacity(0.84))
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                    .onTapGesture(count: 3) {
+                        pinkyPulseActive = true
+                        let soft = UIImpactFeedbackGenerator(style: .soft)
+                        soft.impactOccurred(intensity: 0.4)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            pinkyPulseActive = false
                         }
-                )
+                    }
+                    .onTapGesture(count: 1) {
+                        closeFloatingMenusIfNeeded()
+                        Haptics.shared.lightTap()
+                        showSettings = true
+                    }
+                    .onLongPressGesture(minimumDuration: 0.45) {
+                        closeFloatingMenusIfNeeded()
+                        Haptics.shared.tinyPop()
+                        showDrafts = true
+                    }
 
                 Spacer()
             }
@@ -417,6 +448,9 @@ struct ContentView: View {
                     glyph: {
                         PinkyPromiseGlyph(isDarkField: isDarkField)
                             .frame(width: 24, height: 24)
+                            .scaleEffect(pinkyPulseActive ? 1.15 : 1.0)
+                            .opacity(pinkyPulseActive ? 0.6 : 1.0)
+                            .animation(.easeInOut(duration: 0.15).repeatCount(4, autoreverses: true), value: pinkyPulseActive)
                     }
                 )
             }
