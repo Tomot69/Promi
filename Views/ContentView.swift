@@ -284,6 +284,8 @@ struct ContentView: View {
     private var backgroundLayer: some View {
         visualMood.homeBackground
             .ignoresSafeArea()
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Promi canvas")
     }
 
     private var fieldLayer: some View {
@@ -407,6 +409,10 @@ struct ContentView: View {
                         Haptics.shared.tinyPop()
                         showDrafts = true
                     }
+                    .accessibilityLabel("Promi")
+                    .accessibilityHint(userStore.selectedLanguage.starts(with: "en")
+                        ? "Tap to open settings, long press for drafts"
+                        : "Toucher pour les réglages, appui long pour les brouillons")
 
                 Spacer()
             }

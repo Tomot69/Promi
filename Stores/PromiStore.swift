@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import WidgetKit
 import Combine
 
 // MARK: - Promi Store
@@ -15,7 +16,7 @@ class PromiStore: ObservableObject {
     @Published var layoutSeed: Int = UserDefaults.standard.integer(forKey: "promi.layoutSeed")
     @Published var lastShakeDate: Date = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "promi.lastShake"))
     @Published var shakeCountInWindow: Int = 0
-
+    
     func shakeToReorganize() -> Bool {
         let now = Date()
         // Cooldown 24h après 2 shakes dans les 5 dernières minutes
@@ -133,6 +134,7 @@ class PromiStore: ObservableObject {
         if let encoded = try? JSONEncoder().encode(promis) {
             userDefaults.set(encoded, forKey: promisKey)
         }
+        reloadWidget()
     }
     
     private func loadBravos() {
@@ -162,4 +164,7 @@ class PromiStore: ObservableObject {
             userDefaults.set(encoded, forKey: commentsKey)
         }
     }
+    private func reloadWidget() {
+            WidgetCenter.shared.reloadTimelines(ofKind: "PromiWidget")
+        }
 }

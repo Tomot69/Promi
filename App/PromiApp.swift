@@ -39,6 +39,8 @@ struct PromiApp: App {
                         language: userStore.selectedLanguage
                     )
                     NotificationManager.shared.updateBadge(promis: promiStore.promis)
+                    karmaStore.validateStreak()
+                    karmaStore.loadHistory()
                     NotificationManager.shared.scheduleMorningReminder(
                         promis: promiStore.promis,
                         language: userStore.selectedLanguage

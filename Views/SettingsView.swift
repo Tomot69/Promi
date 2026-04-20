@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -11,14 +12,16 @@ struct SettingsView: View {
     @AppStorage("promi.visualMood") private var visualMoodRawValue: String =
         PromiColorMood.terrePromi.rawValue
 
-    @State private var showLanguagePicker = false
+     @State private var showLanguagePicker = false
     @State private var showStudio = false
     @State private var showReplayOnboarding = false
+    @State private var notificationsEnabled: Bool = UserDefaults.standard.bool(forKey: "promi.notificationsEnabled")
+    @State private var showPaywall = false
+    @State private var showLegal = false
     @State private var showUsernameEditor = false
     @State private var showTerms = false
     @State private var showPrivacy = false
     @State private var showBlockedUsers = false
-    @State private var showPaywall = false
 
 
     private var currentPack: PromiVisualPack {
@@ -64,6 +67,7 @@ struct SettingsView: View {
 
                         languageRow
                         studioRow
+                        notificationsRow
 
                         sectionLabel(isFrench ? "DÉCOUVERTE" : "DISCOVER")
                             .padding(.top, 14)
@@ -74,14 +78,6 @@ struct SettingsView: View {
                             .padding(.top, 14)
 
                         blockedUsersRow
-
-                        sectionLabel(isFrench ? "BIENTÔT" : "COMING SOON")
-                            .padding(.top, 14)
-
-                        comingSoonRow(
-                            title: isFrench ? "Notifications" : "Notifications",
-                            caption: isFrench ? "rappels intelligents" : "smart reminders"
-                        )
 
                         sectionLabel(isFrench ? "LÉGAL" : "LEGAL")
                             .padding(.top, 14)
@@ -228,6 +224,49 @@ struct SettingsView: View {
             Haptics.shared.lightTap()
             showStudio = true
         }
+    }
+
+    private var notificationsRow: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Notifications")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.white.opacity(0.88))
+                Text(isFrench ? "rappels veille, jour J, matin" : "eve, day-of, morning reminders")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundColor(.white.opacity(0.52))
+            }
+            Spacer()
+            Toggle("", isOn: $notificationsEnabled)
+                .labelsHidden()
+                .tint(Brand.orange)
+                .onChange(of: notificationsEnabled) { _, newValue in
+                    UserDefaults.standard.set(newValue, forKey: "promi.notificationsEnabled")
+                    if newValue {
+                        NotificationManager.shared.requestPermission()
+                        NotificationManager.shared.rescheduleAll(
+                            promis: promiStore.promis,
+                            language: userStore.selectedLanguage
+                        )
+                        NotificationManager.shared.scheduleMorningReminder(
+                            promis: promiStore.promis,
+                            language: userStore.selectedLanguage
+                        )
+                    } else {
+                        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+                    }
+                }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.white.opacity(0.05))
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
+            }
+        )
     }
 
     private var replayOnboardingRow: some View {

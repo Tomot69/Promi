@@ -25,8 +25,8 @@ struct PromiProvider: TimelineProvider {
             from: defaults.data(forKey: "karmaState") ?? Data()))?.percentage ?? 0
 
         // Lire les prochains Promi depuis UserDefaults (partagé via App Group)
-        var nextTitle: String? = nil
-        var nextDate: Date? = nil
+        let nextTitle: String? = nil
+        let nextDate: Date? = nil
 
         let entry = PromiEntry(
             date: Date(),

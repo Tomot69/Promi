@@ -97,6 +97,7 @@ struct KarmaView: View {
             Text("\(karmaStore.karmaState.percentage)%")
                 .font(.system(size: 72, weight: .ultraLight))
                 .foregroundColor(karmaColor)
+                .accessibilityLabel("Karma \(karmaStore.karmaState.percentage) percent")
         }
         .padding(.top, 64)
     }

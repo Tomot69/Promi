@@ -84,11 +84,31 @@ class KarmaStore: ObservableObject {
     /// Historique karma : tableau de (date, pourcentage). Max 90 entrées.
     @Published var karmaHistory: [(date: Date, value: Int)] = []
 
+    /// Vérifie si le streak est encore valide. Si le dernier jour
+    /// de Promi tenu est avant hier, le streak est cassé → reset 0.
+    func validateStreak() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd"
+        let todayStr = formatter.string(from: Date())
+        let yesterdayStr = formatter.string(from: Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
+
+        if lastStreakDay != todayStr && lastStreakDay != yesterdayStr {
+            currentStreak = 0
+            userDefaults.set(0, forKey: "promi.streak.current")
+        }
+    }
+
     func loadHistory() {
-        guard let data = userDefaults.data(forKey: "promi.karmaHistory"),
-              let decoded = try? JSONDecoder().decode([KarmaHistoryEntry].self, from: data)
-        else { return }
-        karmaHistory = decoded.map { ($0.date, $0.value) }
+        if let data = userDefaults.data(forKey: "promi.karmaHistory"),
+           let decoded = try? JSONDecoder().decode([KarmaHistoryEntry].self, from: data) {
+            karmaHistory = decoded.map { ($0.date, $0.value) }
+        }
+        // Point initial si l'historique est vide
+        if karmaHistory.isEmpty {
+            let today = Calendar.current.startOfDay(for: Date())
+            karmaHistory = [(today, karmaState.percentage)]
+            persistHistory()
+        }
     }
 
     private func persistHistory() {
