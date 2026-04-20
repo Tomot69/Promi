@@ -53,12 +53,14 @@ struct AppleSignInView: View {
 
                 // Title + subtitle
                 VStack(spacing: 10) {
-                    Text(isEnglish ? "Welcome to " : "Bienvenue sur ")
-                        .font(.system(size: 26, weight: .light))
-                        .foregroundColor(Color.white.opacity(0.94))
-                    + Text("Promi")
-                        .font(.system(size: 26, weight: .light))
-                        .foregroundColor(Brand.orange)
+                    HStack(spacing: 0) {
+                        Text(isEnglish ? "Welcome to " : "Bienvenue sur ")
+                            .font(.system(size: 26, weight: .light))
+                            .foregroundColor(Color.white.opacity(0.94))
+                        Text("Promi")
+                            .font(.system(size: 26, weight: .light))
+                            .foregroundColor(Brand.orange)
+                    }
 
                     Text(isEnglish
                          ? "Connect to share Promis and join Nuées with the people around you."

@@ -10,6 +10,9 @@
 		520E36BB2F83BA4F0057DD70 /* PromiFieldVisuals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520E36BA2F83BA4F0057DD70 /* PromiFieldVisuals.swift */; };
 		520E36BD2F8517DD0057DD70 /* PromiListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520E36BC2F8517DD0057DD70 /* PromiListView.swift */; };
 		520E36BF2F85180E0057DD70 /* PromiCompositionShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520E36BE2F85180E0057DD70 /* PromiCompositionShareView.swift */; };
+		521766052F96967900AB23FF /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 521766042F96967800AB23FF /* WidgetKit.framework */; };
+		521766072F96967900AB23FF /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 521766062F96967900AB23FF /* SwiftUI.framework */; };
+		521766162F96967E00AB23FF /* PromiWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 521766022F96967800AB23FF /* PromiWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		521AFCC12EAD39D5009D2334 /* PromiDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC02EAD39D5009D2334 /* PromiDraft.swift */; };
 		521AFCC32EAD39F7009D2334 /* DraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC22EAD39F7009D2334 /* DraftStore.swift */; };
 		521AFCC52EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */; };
@@ -131,6 +134,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		521766142F96967E00AB23FF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 52D3F0432EABF4630048149B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 521766012F96967800AB23FF;
+			remoteInfo = PromiWidgetExtension;
+		};
 		52F524262EF9B29E007B30D5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 52D3F0432EABF4630048149B /* Project object */;
@@ -140,10 +150,27 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		521766172F96967E00AB23FF /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				521766162F96967E00AB23FF /* PromiWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		520E36BA2F83BA4F0057DD70 /* PromiFieldVisuals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiFieldVisuals.swift; sourceTree = "<group>"; };
 		520E36BC2F8517DD0057DD70 /* PromiListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiListView.swift; sourceTree = "<group>"; };
 		520E36BE2F85180E0057DD70 /* PromiCompositionShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiCompositionShareView.swift; sourceTree = "<group>"; };
+		521766022F96967800AB23FF /* PromiWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PromiWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		521766042F96967800AB23FF /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		521766062F96967900AB23FF /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		521AFCC02EAD39D5009D2334 /* PromiDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiDraft.swift; sourceTree = "<group>"; };
 		521AFCC22EAD39F7009D2334 /* DraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DraftStore.swift; sourceTree = "<group>"; };
 		521AFCC42EAD3A2E009D2334 /* MinimalIntensityGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinimalIntensityGaugeView.swift; sourceTree = "<group>"; };
@@ -267,7 +294,25 @@
 		52F524342EF9BA45007B30D5 /* CommentText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentText.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5217661A2F96967E00AB23FF /* Exceptions for "PromiWidget" folder in "PromiWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 521766012F96967800AB23FF /* PromiWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		521766082F96967900AB23FF /* PromiWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5217661A2F96967E00AB23FF /* Exceptions for "PromiWidget" folder in "PromiWidgetExtension" target */,
+			);
+			path = PromiWidget;
+			sourceTree = "<group>";
+		};
 		52BF9BF32F8A5DC200424F02 /* Sync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Sync;
@@ -291,6 +336,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		521765FF2F96967800AB23FF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				521766072F96967900AB23FF /* SwiftUI.framework in Frameworks */,
+				521766052F96967900AB23FF /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		52D3F0482EABF4630048149B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -308,6 +362,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		521766032F96967800AB23FF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				521766042F96967800AB23FF /* WidgetKit.framework */,
+				521766062F96967900AB23FF /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		523FA01A2EFB76820035CB3F /* Stores */ = {
 			isa = PBXGroup;
 			children = (
@@ -437,6 +500,8 @@
 				52D3F0612EABF55C0048149B /* Ressources */,
 				52D3F04D2EABF4630048149B /* Promi */,
 				52F524232EF9B29E007B30D5 /* PromiTests */,
+				521766082F96967900AB23FF /* PromiWidget */,
+				521766032F96967800AB23FF /* Frameworks */,
 				52D3F04C2EABF4630048149B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -446,6 +511,7 @@
 			children = (
 				52D3F04B2EABF4630048149B /* Promi.app */,
 				52F524222EF9B29E007B30D5 /* PromiTests.xctest */,
+				521766022F96967800AB23FF /* PromiWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -629,6 +695,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		521766012F96967800AB23FF /* PromiWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5217661B2F96967E00AB23FF /* Build configuration list for PBXNativeTarget "PromiWidgetExtension" */;
+			buildPhases = (
+				521765FE2F96967800AB23FF /* Sources */,
+				521765FF2F96967800AB23FF /* Frameworks */,
+				521766002F96967800AB23FF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				521766082F96967900AB23FF /* PromiWidget */,
+			);
+			name = PromiWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = PromiWidgetExtension;
+			productReference = 521766022F96967800AB23FF /* PromiWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		52D3F04A2EABF4630048149B /* Promi */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 52D3F0562EABF4650048149B /* Build configuration list for PBXNativeTarget "Promi" */;
@@ -636,10 +724,12 @@
 				52D3F0472EABF4630048149B /* Sources */,
 				52D3F0482EABF4630048149B /* Frameworks */,
 				52D3F0492EABF4630048149B /* Resources */,
+				521766172F96967E00AB23FF /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				521766152F96967E00AB23FF /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				52BF9BF32F8A5DC200424F02 /* Sync */,
@@ -686,6 +776,9 @@
 				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
+					521766012F96967800AB23FF = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
 					52D3F04A2EABF4630048149B = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
@@ -711,11 +804,19 @@
 			targets = (
 				52D3F04A2EABF4630048149B /* Promi */,
 				52F524212EF9B29E007B30D5 /* PromiTests */,
+				521766012F96967800AB23FF /* PromiWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		521766002F96967800AB23FF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		52D3F0492EABF4630048149B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -734,6 +835,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		521765FE2F96967800AB23FF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		52D3F0472EABF4630048149B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -871,6 +979,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		521766152F96967E00AB23FF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 521766012F96967800AB23FF /* PromiWidgetExtension */;
+			targetProxy = 521766142F96967E00AB23FF /* PBXContainerItemProxy */;
+		};
 		52F524272EF9B29E007B30D5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 52D3F04A2EABF4630048149B /* Promi */;
@@ -879,6 +992,66 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		521766182F96967E00AB23FF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PromiWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PromiWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tom.promi.Promi.PromiWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		521766192F96967E00AB23FF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PromiWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PromiWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tom.promi.Promi.PromiWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		52D3F0542EABF4650048149B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1117,6 +1290,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5217661B2F96967E00AB23FF /* Build configuration list for PBXNativeTarget "PromiWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				521766182F96967E00AB23FF /* Debug */,
+				521766192F96967E00AB23FF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		52D3F0462EABF4630048149B /* Build configuration list for PBXProject "Promi" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

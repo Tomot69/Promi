@@ -380,9 +380,6 @@ final class ZoomHostScrollView: UIScrollView {
                 CGSize(width: CGFloat.greatestFiniteMagnitude,
                        height: CGFloat.greatestFiniteMagnitude)
             )
-            // Le contenu doit être assez grand pour remplir l'écran
-            // même au dézoom maximum. Sinon UIScrollView n'a plus
-            // de place pour scroller → snap au coin → "attraction".
             let minScale = max(minimumZoomScale, 0.1)
             let finalSize = CGSize(
                 width: max(intrinsic.width, viewportSize.width, viewportSize.width / minScale),
@@ -391,7 +388,6 @@ final class ZoomHostScrollView: UIScrollView {
             hosted.frame = CGRect(origin: .zero, size: finalSize)
             contentSize = finalSize
 
-            // Démarrer centré dans le grand canvas
             let startX = (finalSize.width - viewportSize.width) / 2
             let startY = (finalSize.height - viewportSize.height) / 2
             contentOffset = CGPoint(x: startX, y: startY)
@@ -638,7 +634,7 @@ struct VitrailChromePromiFieldView: View {
     @StateObject private var motion = MotionTilt.shared
 
     var body: some View {
-        let clampedTilt = CGSize(
+        let _ = CGSize(
             width: min(max(-0.4, motion.tilt.width), 0.4),
             height: min(max(-0.4, motion.tilt.height), 0.4)
         )
@@ -1269,7 +1265,7 @@ fileprivate struct CommonPromiFieldView: View {
             }
         }
         .frame(width: max(size.width, 1), height: max(size.height, 1), alignment: .topLeading)
-        .animation(.spring(response: 0.44, dampingFraction: 0.86), value: cache.key)
+        .animation(.easeOut(duration: 0.2), value: cache.key)
         .onAppear { regenerate() }
         .onChange(of: renderKey) { _, _ in regenerate() }
     }

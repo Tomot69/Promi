@@ -1,4 +1,5 @@
 import SwiftUI
+import EventKit
 
 // MARK: - EditPromiView
 //
@@ -34,6 +35,7 @@ struct EditPromiView: View {
     @State private var selectedNuéeId: UUID?
     @State private var showValidationAnimation = false
     @State private var showChallenge = false
+    @State private var calendarAdded = false
     @State private var showComments = false
     @State private var showDeleteConfirmation = false
 
@@ -674,6 +676,34 @@ struct EditPromiView: View {
                 .buttonStyle(.plain)
             }
 
+            // Ajouter au calendrier
+            if promi.status == .open && !calendarAdded {
+                Button {
+                    addToCalendar()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "calendar.badge.plus")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text(isEnglish ? "Add to Calendar" : "Ajouter au calendrier")
+                            .font(.system(size: 12, weight: .semibold))
+                    }
+                    .foregroundColor(Color.white.opacity(0.58))
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
+            } else if calendarAdded {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text(isEnglish ? "Added" : "Ajouté")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundColor(Color(red: 0.34, green: 0.80, blue: 0.60).opacity(0.72))
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+            }
+
             // ── Social : Bravo + Commentaires ──
             VStack(spacing: 10) {
                 HStack(spacing: 0) {
@@ -830,6 +860,29 @@ struct EditPromiView: View {
 
         Haptics.shared.success()
         dismiss()
+    }
+
+    private func addToCalendar() {
+        let store = EKEventStore()
+        store.requestFullAccessToEvents { granted, error in
+            guard granted, error == nil else { return }
+            let event = EKEvent(eventStore: store)
+            event.title = "Promi: \(promi.title)"
+            event.startDate = promi.dueDate
+            event.endDate = Calendar.current.date(byAdding: .hour, value: 1, to: promi.dueDate)
+            event.notes = promi.assignee.map { "Pour \($0)" }
+            event.calendar = store.defaultCalendarForNewEvents
+            event.addAlarm(EKAlarm(relativeOffset: -3600)) // 1h avant
+            do {
+                try store.save(event, span: .thisEvent)
+                DispatchQueue.main.async {
+                    Haptics.shared.success()
+                    calendarAdded = true
+                }
+            } catch {
+                print("[Promi] Calendar save error: \(error)")
+            }
+        }
     }
 
     private func toggleStatus() {

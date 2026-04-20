@@ -297,10 +297,12 @@ struct ContentView: View {
             sortOption: selectedSort,
             onTapPromi: { promi in
                 closeFloatingMenusIfNeeded()
+                Haptics.shared.packTap(visualPackRawValue)
                 selectedPromi = promi
             },
             onTapNuée: { nuée in
                 closeFloatingMenusIfNeeded()
+                Haptics.shared.packTap(visualPackRawValue)
                 selectedNuée = nuée
             },
             onLongPressPromi: { promi in
@@ -309,7 +311,7 @@ struct ContentView: View {
             }
         )
         .onAppear { homeFieldSize = geo.size }
-        .onChange(of: geo.size) { homeFieldSize = $0 }
+        .onChange(of: geo.size) { _, newSize in homeFieldSize = newSize }
         .overlay(
             Circle()
                 .fill(Brand.orange.opacity(0.06 * karmaPulseIntensity))
