@@ -38,6 +38,11 @@ struct PromiApp: App {
                         promis: promiStore.promis,
                         language: userStore.selectedLanguage
                     )
+                    NotificationManager.shared.updateBadge(promis: promiStore.promis)
+                    NotificationManager.shared.scheduleMorningReminder(
+                        promis: promiStore.promis,
+                        language: userStore.selectedLanguage
+                    )
 
                     guard isShowingSplash else { return }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.15) {

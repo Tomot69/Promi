@@ -69,9 +69,75 @@ class KarmaStore: ObservableObject {
         }
     }
     
+    // MARK: - Streak
+
+    /// Nombre de jours consécutifs avec au moins 1 Promi tenu.
+    @Published var currentStreak: Int = UserDefaults.standard.integer(forKey: "promi.streak.current")
+    @Published var longestStreak: Int = UserDefaults.standard.integer(forKey: "promi.streak.longest")
+
+    /// Dernier jour où un Promi a été tenu (format yyyyMMdd).
+    private var lastStreakDay: String {
+        get { userDefaults.string(forKey: "promi.streak.lastDay") ?? "" }
+        set { userDefaults.set(newValue, forKey: "promi.streak.lastDay") }
+    }
+
+    /// Historique karma : tableau de (date, pourcentage). Max 90 entrées.
+    @Published var karmaHistory: [(date: Date, value: Int)] = []
+
+    func loadHistory() {
+        guard let data = userDefaults.data(forKey: "promi.karmaHistory"),
+              let decoded = try? JSONDecoder().decode([KarmaHistoryEntry].self, from: data)
+        else { return }
+        karmaHistory = decoded.map { ($0.date, $0.value) }
+    }
+
+    private func persistHistory() {
+        let entries = karmaHistory.suffix(90).map { KarmaHistoryEntry(date: $0.date, value: $0.value) }
+        if let data = try? JSONEncoder().encode(entries) {
+            userDefaults.set(data, forKey: "promi.karmaHistory")
+        }
+    }
+
+    /// Appelé quand un Promi est marqué tenu. Met à jour le streak
+    /// et enregistre un point dans l'historique karma.
+    func recordPromiKept() {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd"
+        let todayStr = formatter.string(from: Date())
+        let yesterdayStr = formatter.string(from: Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
+
+        if lastStreakDay == todayStr {
+            // Déjà compté aujourd'hui
+        } else if lastStreakDay == yesterdayStr {
+            currentStreak += 1
+        } else {
+            currentStreak = 1
+        }
+        lastStreakDay = todayStr
+        longestStreak = max(longestStreak, currentStreak)
+        userDefaults.set(currentStreak, forKey: "promi.streak.current")
+        userDefaults.set(longestStreak, forKey: "promi.streak.longest")
+
+        // Point d'historique
+        let today = Calendar.current.startOfDay(for: Date())
+        if let lastEntry = karmaHistory.last,
+           Calendar.current.isDate(lastEntry.date, inSameDayAs: today) {
+            karmaHistory[karmaHistory.count - 1] = (today, karmaState.percentage)
+        } else {
+            karmaHistory.append((today, karmaState.percentage))
+            if karmaHistory.count > 90 { karmaHistory.removeFirst() }
+        }
+        persistHistory()
+    }
+
     private func persistKarma() {
         if let encoded = try? JSONEncoder().encode(karmaState) {
             userDefaults.set(encoded, forKey: karmaKey)
         }
     }
+}
+
+struct KarmaHistoryEntry: Codable {
+    let date: Date
+    let value: Int
 }

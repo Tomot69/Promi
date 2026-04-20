@@ -52,11 +52,18 @@ struct KarmaView: View {
                     VStack(spacing: 32) {
                         header
 
+                        streakBadge
+
+                        karmaGraph
+
                         roastText
 
                         statsBlock
                     }
                     .padding(.bottom, 40)
+                }
+                .onAppear {
+                    karmaStore.loadHistory()
                 }
 
                 // Promi Plus : collé en bas de l'écran, hors du scroll,
@@ -223,6 +230,136 @@ struct KarmaView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Streak badge
+
+    @ViewBuilder
+    private var streakBadge: some View {
+        let streak = karmaStore.currentStreak
+        if streak > 0 {
+            HStack(spacing: 10) {
+                // Flamme
+                Text(streak >= 30 ? "🔥" : (streak >= 7 ? "✨" : "⚡"))
+                    .font(.system(size: 22))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(streak) \(streak == 1 ? (isEnglish ? "day" : "jour") : (isEnglish ? "days" : "jours"))")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white.opacity(0.92))
+                    Text(isEnglish ? "Current streak" : "Série en cours")
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundColor(.white.opacity(0.48))
+                }
+
+                Spacer()
+
+                if karmaStore.longestStreak > streak {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("\(karmaStore.longestStreak)")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Brand.orange.opacity(0.72))
+                        Text(isEnglish ? "best" : "record")
+                            .font(.system(size: 10, weight: .regular))
+                            .foregroundColor(.white.opacity(0.38))
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.white.opacity(0.05))
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
+                }
+            )
+            .padding(.horizontal, 20)
+        }
+    }
+
+    private var isEnglish: Bool {
+        userStore.selectedLanguage.lowercased().starts(with: "en")
+    }
+
+    // MARK: - Karma graph (last 30 days)
+
+    @ViewBuilder
+    private var karmaGraph: some View {
+        let history = karmaStore.karmaHistory.suffix(30)
+        if history.count >= 2 {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(isEnglish ? "Last 30 days" : "30 derniers jours")
+                    .font(.system(size: 10, weight: .semibold))
+                    .tracking(1.0)
+                    .foregroundColor(Color.white.opacity(0.48))
+
+                GeometryReader { geo in
+                    let w = geo.size.width
+                    let h: CGFloat = 100
+                    let points = Array(history)
+                    let minVal = max(0, (points.map(\.value).min() ?? 0) - 5)
+                    let maxVal = min(100, (points.map(\.value).max() ?? 100) + 5)
+                    let range = max(CGFloat(maxVal - minVal), 1)
+
+                    ZStack(alignment: .topLeading) {
+                        // Grid lines
+                        ForEach([25, 50, 75, 100], id: \.self) { line in
+                            if line >= minVal && line <= maxVal {
+                                let y = h - ((CGFloat(line - minVal) / range) * h)
+                                Path { p in
+                                    p.move(to: CGPoint(x: 0, y: y))
+                                    p.addLine(to: CGPoint(x: w, y: y))
+                                }
+                                .stroke(Color.white.opacity(0.06), lineWidth: 0.5)
+                            }
+                        }
+
+                        // Courbe
+                        Path { path in
+                            for (i, entry) in points.enumerated() {
+                                let x = w * CGFloat(i) / CGFloat(max(points.count - 1, 1))
+                                let y = h - ((CGFloat(entry.value - minVal) / range) * h)
+                                if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
+                                else { path.addLine(to: CGPoint(x: x, y: y)) }
+                            }
+                        }
+                        .stroke(
+                            LinearGradient(
+                                colors: [Brand.karmaPoor, Brand.karmaAverage, Brand.karmaGood, Brand.karmaExcellent],
+                                startPoint: .bottom,
+                                endPoint: .top
+                            ),
+                            style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
+                        )
+
+                        // Point actuel
+                        if let last = points.last {
+                            let x = w
+                            let y = h - ((CGFloat(last.value - minVal) / range) * h)
+                            Circle()
+                                .fill(karmaColor)
+                                .frame(width: 6, height: 6)
+                                .position(x: x, y: y)
+                        }
+                    }
+                    .frame(height: h)
+                }
+                .frame(height: 100)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.white.opacity(0.05))
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.white.opacity(0.12), lineWidth: 0.6)
+                }
+            )
+            .padding(.horizontal, 20)
+        }
     }
 
     // MARK: - Karma color (same thresholds and palette as before)

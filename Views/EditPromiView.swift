@@ -845,7 +845,11 @@ struct EditPromiView: View {
             }
 
             promiStore.markAsDone(promi)
-            NotificationManager.shared.cancelReminders(for: promi.id)
+                        karmaStore.updateKarma(basedOn: promiStore.promis)
+                        karmaStore.recordPromiKept()
+                        NotificationManager.shared.cancelReminders(for: promi.id)
+                        NotificationManager.shared.updateBadge(promis: promiStore.promis)
+                        Haptics.shared.playKeptSound()
             // Bonus karma minuit : mettre à jour immédiatement
             karmaStore.updateKarma(basedOn: promiStore.promis)
 

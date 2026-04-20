@@ -114,6 +114,59 @@ final class NotificationManager {
         }
     }
 
+    /// Met à jour le badge d'app = nombre de Promi qui expirent aujourd'hui.
+    func updateBadge(promis: [PromiItem]) {
+        let today = Calendar.current.startOfDay(for: Date())
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+        let expiringToday = promis.filter { promi in
+            promi.status == .open
+            && promi.dueDate >= today
+            && promi.dueDate < tomorrow
+        }.count
+        UNUserNotificationCenter.current().setBadgeCount(expiringToday)
+    }
+
+    /// Rappel intelligent du matin (8h). Résume la journée.
+    func scheduleMorningReminder(promis: [PromiItem], language: String) {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: ["promi-morning"])
+
+        let isFrench = !language.lowercased().starts(with: "en")
+        let today = Calendar.current.startOfDay(for: Date())
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
+        let todayCount = promis.filter { $0.status == .open && $0.dueDate >= today && $0.dueDate < tomorrow }.count
+        let openCount = promis.filter { $0.status == .open }.count
+
+        let content = UNMutableNotificationContent()
+        content.title = "Promi"
+        if todayCount > 0 {
+            content.body = isFrench
+                ? "\(todayCount) Promi aujourd'hui — à toi de jouer."
+                : "\(todayCount) Promi today — time to deliver."
+        } else if openCount > 0 {
+            content.body = isFrench
+                ? "Rien aujourd'hui, mais \(openCount) Promi en cours."
+                : "Nothing today, but \(openCount) Promi in progress."
+        } else {
+            content.body = isFrench
+                ? "Pas de Promi en vue — c'est le moment d'en créer un."
+                : "No Promi ahead — time to make a promise."
+        }
+        content.sound = .default
+        content.threadIdentifier = "promi-morning"
+
+        var comps = DateComponents()
+        comps.hour = 8
+        comps.minute = 0
+        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)
+        let request = UNNotificationRequest(
+            identifier: "promi-morning",
+            content: content,
+            trigger: trigger
+        )
+        center.add(request)
+    }
+
     func scheduleMidnightCelebration(promiTitle: String, language: String) {
         let isFrench = !language.lowercased().starts(with: "en")
         let content = UNMutableNotificationContent()

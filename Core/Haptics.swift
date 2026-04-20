@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AudioToolbox
 
 class Haptics {
     static let shared = Haptics()
@@ -31,4 +32,9 @@ class Haptics {
         let generator = UIImpactFeedbackGenerator(style: .soft)
         generator.impactOccurred(intensity: 0.5)
     }
+    /// Son signature "tenu" — une note courte et satisfaisante.
+        /// Utilise le son système iOS 'Tink' (intégré, pas besoin de fichier).
+        func playKeptSound() {
+            AudioServicesPlaySystemSound(1057) // Tink
+        }
 }
