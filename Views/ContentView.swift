@@ -151,6 +151,7 @@ struct ContentView: View {
             tutorialLayer
         }
         .ignoresSafeArea()
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .sheet(isPresented: $showAddPromi) {
             AddPromiView()
         }
@@ -208,6 +209,12 @@ struct ContentView: View {
         }
         .sheet(item: $selectedNuée) { nuée in
             NuéeDetailView(nuéeId: nuée.id)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .promiDeepLink)) { notif in
+            if let idStr = notif.userInfo?["promiId"] as? String,
+               let promi = promiStore.promis.first(where: { $0.id.uuidString == idStr }) {
+                selectedPromi = promi
+            }
         }
         .onChange(of: karmaStore.karmaState.percentage) { oldVal, newVal in
             if let threshold = Brand.karmaJustCrossedThreshold(old: oldVal, new: newVal) {

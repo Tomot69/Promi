@@ -81,7 +81,7 @@ struct PromiWidgetEntryView: View {
                     .foregroundColor(.primary)
                     .lineLimit(2)
             } else {
-                Text("Rien en vue")
+                Text("—")
                     .font(.system(size: 12, weight: .regular))
                     .foregroundColor(.secondary)
             }

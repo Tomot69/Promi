@@ -116,6 +116,17 @@ class PromiAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCente
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
+        if let promiIdStr = response.notification.request.content.userInfo["promiId"] as? String {
+            NotificationCenter.default.post(
+                name: .promiDeepLink,
+                object: nil,
+                userInfo: ["promiId": promiIdStr]
+            )
+        }
         completionHandler()
     }
+}
+
+extension Notification.Name {
+    static let promiDeepLink = Notification.Name("promiDeepLink")
 }

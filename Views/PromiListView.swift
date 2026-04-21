@@ -534,12 +534,22 @@ struct PromiListView: View {
     private var emptySubtitle: String {
         switch selectedSegment {
         case .active:
-            return trimmedQuery.isEmpty
-                ? "Crée ta prochaine promesse. Le champ attend un nouveau foyer."
+            if trimmedQuery.isEmpty {
+                return isEnglish
+                    ? "Create your next promise. The canvas awaits."
+                    : "Crée ta prochaine promesse. La toile attend."
+            }
+            return isEnglish
+                ? "Adjust your search or sort to find your Promi."
                 : "Ajuste la recherche ou le tri pour retrouver ton Promi."
         case .done:
-            return trimmedQuery.isEmpty
-                ? "Chaque promesse tenue laissera une trace ici — un souvenir vivant."
+            if trimmedQuery.isEmpty {
+                return isEnglish
+                    ? "Every promise kept will leave a trace here."
+                    : "Chaque promesse tenue laissera une trace ici."
+            }
+            return isEnglish
+                ? "Adjust your search to find a kept promise."
                 : "Ajuste la recherche pour retrouver une promesse accomplie."
         }
     }

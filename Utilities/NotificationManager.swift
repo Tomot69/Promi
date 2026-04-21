@@ -57,6 +57,7 @@ final class NotificationManager {
                 : "« \(title) » expires tomorrow"
             content.sound = .default
             content.threadIdentifier = "promi-reminders"
+            content.userInfo = ["promiId": promi.id.uuidString]
 
             let comps = Calendar.current.dateComponents(
                 [.year, .month, .day, .hour, .minute], from: eveDate
@@ -85,6 +86,7 @@ final class NotificationManager {
                 : "« \(title) » is today!"
             content.sound = .default
             content.threadIdentifier = "promi-reminders"
+            content.userInfo = ["promiId": promi.id.uuidString]
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: dayComps, repeats: false)
             let request = UNNotificationRequest(
