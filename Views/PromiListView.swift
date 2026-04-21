@@ -97,6 +97,7 @@ struct PromiListView: View {
                     .font(.system(size: 12, weight: .regular))
                     .foregroundColor(Color.white.opacity(0.52))
                     .tracking(0.2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             Spacer()
@@ -116,15 +117,19 @@ struct PromiListView: View {
         let activeCount = activePromis.count
 
         if doneCount == 0 && activeCount == 0 {
-            return "le territoire est en repos"
+            return isEnglish ? "the canvas is quiet" : "la toile est calme"
         }
 
         var parts: [String] = []
         if doneCount > 0 {
-            parts.append("\(doneCount) tenu\(doneCount > 1 ? "s" : "")")
+            parts.append(isEnglish
+                ? "\(doneCount) kept"
+                : "\(doneCount) tenu\(doneCount > 1 ? "s" : "")")
         }
         if activeCount > 0 {
-            parts.append("\(activeCount) à venir")
+            parts.append(isEnglish
+                ? "\(activeCount) ahead"
+                : "\(activeCount) à venir")
         }
         return parts.joined(separator: " · ")
     }
@@ -132,8 +137,14 @@ struct PromiListView: View {
     /// "Mes " (or "Mon ") in near-white + "Promi" in the brand orange.
     /// Built as a single AttributedString — the iOS 26+ idiomatic way to
     /// style parts of a Text (Text + concatenation is deprecated).
+    private var isEnglish: Bool {
+        userStore.selectedLanguage.lowercased().starts(with: "en")
+    }
+
     private var titleAttributed: Text {
-        let prefix = useSingular ? "Mon " : "Mes "
+        let prefix = isEnglish
+            ? (useSingular ? "My " : "My ")
+            : (useSingular ? "Mon " : "Mes ")
         var attributed = AttributedString(prefix + "Promi")
         attributed.foregroundColor = Color.white.opacity(0.94)
         if let range = attributed.range(of: "Promi") {
@@ -508,9 +519,15 @@ struct PromiListView: View {
     private var emptyTitle: String {
         switch selectedSegment {
         case .active:
-            return trimmedQuery.isEmpty ? "Le territoire est en repos" : "Aucun résultat"
+            if trimmedQuery.isEmpty {
+                return isEnglish ? "The canvas is quiet" : "La toile est calme"
+            }
+            return isEnglish ? "No results" : "Aucun résultat"
         case .done:
-            return trimmedQuery.isEmpty ? "Pas encore de promesses tenues" : "Aucun résultat"
+            if trimmedQuery.isEmpty {
+                return isEnglish ? "No promises kept yet" : "Pas encore de promesses tenues"
+            }
+            return isEnglish ? "No results" : "Aucun résultat"
         }
     }
 

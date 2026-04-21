@@ -1196,7 +1196,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Promi/Info.plist;
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Promi peut ajouter vos échéances au calendrier pour ne rien oublier.";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Promi ajoute vos échéances au calendrier iOS pour ne rien oublier.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Pour prendre des photos";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Promi utilise vos contacts pour envoyer des promesses à vos proches.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pour enregistrer des notes audio";
@@ -1234,7 +1234,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Promi/Info.plist;
-				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Promi peut ajouter vos échéances au calendrier pour ne rien oublier.";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Promi ajoute vos échéances au calendrier iOS pour ne rien oublier.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Pour prendre des photos";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Promi utilise vos contacts pour envoyer des promesses à vos proches.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Pour enregistrer des notes audio";

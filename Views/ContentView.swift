@@ -110,6 +110,7 @@ struct ContentView: View {
     @State private var shakeDetected = false
     @State private var isSortMenuExpanded = false
     @State private var isAddMenuExpanded = false
+    @State private var canvasOpacity: Double = 0
 
     // Tutorial overlay (shown once, on first landing on the home if the
     // user has not yet completed it). The currentTutorialStep tracks the
@@ -312,7 +313,13 @@ struct ContentView: View {
                 reportPromi = promi
             }
         )
-        .onAppear { homeFieldSize = geo.size }
+        .onAppear {
+            homeFieldSize = geo.size
+            withAnimation(.easeOut(duration: 0.3)) {
+                canvasOpacity = 1
+            }
+        }
+        .opacity(canvasOpacity)
         .onChange(of: geo.size) { _, newSize in homeFieldSize = newSize }
         .overlay(
             Circle()

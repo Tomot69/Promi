@@ -134,6 +134,17 @@ class PromiStore: ObservableObject {
         if let encoded = try? JSONEncoder().encode(promis) {
             userDefaults.set(encoded, forKey: promisKey)
         }
+        // Widget : stocker le prochain Promi pour affichage
+        let nextOpen = promis
+            .filter { $0.status == .open }
+            .sorted { $0.dueDate < $1.dueDate }
+            .first
+        userDefaults.set(nextOpen?.title, forKey: "promi.widget.nextTitle")
+        if let date = nextOpen?.dueDate {
+            userDefaults.set(date.timeIntervalSince1970, forKey: "promi.widget.nextDate")
+        } else {
+            userDefaults.removeObject(forKey: "promi.widget.nextDate")
+        }
         reloadWidget()
     }
     

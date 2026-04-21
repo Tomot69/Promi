@@ -165,6 +165,8 @@ struct DockAddControl: View {
                 .frame(width: size, height: size)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Add")
+            .accessibilityHint("Create a new Promi or Nuée")
             .zIndex(2)
         }
         .frame(width: size, height: size, alignment: .bottom)
@@ -207,13 +209,14 @@ struct PromiFieldSortControl: View {
             }) {
                 ZStack {
                     FloatingChromeCircle(isDarkField: isDarkField)
-
                     PromiFieldSortGlyph(isDarkField: isDarkField)
                         .frame(width: 24, height: 24)
                 }
                 .frame(width: buttonSize, height: buttonSize)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Sort")
+            .accessibilityHint("Change sort order")
             .zIndex(2)
         }
         .frame(width: buttonSize, height: buttonSize, alignment: .bottomLeading)

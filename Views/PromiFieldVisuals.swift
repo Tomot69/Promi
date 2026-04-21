@@ -1885,6 +1885,55 @@ fileprivate enum PromiFieldLayoutFactory {
             }
         }
 
+        // Alvéoles × Nuit Cobalt : bleu Klein rare. 1 cellule idle au
+        // hasard reçoit un IKB (International Klein Blue) pur qui "pop"
+        // parmi les violets. Le seed est fixe (basé sur le layoutSeed)
+        // pour que le bleu reste au même endroit tant qu'on ne secoue pas.
+        if theme == .alveoles && mood == .nuitCobalt {
+            let kleinBlue = Color(red: 0.0, green: 0.30, blue: 0.88)
+            let idleIndicesPool = cells.indices.filter {
+                cells[$0].promotedPromi == nil && cells[$0].promotedNuée == nil
+            }
+            if !idleIndicesPool.isEmpty {
+                // Seed déterministe → même cellule bleue tant que la toile
+                // ne change pas. Le hashValue du premier idle suffit.
+                let rng = idleIndicesPool.count
+                // Choisir 1 cellule garantie + parfois 1 bonus (≈20% de chance)
+                let pick1 = idleIndicesPool[abs(rng.hashValue) % idleIndicesPool.count]
+                let original = cells[pick1]
+                cells[pick1] = PromiFieldCell(
+                    id: original.id,
+                    points: original.points,
+                    visibleBounds: original.visibleBounds,
+                    promotedPromi: nil,
+                    promotedNuée: nil,
+                    fillStyle: AnyShapeStyle(kleinBlue),
+                    strokeColor: original.strokeColor,
+                    strokeStyle: original.strokeStyle,
+                    textMode: original.textMode
+                )
+
+                // Bonus : ~20% de chance d'un 2ème bleu Klein épars
+                let bonus = abs((rng &+ 7).hashValue) % 5
+                if bonus == 0 && idleIndicesPool.count > 3 {
+                    let pick2Candidates = idleIndicesPool.filter { $0 != pick1 }
+                    let pick2 = pick2Candidates[abs((rng &+ 13).hashValue) % pick2Candidates.count]
+                    let orig2 = cells[pick2]
+                    cells[pick2] = PromiFieldCell(
+                        id: orig2.id,
+                        points: orig2.points,
+                        visibleBounds: orig2.visibleBounds,
+                        promotedPromi: nil,
+                        promotedNuée: nil,
+                        fillStyle: AnyShapeStyle(kleinBlue),
+                        strokeColor: orig2.strokeColor,
+                        strokeStyle: orig2.strokeStyle,
+                        textMode: orig2.textMode
+                    )
+                }
+            }
+        }
+
         // Cristal pack: outer compartments become stroke-only frames (transparent
         // fill). Inside each, a tier-2 medium-cell pavage is computed and clipped
         // to the outer polygon. Inside each medium, a tier-3 fine sub-pavage is

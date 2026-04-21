@@ -76,6 +76,16 @@ struct MinimalIntensityGaugeView: View {
         .onAppear {
             updateHeartStrokes(for: intensity)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(question) — \(intensityLabel)")
+        .accessibilityValue("\(intensity) percent")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: intensity = min(100, intensity + 10)
+            case .decrement: intensity = max(0, intensity - 10)
+            @unknown default: break
+            }
+        }
     }
 
     // MARK: Progressive heart (two halves drawn in sequence)

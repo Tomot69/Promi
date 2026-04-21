@@ -35,6 +35,7 @@ final class NotificationManager {
     /// après chaque modification de dueDate. Les anciens rappels pour
     /// ce Promi sont supprimés avant d'en créer de nouveaux.
     func scheduleReminders(for promi: PromiItem, language: String) {
+        guard UserDefaults.standard.bool(forKey: "promi.notificationsEnabled") else { return }
         let center = UNUserNotificationCenter.current()
         let idPrefix = promi.id.uuidString
         // Supprimer les anciens rappels pour ce Promi.
@@ -128,6 +129,7 @@ final class NotificationManager {
 
     /// Rappel intelligent du matin (8h). Résume la journée.
     func scheduleMorningReminder(promis: [PromiItem], language: String) {
+        guard UserDefaults.standard.bool(forKey: "promi.notificationsEnabled") else { return }
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: ["promi-morning"])
 

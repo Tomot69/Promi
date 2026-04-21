@@ -655,7 +655,10 @@ struct EditPromiView: View {
                 .padding(.vertical, 10)
                 .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.plain)
+           .buttonStyle(.plain)
+                       .accessibilityLabel(promi.status == .open
+                           ? (isEnglish ? "Mark as kept" : "Marquer comme tenu")
+                           : (isEnglish ? "Reopen promise" : "Réouvrir la promesse"))
 
             // Défi public — partager le Promi en story avec timer.
             if promi.status == .open {

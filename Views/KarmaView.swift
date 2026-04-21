@@ -231,6 +231,7 @@ struct KarmaView: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(isEnglish ? "Close" : "Fermer")
     }
 
     // MARK: - Streak badge

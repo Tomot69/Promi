@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct PromiApp: App {
+    @UIApplicationDelegateAdaptor(PromiAppDelegate.self) var appDelegate
     @StateObject private var userStore = UserStore()
     @StateObject private var promiStore = PromiStore()
     @StateObject private var karmaStore = KarmaStore()
@@ -10,6 +11,7 @@ struct PromiApp: App {
     @StateObject private var contactsStore = ContactsStore()
 
     @State private var isShowingSplash = true
+    @State private var canvasOpacity: Double = 0
 
     var body: some Scene {
         WindowGroup {
@@ -33,6 +35,11 @@ struct PromiApp: App {
                     NuéeLifecycleManager.reconcileNotifications(for: userNuées)
 
                     // Notifications Promi : permission + reprogrammation.
+                    // Première fois → activer par défaut.
+                    if !UserDefaults.standard.bool(forKey: "promi.notificationsInitialized") {
+                        UserDefaults.standard.set(true, forKey: "promi.notificationsEnabled")
+                        UserDefaults.standard.set(true, forKey: "promi.notificationsInitialized")
+                    }
                     NotificationManager.shared.requestPermission()
                     NotificationManager.shared.rescheduleAll(
                         promis: promiStore.promis,
@@ -81,5 +88,34 @@ struct PromiApp: App {
         } else {
             ContentView()
         }
+    }
+}
+class PromiAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+
+    /// Affiche la notification même quand l'app est au premier plan.
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound, .badge])
+    }
+
+    /// Tap sur une notification → l'app s'ouvre (pas d'action custom pour l'instant,
+    /// mais le framework est prêt pour ouvrir le Promi spécifique quand on ajoutera
+    /// le promiId dans le userInfo de la notification).
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        completionHandler()
     }
 }
