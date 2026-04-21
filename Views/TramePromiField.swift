@@ -3,7 +3,7 @@
 //  Promi
 //
 //  Pack visuel "Trame" : mosaïque Voronoï dense générée en code,
-//  contours fins + points au centroïde. 4 moods (Jardin, Obsidienne,
+//  contours fins + points au centroïde. 3 moods (Confettis, Obsidienne,
 //  Adobe, Confettis) partagent la même géométrie, seules les couleurs
 //  changent. Totalement indépendant du pack Chrome × Vitrail qui lui
 //  est basé sur un PNG photoréaliste.

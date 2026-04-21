@@ -75,19 +75,16 @@ struct SplashScreenView: View {
     // MARK: Logo card (chrome)
 
     private var logoCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(Color.white.opacity(0.06))
-                .frame(width: 132, height: 168)
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(Color.white.opacity(0.16), lineWidth: 0.6)
-                .frame(width: 132, height: 168)
-
-            Image("LogoPromi")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 88, height: 110)
-        }
+        Image("LogoPromi")
+            .resizable()
+            .scaledToFill()
+            .frame(width: 140, height: 140)
+            .clipShape(RoundedRectangle(cornerRadius: 31, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 31, style: .continuous)
+                    .stroke(Color.white.opacity(0.14), lineWidth: 0.6)
+            )
+            .shadow(color: .black.opacity(0.3), radius: 20, y: 8)
     }
 
     // MARK: Title block (Promi in orange + tagline)

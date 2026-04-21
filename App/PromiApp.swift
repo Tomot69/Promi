@@ -48,13 +48,26 @@ struct PromiApp: App {
                     NotificationManager.shared.updateBadge(promis: promiStore.promis)
                     karmaStore.validateStreak()
                     karmaStore.loadHistory()
+
+                    // Widget : écrire le prochain Promi au lancement
+                    // (sinon le widget reste vide jusqu'à la prochaine mutation).
+                    let nextOpen = promiStore.promis
+                        .filter { $0.status == .open }
+                        .sorted { $0.dueDate < $1.dueDate }
+                        .first
+                    UserDefaults.standard.set(nextOpen?.title, forKey: "promi.widget.nextTitle")
+                    if let date = nextOpen?.dueDate {
+                        UserDefaults.standard.set(date.timeIntervalSince1970, forKey: "promi.widget.nextDate")
+                    } else {
+                        UserDefaults.standard.removeObject(forKey: "promi.widget.nextDate")
+                    }
                     NotificationManager.shared.scheduleMorningReminder(
                         promis: promiStore.promis,
                         language: userStore.selectedLanguage
                     )
 
                     guard isShowingSplash else { return }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.15) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
                         withAnimation(.easeOut(duration: 0.28)) {
                             isShowingSplash = false
                         }

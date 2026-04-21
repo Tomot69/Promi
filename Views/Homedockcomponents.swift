@@ -280,22 +280,29 @@ struct AddActionMenu: View {
     let draftCount: Int
     let isDarkField: Bool
     let isPremium: Bool
+
+    private var isEnglish: Bool {
+        Locale.current.language.languageCode?.identifier.starts(with: "en") == true
+    }
     let onNewPromi: () -> Void
     let onNewNuée: () -> Void
     let onOpenDrafts: () -> Void
     let onOpenPaywall: () -> Void
 
     private var draftLabel: String {
-        draftCount > 1 ? "Brouillons" : "Brouillon"
+        if isEnglish {
+            return draftCount > 1 ? "Drafts" : "Draft"
+        }
+        return draftCount > 1 ? "Brouillons" : "Brouillon"
     }
 
     private var draftSubtitle: String {
         if draftCount == 0 {
-            return "Aucun brouillon en cours"
+            return isEnglish ? "No drafts" : "Aucun brouillon en cours"
         } else if draftCount == 1 {
-            return "1 brouillon en cours"
+            return isEnglish ? "1 draft pending" : "1 brouillon en cours"
         } else {
-            return "\(draftCount) brouillons en cours"
+            return isEnglish ? "\(draftCount) drafts pending" : "\(draftCount) brouillons en cours"
         }
     }
 
@@ -339,15 +346,15 @@ struct AddActionMenu: View {
             }
 
             menuRow(
-                title: "Nouveau Promi",
-                subtitle: "Créer une promesse maintenant",
+                title: isEnglish ? "New Promi" : "Nouveau Promi",
+                subtitle: isEnglish ? "Create a promise now" : "Créer une promesse maintenant",
                 accent: true,
                 action: onNewPromi
             )
 
             menuRow(
-                title: "Nouvelle Nuée",
-                subtitle: "Créer un essaim partagé",
+                title: isEnglish ? "New Nuée" : "Nouvelle Nuée",
+                subtitle: isEnglish ? "Create a shared group" : "Créer un essaim partagé",
                 accent: false,
                 action: onNewNuée
             )

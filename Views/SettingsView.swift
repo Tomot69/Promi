@@ -287,16 +287,6 @@ struct SettingsView: View {
         }
     }
 
-    private func comingSoonRow(title: String, caption: String) -> some View {
-        SettingsRow(
-            title: title,
-            value: caption,
-            accent: Color.white.opacity(0.42),
-            enabled: false
-        ) {}
-        .opacity(0.54)
-    }
-
     private var promiPlusRow: some View {
         SettingsRow(
             title: "Promi Plus",

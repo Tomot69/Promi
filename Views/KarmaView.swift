@@ -125,19 +125,19 @@ struct KarmaView: View {
             )
 
             KarmaStatRow(
-                label: "Tenus",
+                label: isEnglish ? "Kept" : "Tenus",
                 value: "\(karmaStore.karmaState.completedPromis)",
                 accent: Brand.karmaGood
             )
 
             KarmaStatRow(
-                label: "Ratés",
+                label: isEnglish ? "Missed" : "Ratés",
                 value: "\(karmaStore.karmaState.failedPromis)",
                 accent: Brand.karmaPoor
             )
 
             KarmaStatRow(
-                label: "En cours",
+                label: isEnglish ? "Pending" : "En cours",
                 value: "\(karmaStore.karmaState.pendingPromis)",
                 accent: Brand.karmaAverage
             )
@@ -211,7 +211,7 @@ struct KarmaView: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.82))
 
-                Text("Fermer")
+                Text(isEnglish ? "Close" : "Fermer")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.94))
             }

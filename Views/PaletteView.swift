@@ -383,7 +383,7 @@ struct PaletteView: View {
         (.mosaicFlat, [.craieMarine, .sableMenthe, .mineralPrune]),
         (.spectrumSoft, [.jardinPromi, .auroreCobalt, .citrusBrume]),
         (.vitrailChrome, [.vitrailCathédrale, .vitrailAube, .vitrailNuit]),
-        (.trame, [.trameConfettis, .trameObsidienne, .trameAdobe, .trameJardin])
+        (.trame, [.trameConfettis, .trameObsidienne, .trameAdobe])
     ]
 
     var body: some View {
@@ -469,7 +469,7 @@ struct PaletteView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Fermer") { dismiss() }
+                    Button(Locale.current.language.languageCode?.identifier.starts(with: "fr") == true ? "Fermer" : "Close") { dismiss() }
                         .foregroundColor(Color.orange.opacity(0.92))
                         .font(.system(size: 15, weight: .regular))
                 }

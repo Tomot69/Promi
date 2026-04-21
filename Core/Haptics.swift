@@ -61,6 +61,9 @@ class Haptics {
     private var tonePlayer: AVAudioPlayer?
 
     func playKeptSound() {
+        try? AVAudioSession.sharedInstance().setCategory(.playback, options: .mixWithOthers)
+        try? AVAudioSession.sharedInstance().setActive(true)
+
         let sampleRate: Double = 44100
         let duration: Double = 0.38
         let frequency: Double = 95

@@ -164,7 +164,7 @@ struct PromiListView: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.82))
 
-                Text("Fermer")
+                Text(isEnglish ? "Close" : "Fermer")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.94))
             }
@@ -201,7 +201,7 @@ struct PromiListView: View {
             TextField(
                 "",
                 text: $query,
-                prompt: Text("Rechercher un Promi ou une personne…")
+                prompt: Text(isEnglish ? "Search a Promi or person…" : "Rechercher un Promi ou une personne…")
                     .foregroundColor(Color.white.opacity(0.40))
             )
             .textInputAutocapitalization(.sentences)
@@ -233,8 +233,8 @@ struct PromiListView: View {
     @ViewBuilder
     private var segmentBar: some View {
         HStack(spacing: 8) {
-            segmentButton(.active, title: "À venir", count: activePromis.count)
-            segmentButton(.done, title: "Accomplis", count: donePromis.count)
+            segmentButton(.active, title: isEnglish ? "Upcoming" : "À venir", count: activePromis.count)
+            segmentButton(.done, title: isEnglish ? "Kept" : "Accomplis", count: donePromis.count)
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 10)
