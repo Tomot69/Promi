@@ -92,7 +92,7 @@ struct CreateNuéeView: View {
     }
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var cleanName: String {
@@ -165,11 +165,11 @@ struct CreateNuéeView: View {
                 Haptics.shared.tinyPop()
                 saveDraft()
             }
-            Button(isEnglish ? "Discard" : "Jeter", role: .destructive) {
+            Button(Loc.discard, role: .destructive) {
                 if let d = editingDraft { draftStore.deleteNuéeDraft(d) }
                 dismiss()
             }
-            Button(isEnglish ? "Cancel" : "Annuler", role: .cancel) { }
+            Button(Loc.cancel, role: .cancel) { }
         }
     }
 
@@ -232,14 +232,14 @@ struct CreateNuéeView: View {
             HStack(spacing: 10) {
                 kindCard(
                     .thematic,
-                    title: isEnglish ? "Thematic" : "Thématique",
+                    title: Loc.thematic,
                     subtitle: isEnglish
                         ? "around a topic"
                         : "autour d’un sujet"
                 )
                 kindCard(
                     .intimate,
-                    title: isEnglish ? "Intimate" : "Intime",
+                    title: Loc.intimate,
                     subtitle: isEnglish
                         ? "a private inner circle"
                         : "un cercle privé"
@@ -328,7 +328,7 @@ struct CreateNuéeView: View {
                         Image(systemName: "person.crop.circle.badge.plus")
                             .font(.system(size: 16, weight: .regular))
                             .foregroundColor(Color.white.opacity(0.42))
-                        Text(isEnglish ? "Add people" : "Ajouter des personnes")
+                        Text(Loc.addPeople)
                             .font(.system(size: 15, weight: .regular))
                             .foregroundColor(Color.white.opacity(0.46))
                     } else {
@@ -365,7 +365,7 @@ struct CreateNuéeView: View {
             ContactPickerView(
                 selection: $selectedMemberIds,
                 priorityContactIds: [], // pas de Nuée parente ici
-                title: isEnglish ? "With whom?" : "Avec qui ?"
+                title: Loc.withWhomQ
             )
             .environmentObject(userStore)
             .environmentObject(contactsStore)
@@ -441,7 +441,7 @@ struct CreateNuéeView: View {
                     .foregroundColor(Brand.orange.opacity(0.86))
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(isEnglish ? "Thematic" : "Thématique")
+                    Text(Loc.thematic)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(Color.white.opacity(0.92))
                     Text(isEnglish
@@ -571,7 +571,7 @@ struct CreateNuéeView: View {
 
             HStack(spacing: 10) {
                 durationToggle(
-                    label: isEnglish ? "Permanent" : "Permanente",
+                    label: Loc.permanent,
                     selected: !isEphemeral
                 ) {
                     Haptics.shared.lightTap()
@@ -580,7 +580,7 @@ struct CreateNuéeView: View {
                     }
                 }
                 durationToggle(
-                    label: isEnglish ? "Ephemeral" : "Éphémère",
+                    label: Loc.ephemeral,
                     selected: isEphemeral
                 ) {
                     Haptics.shared.lightTap()
@@ -657,7 +657,7 @@ struct CreateNuéeView: View {
 
     private var createNuéeButton: some View {
         Button(action: createNuée) {
-            Text(isEnglish ? "Create the Nuée" : "Créer la Nuée")
+            Text(Loc.createNuee)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(Color.white.opacity(canCreate ? 0.96 : 0.38))
                 .frame(maxWidth: .infinity)
@@ -697,7 +697,7 @@ struct CreateNuéeView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(Color.white.opacity(0.86))
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.92))
             }

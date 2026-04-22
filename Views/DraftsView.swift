@@ -30,7 +30,7 @@ struct DraftsView: View {
     @State private var editingNuéeDraft: NuéeDraft?
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
     @State private var pendingDeletePromi: PromiDraft?
     @State private var pendingDeleteNuée: NuéeDraft?
@@ -63,11 +63,11 @@ struct DraftsView: View {
             .sheet(item: $editingPromiDraft) { d in AddPromiView(editingDraft: d) }
             .sheet(item: $editingNuéeDraft) { d in CreateNuéeView(editingDraft: d) }
             .confirmationDialog(isEnglish ? "Discard this draft?" : "Jeter ce brouillon ?", isPresented: Binding(get: { pendingDeletePromi != nil || pendingDeleteNuée != nil }, set: { if !$0 { pendingDeletePromi = nil; pendingDeleteNuée = nil } }), titleVisibility: .visible) {
-                Button(isEnglish ? "Discard" : "Jeter", role: .destructive) {
+                Button(Loc.discard, role: .destructive) {
                     if let d = pendingDeletePromi { withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) { draftStore.deleteDraft(d) }; pendingDeletePromi = nil }
                     if let d = pendingDeleteNuée { withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) { draftStore.deleteNuéeDraft(d) }; pendingDeleteNuée = nil }
                 }
-                Button(isEnglish ? "Cancel" : "Annuler", role: .cancel) { pendingDeletePromi = nil; pendingDeleteNuée = nil }
+                Button(Loc.cancel, role: .cancel) { pendingDeletePromi = nil; pendingDeleteNuée = nil }
             }
         }
     }
@@ -139,7 +139,7 @@ struct DraftsView: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.82))
 
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.94))
             }
@@ -265,7 +265,7 @@ struct DraftsView: View {
                         .foregroundColor(Color.white.opacity(0.68))
                 }
 
-                Text(isEnglish ? "No drafts" : "Aucun brouillon")
+                Text(Loc.noDrafts)
                     .font(.system(size: 20, weight: .light))
                     .foregroundColor(Color.white.opacity(0.88))
 

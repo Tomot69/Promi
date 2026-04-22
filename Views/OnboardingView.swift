@@ -47,7 +47,7 @@ struct OnboardingView: View {
     }
 
     private var isFrench: Bool {
-        !userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var slides: [PromiOnboardingSlide] {

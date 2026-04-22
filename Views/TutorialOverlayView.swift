@@ -15,7 +15,7 @@ struct TutorialOverlayView: View {
     @EnvironmentObject var userStore: UserStore
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var isLastStep: Bool {
@@ -260,9 +260,9 @@ struct TutorialOverlayView: View {
 
     private var buttonText: String {
         if isLastStep {
-            return isEnglish ? "Got it" : "Terminé"
+            return Loc.gotIt
         } else {
-            return isEnglish ? "Next" : "Suivant"
+            return Loc.next
         }
     }
 

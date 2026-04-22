@@ -121,8 +121,8 @@ extension Nuée {
     func localizedSubtitle(isEnglish: Bool) -> String {
         let kindLabel: String
         switch kind {
-        case .thematic: kindLabel = isEnglish ? "Thematic" : "Thématique"
-        case .intimate: kindLabel = isEnglish ? "Intimate" : "Intime"
+        case .thematic: kindLabel = Loc.thematic
+        case .intimate: kindLabel = Loc.intimate
         }
         let count = activeMemberCount
         let memberWord: String

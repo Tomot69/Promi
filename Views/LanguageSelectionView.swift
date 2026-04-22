@@ -37,7 +37,18 @@ struct LanguageSelectionView: View {
     private let languages: [(code: String, nativeName: String, localizedName: String)] = [
         ("fr", "Français", "French"),
         ("en", "English", "Anglais"),
-        ("es", "Español", "Espagnol")
+        ("es", "Español", "Spanish"),
+        ("de", "Deutsch", "German"),
+        ("at", "Deutsch (Österreich)", "Austrian"),
+        ("it", "Italiano", "Italian"),
+        ("pt", "Português", "Portuguese"),
+        ("sv", "Svenska", "Swedish"),
+        ("nb", "Norsk", "Norwegian"),
+        ("da", "Dansk", "Danish"),
+        ("pl", "Polski", "Polish"),
+        ("hu", "Magyar", "Hungarian"),
+        ("hr", "Hrvatski", "Croatian"),
+        ("sr", "Srpski", "Serbian")
     ]
 
     init() {
@@ -65,7 +76,7 @@ struct LanguageSelectionView: View {
     }
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     // MARK: Body
@@ -80,15 +91,20 @@ struct LanguageSelectionView: View {
             )
 
             VStack(spacing: 0) {
-                Spacer(minLength: 48)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 48)
+                            .frame(height: 48)
 
-                titleBlock
+                        titleBlock
 
-                Spacer(minLength: 40)
+                        Spacer(minLength: 28)
+                            .frame(height: 28)
 
-                languageField
-
-                Spacer()
+                        languageField
+                    }
+                    .padding(.bottom, 20)
+                }
 
                 continueButton
             }
@@ -127,7 +143,7 @@ struct LanguageSelectionView: View {
                 ? "change your language."
                 : "changez de langue."
         } else {
-            return "Choisissez votre langue.\nChoose your language.\nElige tu idioma."
+            return "Choisissez votre langue.\nChoose your language."
         }
     }
 
@@ -234,6 +250,16 @@ struct LanguageSelectionView: View {
         switch selectedLanguage {
         case "en": return "Continue"
         case "es": return "Continuar"
+        case "de", "at": return "Weiter"
+        case "it": return "Continua"
+        case "pt": return "Continuar"
+        case "sv": return "Fortsätt"
+        case "nb": return "Fortsett"
+        case "da": return "Fortsæt"
+        case "pl": return "Kontynuuj"
+        case "hu": return "Folytatás"
+        case "hr": return "Nastavi"
+        case "sr": return "Nastavi"
         default:   return "Continuer"
         }
     }
@@ -249,7 +275,7 @@ struct LanguageSelectionView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(Color.white.opacity(0.86))
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.92))
             }

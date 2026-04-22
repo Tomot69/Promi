@@ -125,19 +125,19 @@ struct KarmaView: View {
             )
 
             KarmaStatRow(
-                label: isEnglish ? "Kept" : "Tenus",
+                label: Loc.keptLabel,
                 value: "\(karmaStore.karmaState.completedPromis)",
                 accent: Brand.karmaGood
             )
 
             KarmaStatRow(
-                label: isEnglish ? "Missed" : "Ratés",
+                label: Loc.missedLabel,
                 value: "\(karmaStore.karmaState.failedPromis)",
                 accent: Brand.karmaPoor
             )
 
             KarmaStatRow(
-                label: isEnglish ? "Pending" : "En cours",
+                label: Loc.pendingLabel,
                 value: "\(karmaStore.karmaState.pendingPromis)",
                 accent: Brand.karmaAverage
             )
@@ -149,7 +149,7 @@ struct KarmaView: View {
 
     @ViewBuilder
     private var promiPlusCard: some View {
-        let isFrench = !userStore.selectedLanguage.starts(with: "en")
+        let isFrench = !userStore.selectedLanguage.lowercased().starts(with: "fr")
 
         Button {
             Haptics.shared.lightTap()
@@ -211,7 +211,7 @@ struct KarmaView: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.82))
 
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.94))
             }
@@ -231,7 +231,7 @@ struct KarmaView: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(isEnglish ? "Close" : "Fermer")
+        .accessibilityLabel(Loc.close)
     }
 
     // MARK: - Streak badge
@@ -249,7 +249,7 @@ struct KarmaView: View {
                     Text("\(streak) \(streak == 1 ? (isEnglish ? "day" : "jour") : (isEnglish ? "days" : "jours"))")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.white.opacity(0.92))
-                    Text(isEnglish ? "Current streak" : "Série en cours")
+                    Text(Loc.currentStreak)
                         .font(.system(size: 11, weight: .regular))
                         .foregroundColor(.white.opacity(0.48))
                 }
@@ -261,7 +261,7 @@ struct KarmaView: View {
                         Text("\(karmaStore.longestStreak)")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(Brand.orange.opacity(0.72))
-                        Text(isEnglish ? "best" : "record")
+                        Text(Loc.best)
                             .font(.system(size: 10, weight: .regular))
                             .foregroundColor(.white.opacity(0.38))
                     }
@@ -282,7 +282,7 @@ struct KarmaView: View {
     }
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     // MARK: - Karma graph (last 30 days)
@@ -292,7 +292,7 @@ struct KarmaView: View {
         let history = karmaStore.karmaHistory.suffix(30)
         if history.count >= 2 {
             VStack(alignment: .leading, spacing: 8) {
-                Text(isEnglish ? "Last 30 days" : "30 derniers jours")
+                Text(Loc.last30Days)
                     .font(.system(size: 10, weight: .semibold))
                     .tracking(1.0)
                     .foregroundColor(Color.white.opacity(0.48))

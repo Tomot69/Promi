@@ -55,7 +55,7 @@ struct PromiCompositionShareView: View {
 
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     // MARK: - Body
@@ -209,7 +209,7 @@ struct PromiCompositionShareView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(Color.white.opacity(0.86))
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.92))
             }
@@ -297,7 +297,7 @@ struct PromiCompositionShareView: View {
 
                     Text(isPreparingShare
                          ? (isEnglish ? "Preparing…" : "Préparation…")
-                         : (isEnglish ? "Share" : "Partager"))
+                         : (Loc.share))
                         .font(.system(size: 15, weight: .semibold))
                 }
                 .foregroundColor(Color.white.opacity(0.96))
@@ -1030,7 +1030,7 @@ private struct SharePromiFilterSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(isEnglish ? "Done" : "OK") {
+                    Button(Loc.done) {
                         dismiss()
                     }
                     .foregroundColor(Brand.orange)

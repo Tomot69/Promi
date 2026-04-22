@@ -117,7 +117,7 @@ struct PromiListView: View {
         let activeCount = activePromis.count
 
         if doneCount == 0 && activeCount == 0 {
-            return isEnglish ? "the canvas is quiet" : "la toile est calme"
+            return Loc.canvasQuiet
         }
 
         var parts: [String] = []
@@ -138,7 +138,7 @@ struct PromiListView: View {
     /// Built as a single AttributedString — the iOS 26+ idiomatic way to
     /// style parts of a Text (Text + concatenation is deprecated).
     private var isEnglish: Bool {
-        userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var titleAttributed: Text {
@@ -164,7 +164,7 @@ struct PromiListView: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.82))
 
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.94))
             }
@@ -233,8 +233,8 @@ struct PromiListView: View {
     @ViewBuilder
     private var segmentBar: some View {
         HStack(spacing: 8) {
-            segmentButton(.active, title: isEnglish ? "Upcoming" : "À venir", count: activePromis.count)
-            segmentButton(.done, title: isEnglish ? "Kept" : "Accomplis", count: donePromis.count)
+            segmentButton(.active, title: Loc.upcoming, count: activePromis.count)
+            segmentButton(.done, title: Loc.keptSegment, count: donePromis.count)
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 10)
@@ -520,14 +520,14 @@ struct PromiListView: View {
         switch selectedSegment {
         case .active:
             if trimmedQuery.isEmpty {
-                return isEnglish ? "The canvas is quiet" : "La toile est calme"
+                return Loc.canvasQuiet
             }
-            return isEnglish ? "No results" : "Aucun résultat"
+            return Loc.noResults
         case .done:
             if trimmedQuery.isEmpty {
-                return isEnglish ? "No promises kept yet" : "Pas encore de promesses tenues"
+                return Loc.noPromisesKeptYet
             }
-            return isEnglish ? "No results" : "Aucun résultat"
+            return Loc.noResults
         }
     }
 

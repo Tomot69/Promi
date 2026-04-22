@@ -282,7 +282,7 @@ struct AddActionMenu: View {
     let isPremium: Bool
 
     private var isEnglish: Bool {
-        Locale.current.language.languageCode?.identifier.starts(with: "en") == true
+        Locale.current.language.languageCode?.identifier.starts(with: "fr") != true
     }
     let onNewPromi: () -> Void
     let onNewNuée: () -> Void

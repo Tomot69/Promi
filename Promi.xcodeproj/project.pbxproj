@@ -75,6 +75,7 @@
 		5260F8B12F916C600037F9D2 /* BlockedUsersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8B02F916C600037F9D2 /* BlockedUsersView.swift */; };
 		5260F8B32F92573E0037F9D2 /* QuotaConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8B22F92573E0037F9D2 /* QuotaConstants.swift */; };
 		5260F8B52F9257E60037F9D2 /* PromiPlusPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5260F8B42F9257E60037F9D2 /* PromiPlusPaywallView.swift */; };
+		526AAF182F99068400964C27 /* Loc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526AAF172F99068400964C27 /* Loc.swift */; };
 		526C00FC2EFCB77800FA6D41 /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C00FB2EFCB77800FA6D41 /* FeatureFlags.swift */; };
 		526C00FF2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C00FE2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift */; };
 		526C01092EFCBB5500FA6D41 /* ReadPathActivationGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526C01082EFCBB5500FA6D41 /* ReadPathActivationGate.swift */; };
@@ -234,6 +235,7 @@
 		5260F8B22F92573E0037F9D2 /* QuotaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuotaConstants.swift; sourceTree = "<group>"; };
 		5260F8B42F9257E60037F9D2 /* PromiPlusPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromiPlusPaywallView.swift; sourceTree = "<group>"; };
 		5269800E2EFD6FD2002A2AC9 /* Promi.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Promi.xctestplan; sourceTree = "<group>"; };
+		526AAF172F99068400964C27 /* Loc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loc.swift; sourceTree = "<group>"; };
 		526C00FB2EFCB77800FA6D41 /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
 		526C00FE2EFCB7C200FA6D41 /* ReadPathBootstrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadPathBootstrapper.swift; sourceTree = "<group>"; };
 		526C01082EFCBB5500FA6D41 /* ReadPathActivationGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadPathActivationGate.swift; sourceTree = "<group>"; };
@@ -629,6 +631,7 @@
 			children = (
 				52D3F0682EABF6320048149B /* Brand.swift */,
 				52D3F06A2EABF6FF0048149B /* Haptics.swift */,
+				526AAF172F99068400964C27 /* Loc.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -858,6 +861,7 @@
 			files = (
 				52D3F0732EABF8870048149B /* KarmaState.swift in Sources */,
 				5251CA0C2EF9FC83000C59CB /* ReopenPromiUseCase.swift in Sources */,
+				526AAF182F99068400964C27 /* Loc.swift in Sources */,
 				523F9FE92EFAFAF80035CB3F /* LegacyUserDefaultsKeys.swift in Sources */,
 				52E1A24B2EAD1580007EFAA8 /* DraftsView.swift in Sources */,
 				5251C9E12EF9E99E000C59CB /* SocialRules.swift in Sources */,

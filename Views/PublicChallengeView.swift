@@ -21,7 +21,7 @@ struct PublicChallengeView: View {
     @State private var isPreparingShare = false
 
     private var isFrench: Bool {
-        !userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var timeRemaining: String {

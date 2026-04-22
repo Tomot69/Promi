@@ -11,38 +11,35 @@ enum PromiFieldSortOption: String, CaseIterable {
     case nuée = "Nuée"
 
     var displayLabel: String {
-        let en = Locale.current.language.languageCode?.identifier.starts(with: "en") == true
         switch self {
-        case .date: return "Date"
-        case .urgency: return en ? "Urgency" : "Urgence"
-        case .person: return en ? "Person" : "Personne"
-        case .importance: return en ? "Intensity" : "Intensité"
-        case .inspiration: return "Inspi"
-        case .nuée: return "Nuée"
+        case .date: return Loc.sortDate
+        case .urgency: return Loc.sortUrgency
+        case .person: return Loc.sortPerson
+        case .importance: return Loc.sortIntensity
+        case .inspiration: return Loc.sortInspi
+        case .nuée: return Loc.sortNuee
         }
     }
 
     var visualHintTitle: String {
-        let en = Locale.current.language.languageCode?.identifier.starts(with: "en") == true
         switch self {
-        case .date: return en ? "Sort by date" : "Tri date"
-        case .urgency: return en ? "Sort by urgency" : "Tri urgence"
-        case .person: return en ? "Sort by person" : "Tri personne"
-        case .importance: return en ? "Sort by intensity" : "Tri intensité"
-        case .inspiration: return en ? "Free sort" : "Tri libre"
-        case .nuée: return en ? "Sort by Nuée" : "Tri nuée"
+        case .date: return Loc.sortByDate
+        case .urgency: return Loc.sortByUrgency
+        case .person: return Loc.sortByPerson
+        case .importance: return Loc.sortByIntensity
+        case .inspiration: return Loc.sortFree
+        case .nuée: return Loc.sortByNuee
         }
     }
 
     var visualHintSubtitle: String {
-        let en = Locale.current.language.languageCode?.identifier.starts(with: "en") == true
         switch self {
-        case .date: return en ? "closest in time rise to the top" : "les plus proches dans le temps montent"
-        case .urgency: return en ? "most urgent ones densify in front" : "les plus urgents se densifient devant"
-        case .person: return en ? "groups read laterally" : "les groupes se lisent latéralement"
-        case .importance: return en ? "strongest ones take the center" : "les plus forts prennent le centre"
-        case .inspiration: return en ? "free and organic layout" : "répartition libre et organique"
-        case .nuée: return en ? "Promis group by swarm" : "les Promi se regroupent par essaim"
+        case .date: return Loc.sortHintDate
+        case .urgency: return Loc.sortHintUrgency
+        case .person: return Loc.sortHintPerson
+        case .importance: return Loc.sortHintIntensity
+        case .inspiration: return Loc.sortHintInspi
+        case .nuée: return Loc.sortHintNuee
         }
     }
 }
@@ -398,7 +395,7 @@ struct ContentView: View {
             if karmaStore.karmaState.completedPromis > 0 {
                 VStack {
                     Spacer()
-                    Text("\(karmaStore.karmaState.completedPromis) \(userStore.selectedLanguage.starts(with: "en") ? "kept" : (karmaStore.karmaState.completedPromis == 1 ? "tenue" : "tenues"))")
+                    Text("\(karmaStore.karmaState.completedPromis) \(!userStore.selectedLanguage.lowercased().starts(with: "fr") ? "kept" : (karmaStore.karmaState.completedPromis == 1 ? "tenue" : "tenues"))")
                         .font(.system(size: 9, weight: .regular))
                         .tracking(1.2)
                         .foregroundColor(isDarkField ? .white.opacity(0.16) : .black.opacity(0.12))
@@ -472,7 +469,7 @@ struct ContentView: View {
                         showDrafts = true
                     }
                     .accessibilityLabel("Promi")
-                    .accessibilityHint(userStore.selectedLanguage.starts(with: "en")
+                    .accessibilityHint(!userStore.selectedLanguage.lowercased().starts(with: "fr")
                         ? "Tap to open settings, long press for drafts"
                         : "Toucher pour les réglages, appui long pour les brouillons")
 
@@ -648,7 +645,7 @@ struct ContentView: View {
 
     private var canvasMurmur: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        let en = userStore.selectedLanguage.starts(with: "en")
+        let en = !userStore.selectedLanguage.lowercased().starts(with: "fr")
         let streak = karmaStore.currentStreak
         let todayCount = promiStore.promis.filter {
             $0.status == .open && Calendar.current.isDateInToday($0.dueDate)

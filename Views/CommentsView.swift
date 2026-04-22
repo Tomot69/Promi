@@ -42,7 +42,7 @@ struct CommentsView: View {
     }
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var comments: [Comment] {
@@ -108,7 +108,7 @@ struct CommentsView: View {
 
     /// "Commentaires" / "Comments" highlighted in brand orange.
     private var titleAttributed: Text {
-        let raw = isEnglish ? "Comments" : "Commentaires"
+        let raw = Loc.comments
         var attributed = AttributedString(raw)
         attributed.foregroundColor = Brand.orange
         return Text(attributed)
@@ -123,7 +123,7 @@ struct CommentsView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(Color.white.opacity(0.86))
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.92))
             }
@@ -287,7 +287,7 @@ private struct CommentRowView: View {
     let comment: Comment
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     var body: some View {

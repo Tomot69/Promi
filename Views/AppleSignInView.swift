@@ -33,7 +33,7 @@ struct AppleSignInView: View {
     }
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     var body: some View {
@@ -54,7 +54,7 @@ struct AppleSignInView: View {
                 // Title + subtitle
                 VStack(spacing: 10) {
                     HStack(spacing: 0) {
-                        Text(isEnglish ? "Welcome to " : "Bienvenue sur ")
+                        Text(Loc.welcomeTo)
                             .font(.system(size: 26, weight: .light))
                             .foregroundColor(Color.white.opacity(0.94))
                         Text("Promi")
@@ -86,7 +86,7 @@ struct AppleSignInView: View {
                     HStack(spacing: 10) {
                         Image(systemName: "applelogo")
                             .font(.system(size: 18, weight: .medium))
-                        Text(isEnglish ? "Sign in with Apple" : "Se connecter avec Apple")
+                        Text(Loc.signInWithApple)
                             .font(.system(size: 15, weight: .medium))
                     }
                     .foregroundColor(Color.white.opacity(0.38))

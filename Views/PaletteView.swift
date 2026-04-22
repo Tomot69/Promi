@@ -67,7 +67,7 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
     }
 
     var subtitle: String {
-            let en = Locale.current.language.languageCode?.identifier.starts(with: "en") == true
+            let en = Locale.current.language.languageCode?.identifier.starts(with: "fr") != true
             switch self {
             case .terrePromi: return en ? "warm earth, subtle coral, organic density" : "terre chaude, corail discret, densité organique"
             case .nuitCobalt: return en ? "night base, sharp cobalt, cool accents" : "fond nocturne, cobalt net, accents froids"

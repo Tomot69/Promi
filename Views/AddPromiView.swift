@@ -69,7 +69,7 @@ struct AddPromiView: View {
     }
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
 
@@ -161,19 +161,19 @@ struct AddPromiView: View {
     // MARK: - Confirmation dialog labels
 
     private var dialogTitle: String {
-        isEnglish ? "Save as draft?" : "Sauvegarder en brouillon ?"
+        Loc.saveDraftQ
     }
 
     private var saveDraftButtonTitle: String {
-        isEnglish ? "Save draft" : "Sauvegarder"
+        Loc.saveDraft
     }
 
     private var discardButtonTitle: String {
-        isEnglish ? "Discard" : "Jeter"
+        Loc.discard
     }
 
     private var cancelButtonTitle: String {
-        isEnglish ? "Cancel" : "Annuler"
+        Loc.cancel
     }
 
     // MARK: - Header with orange "Promi" accent
@@ -217,7 +217,7 @@ struct AddPromiView: View {
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.82))
 
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.94))
             }
@@ -246,7 +246,7 @@ struct AddPromiView: View {
 
     private var titleField: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel(isEnglish ? "What do you promise" : "Ce que tu promets")
+            sectionLabel(Loc.whatDoYouPromise)
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("Promi")
@@ -296,16 +296,16 @@ struct AddPromiView: View {
             HStack(spacing: 8) {
                 kindChip(
                     kind: .precise,
-                    title: isEnglish ? "Precise" : "Précis"
+                    title: Loc.precise
                 )
                 kindChip(
                     kind: .emotional,
-                    title: isEnglish ? "Linked" : "Lié"
+                    title: Loc.linked
                 )
                 kindChip(
-                    kind: .floating,
-                    title: isEnglish ? "In the air" : "En l’air"
-                )
+                                    kind: .floating,
+                                    title: Loc.inTheAir
+                                )
             }
         }
     }
@@ -346,7 +346,7 @@ struct AddPromiView: View {
 
     private var dateBlock: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel(isEnglish ? "When" : "Quand")
+            sectionLabel(Loc.when)
 
             HStack {
                 DatePicker(
@@ -400,7 +400,7 @@ struct AddPromiView: View {
     private var linkedBlock: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
-                sectionLabel(isEnglish ? "When" : "Quand")
+                sectionLabel(Loc.when)
 
                 HStack {
                     DatePicker(
@@ -447,7 +447,7 @@ struct AddPromiView: View {
 
     private var recipientBlock: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel(isEnglish ? "For whom" : "Pour qui")
+            sectionLabel(Loc.forWhom)
 
             Button {
                 Haptics.shared.lightTap()
@@ -458,9 +458,9 @@ struct AddPromiView: View {
                         Image(systemName: "person.crop.circle.badge.plus")
                             .font(.system(size: 16, weight: .regular))
                             .foregroundColor(Color.white.opacity(0.42))
-                        Text(isEnglish ? "Someone…" : "Quelqu’un…")
-                            .font(.system(size: 16, weight: .regular))
-                            .foregroundColor(Color.white.opacity(0.36))
+                        Text(Loc.someone)
+                                                    .font(.system(size: 16, weight: .regular))
+                                                    .foregroundColor(Color.white.opacity(0.36))
                     } else {
                         // Pastilles d'initiales empilées + résumé textuel.
                         recipientAvatarStack
@@ -489,7 +489,7 @@ struct AddPromiView: View {
             ContactPickerView(
                 selection: $selectedRecipientIds,
                 priorityContactIds: priorityContactIdsForPicker,
-                title: isEnglish ? "For whom?" : "Pour qui ?"
+                title: Loc.forWhomQ
             )
             .environmentObject(userStore)
             .environmentObject(contactsStore)
@@ -699,7 +699,7 @@ struct AddPromiView: View {
 
     private var intensityBlock: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel(isEnglish ? "Intensity" : "Intensité")
+            sectionLabel(Loc.intensity)
 
             MinimalIntensityGaugeView(
                 intensity: $intensity,
@@ -717,7 +717,7 @@ struct AddPromiView: View {
 
     private var createButton: some View {
         Button(action: createPromi) {
-            Text(isEnglish ? "Create Promi" : "Créer ce Promi")
+            Text(Loc.createPromi)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(
                     cleanSuffix.isEmpty

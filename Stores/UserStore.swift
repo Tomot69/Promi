@@ -262,7 +262,7 @@ final class UserStore: ObservableObject {
     var displayName: String {
         if !username.isEmpty { return username }
         if let appleFullName, !appleFullName.isEmpty { return appleFullName }
-        return selectedLanguage.starts(with: "en") ? "You" : "Vous"
+        return !selectedLanguage.lowercased().starts(with: "fr") ? "You" : "Vous"
     }
 
     // MARK: - Debug

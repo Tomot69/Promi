@@ -60,7 +60,7 @@ struct NuéeDetailView: View {
     }
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var currentNuée: Nuée? {
@@ -119,34 +119,34 @@ struct NuéeDetailView: View {
             )
         }
         .confirmationDialog(
-            isEnglish ? "Delete this Nuée?" : "Supprimer cette Nuée ?",
+            Loc.deleteThisNueeQ,
             isPresented: $showDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button(isEnglish ? "Delete" : "Supprimer", role: .destructive) {
+            Button(Loc.delete, role: .destructive) {
                 if let nuée = currentNuée {
                     Haptics.shared.success()
                     nuéeStore.delete(nuée)
                     dismiss()
                 }
             }
-            Button(isEnglish ? "Cancel" : "Annuler", role: .cancel) {}
+            Button(Loc.cancel, role: .cancel) {}
         } message: {
             Text(isEnglish
                  ? "All shared Promis will lose their Nuée link. This cannot be undone."
                  : "Tous les Promis partagés perdront leur lien à la Nuée. Cette action est irréversible.")
         }
         .confirmationDialog(
-            isEnglish ? "Leave this Nuée?" : "Quitter cette Nuée ?",
+            Loc.leaveThisNueeQ,
             isPresented: $showLeaveConfirmation,
             titleVisibility: .visible
         ) {
-            Button(isEnglish ? "Leave" : "Quitter", role: .destructive) {
+            Button(Loc.leave, role: .destructive) {
                 Haptics.shared.lightTap()
                 nuéeStore.removeMember(userId: userStore.localUserId, from: nuéeId)
                 dismiss()
             }
-            Button(isEnglish ? "Cancel" : "Annuler", role: .cancel) {}
+            Button(Loc.cancel, role: .cancel) {}
         }
     }
 
@@ -644,7 +644,7 @@ struct NuéeDetailView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "trash")
                             .font(.system(size: 11, weight: .semibold))
-                        Text(isEnglish ? "Delete the Nuée" : "Supprimer la Nuée")
+                        Text(Loc.deleteNuee)
                             .font(.system(size: 13, weight: .semibold))
                     }
                     .foregroundColor(Color.white.opacity(0.78))
@@ -668,7 +668,7 @@ struct NuéeDetailView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "rectangle.portrait.and.arrow.right")
                             .font(.system(size: 11, weight: .semibold))
-                        Text(isEnglish ? "Leave the Nuée" : "Quitter la Nuée")
+                        Text(Loc.leaveNuee)
                             .font(.system(size: 13, weight: .semibold))
                     }
                     .foregroundColor(Color.white.opacity(0.78))
@@ -722,7 +722,7 @@ struct NuéeDetailView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(Color.white.opacity(0.86))
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.92))
             }

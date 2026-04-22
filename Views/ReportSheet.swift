@@ -25,7 +25,7 @@ struct ReportSheet: View {
     @State private var showBlockConfirmation = false
 
     private var isFrench: Bool {
-        !userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     var body: some View {

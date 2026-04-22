@@ -32,7 +32,7 @@ struct SettingsView: View {
     }
 
     private var isFrench: Bool {
-        !userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     // MARK: Body
@@ -465,7 +465,7 @@ private struct UsernameEditSheet: View {
     @FocusState private var isFieldFocused: Bool
 
     private var isFrench: Bool {
-        !userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var canSave: Bool {

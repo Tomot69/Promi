@@ -27,7 +27,7 @@ struct PromiPlusPaywallView: View {
     @State private var selectedPlan: PlusPlan = .yearly
 
     private var isFrench: Bool {
-        !userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private var currentPack: PromiVisualPack {

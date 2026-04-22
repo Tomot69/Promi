@@ -60,7 +60,7 @@ struct EditPromiView: View {
     }
 
     private var isEnglish: Bool {
-        userStore.selectedLanguage.starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     private let brandOrange = Color(red: 0.98, green: 0.56, blue: 0.22)
@@ -92,7 +92,7 @@ struct EditPromiView: View {
     }
 
     private var titleString: String {
-        isEnglish ? "Modify a Promi" : "Modifier un Promi"
+        Loc.modifyPromi
     }
 
     // MARK: - Body
@@ -156,12 +156,12 @@ struct EditPromiView: View {
             isPresented: $showDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button(isEnglish ? "Delete" : "Supprimer", role: .destructive) {
+            Button(Loc.delete, role: .destructive) {
                 Haptics.shared.success()
                 promiStore.deletePromi(promi)
                 dismiss()
             }
-            Button(isEnglish ? "Cancel" : "Annuler", role: .cancel) {}
+            Button(Loc.cancel, role: .cancel) {}
         }
         .sheet(isPresented: $showChallenge) {
             PublicChallengeView(promi: promi)
@@ -237,7 +237,7 @@ struct EditPromiView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(Color.white.opacity(0.86))
-                Text(isEnglish ? "Close" : "Fermer")
+                Text(Loc.close)
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.white.opacity(0.92))
             }
@@ -294,9 +294,9 @@ struct EditPromiView: View {
             //   centre  : Lié     → relationnel, moment ancré sur une personne
             //   droite  : En l'air → libre, sans moment, pure intention
             HStack(spacing: 8) {
-                kindChip(.precise,    title: isEnglish ? "Precise" : "Précis")
-                kindChip(.emotional,  title: isEnglish ? "Linked"  : "Lié")
-                kindChip(.floating,   title: isEnglish ? "In the air" : "En l’air")
+                kindChip(.precise,    title: Loc.precise)
+                kindChip(.emotional,  title: Loc.linked)
+                                kindChip(.floating,   title: Loc.inTheAir)
             }
         }
     }
@@ -343,7 +343,7 @@ struct EditPromiView: View {
     private var linkedSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 10) {
-                sectionLabel(isEnglish ? "WHEN" : "QUAND")
+                sectionLabel(Loc.when)
 
                 Text(isEnglish
                      ? "the moment, attached to the person."
@@ -414,7 +414,7 @@ struct EditPromiView: View {
     @ViewBuilder
     private var whenSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel(isEnglish ? "WHEN" : "QUAND")
+            sectionLabel(Loc.when)
 
             Text(isEnglish
                  ? "keep the moment visible."
@@ -442,7 +442,7 @@ struct EditPromiView: View {
     @ViewBuilder
     private var forWhomSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel(isEnglish ? "FOR WHOM" : "POUR QUI")
+            sectionLabel(Loc.forWhom)
 
             Text(isEnglish
                  ? "the person this Promi is for."
@@ -451,9 +451,9 @@ struct EditPromiView: View {
                 .foregroundColor(Color.white.opacity(0.52))
 
             TextField(
-                isEnglish ? "Someone…" : "quelqu’un…",
-                text: $assignee
-            )
+                            Loc.someone,
+                            text: $assignee
+                        )
             .font(.system(size: 16, weight: .regular))
             .foregroundColor(Color.white.opacity(0.92))
             .tint(brandOrange)
@@ -593,7 +593,7 @@ struct EditPromiView: View {
     @ViewBuilder
     private var intensitySection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionLabel(isEnglish ? "INTENSITY" : "INTENSITÉ")
+            sectionLabel(Loc.intensity)
 
             MinimalIntensityGaugeView(
                 intensity: $intensity,
@@ -612,7 +612,7 @@ struct EditPromiView: View {
     private var footerActions: some View {
         VStack(spacing: 10) {
             Button(action: saveChanges) {
-                Text(isEnglish ? "Save changes" : "Enregistrer")
+                Text(Loc.saveChanges)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color.white.opacity(canSave ? 0.96 : 0.38))
                     .frame(maxWidth: .infinity)
@@ -641,13 +641,13 @@ struct EditPromiView: View {
            Button(action: toggleStatus) {
                 HStack(spacing: 6) {
                     if promi.status == .open {
-                        Text(isEnglish ? "I kept it" : "Tenu")
+                        Text(Loc.iKeptIt)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(Brand.orange.opacity(0.88))
                     } else {
                         Image(systemName: "arrow.uturn.backward")
                             .font(.system(size: 10, weight: .semibold))
-                        Text(isEnglish ? "Reopen" : "Réouvrir")
+                        Text(Loc.reopen)
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(Color.white.opacity(0.58))
                     }
@@ -687,7 +687,7 @@ struct EditPromiView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "calendar.badge.plus")
                             .font(.system(size: 10, weight: .semibold))
-                        Text(isEnglish ? "Add to Calendar" : "Ajouter au calendrier")
+                        Text(Loc.addToCalendar)
                             .font(.system(size: 12, weight: .semibold))
                     }
                     .foregroundColor(Color.white.opacity(0.58))
@@ -699,7 +699,7 @@ struct EditPromiView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark")
                         .font(.system(size: 10, weight: .semibold))
-                    Text(isEnglish ? "Added" : "Ajouté")
+                    Text(Loc.added)
                         .font(.system(size: 12, weight: .medium))
                 }
                 .foregroundColor(Color(red: 0.34, green: 0.80, blue: 0.60).opacity(0.72))
@@ -762,7 +762,7 @@ struct EditPromiView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "bubble.left")
                                 .font(.system(size: 18, weight: .medium))
-                            Text(isEnglish ? "Comments" : "Commentaires")
+                            Text(Loc.comments)
                                 .font(.system(size: 14, weight: .medium))
                             if promiStore.getCommentsCount(for: promi.id) > 0 {
                                 Text("\(promiStore.getCommentsCount(for: promi.id))")

@@ -38,7 +38,7 @@ struct ContactPickerView: View {
     @FocusState private var newContactFieldFocused: Bool
 
     private var isFrench: Bool {
-        !userStore.selectedLanguage.lowercased().starts(with: "en")
+        !userStore.selectedLanguage.lowercased().starts(with: "fr")
     }
 
     // MARK: - Filtered & grouped data
