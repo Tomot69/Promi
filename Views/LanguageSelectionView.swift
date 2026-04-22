@@ -36,19 +36,7 @@ struct LanguageSelectionView: View {
     /// universally recognizable regardless of the current language.
     private let languages: [(code: String, nativeName: String, localizedName: String)] = [
         ("fr", "Français", "French"),
-        ("en", "English", "Anglais"),
-        ("es", "Español", "Spanish"),
-        ("de", "Deutsch", "German"),
-        ("at", "Deutsch (Österreich)", "Austrian"),
-        ("it", "Italiano", "Italian"),
-        ("pt", "Português", "Portuguese"),
-        ("sv", "Svenska", "Swedish"),
-        ("nb", "Norsk", "Norwegian"),
-        ("da", "Dansk", "Danish"),
-        ("pl", "Polski", "Polish"),
-        ("hu", "Magyar", "Hungarian"),
-        ("hr", "Hrvatski", "Croatian"),
-        ("sr", "Srpski", "Serbian")
+        ("en", "English", "Anglais")
     ]
 
     init() {
