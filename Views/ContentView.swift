@@ -10,25 +10,39 @@ enum PromiFieldSortOption: String, CaseIterable {
     case inspiration = "Inspi"
     case nuée = "Nuée"
 
-    var visualHintTitle: String {
+    var displayLabel: String {
+        let en = Locale.current.language.languageCode?.identifier.starts(with: "en") == true
         switch self {
-        case .date: return "Tri date"
-        case .urgency: return "Tri urgence"
-        case .person: return "Tri personne"
-        case .importance: return "Tri intensité"
-        case .inspiration: return "Tri libre"
-        case .nuée: return "Tri nuée"
+        case .date: return "Date"
+        case .urgency: return en ? "Urgency" : "Urgence"
+        case .person: return en ? "Person" : "Personne"
+        case .importance: return en ? "Intensity" : "Intensité"
+        case .inspiration: return "Inspi"
+        case .nuée: return "Nuée"
+        }
+    }
+
+    var visualHintTitle: String {
+        let en = Locale.current.language.languageCode?.identifier.starts(with: "en") == true
+        switch self {
+        case .date: return en ? "Sort by date" : "Tri date"
+        case .urgency: return en ? "Sort by urgency" : "Tri urgence"
+        case .person: return en ? "Sort by person" : "Tri personne"
+        case .importance: return en ? "Sort by intensity" : "Tri intensité"
+        case .inspiration: return en ? "Free sort" : "Tri libre"
+        case .nuée: return en ? "Sort by Nuée" : "Tri nuée"
         }
     }
 
     var visualHintSubtitle: String {
+        let en = Locale.current.language.languageCode?.identifier.starts(with: "en") == true
         switch self {
-        case .date: return "les plus proches dans le temps montent"
-        case .urgency: return "les plus urgents se densifient devant"
-        case .person: return "les groupes se lisent latéralement"
-        case .importance: return "les plus forts prennent le centre"
-        case .inspiration: return "répartition libre et organique"
-        case .nuée: return "les Promi se regroupent par essaim"
+        case .date: return en ? "closest in time rise to the top" : "les plus proches dans le temps montent"
+        case .urgency: return en ? "most urgent ones densify in front" : "les plus urgents se densifient devant"
+        case .person: return en ? "groups read laterally" : "les groupes se lisent latéralement"
+        case .importance: return en ? "strongest ones take the center" : "les plus forts prennent le centre"
+        case .inspiration: return en ? "free and organic layout" : "répartition libre et organique"
+        case .nuée: return en ? "Promis group by swarm" : "les Promi se regroupent par essaim"
         }
     }
 }

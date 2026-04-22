@@ -244,7 +244,7 @@ struct CompactSortMenu: View {
                             .frame(width: 6, height: 6)
 
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(option.rawValue)
+                            Text(option.displayLabel)
                                 .font(.system(size: 12, weight: isSelected ? .semibold : .regular))
                                 .foregroundColor(.white.opacity(isSelected ? 0.96 : 0.78))
 

@@ -660,6 +660,7 @@ struct NuéeDetailView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(isEnglish ? "Delete Nuée" : "Supprimer la Nuée")
             } else {
                 Button {
                     showLeaveConfirmation = true

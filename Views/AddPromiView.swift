@@ -730,6 +730,7 @@ struct AddPromiView: View {
         }
         .buttonStyle(.plain)
         .disabled(cleanSuffix.isEmpty)
+        .accessibilityLabel(isEnglish ? "Create Promi" : "Créer le Promi")
         .padding(.horizontal, 20)
         .padding(.top, 8)
         .padding(.bottom, 24)
@@ -861,14 +862,6 @@ struct AddPromiView: View {
         }
         karmaStore.updateKarma(basedOn: promiStore.promis)
         userStore.recordPromiCreation()
-        NotificationManager.shared.scheduleReminders(
-            for: newPromi,
-            language: userStore.selectedLanguage
-        )
-        NotificationManager.shared.scheduleReminders(
-            for: newPromi,
-            language: userStore.selectedLanguage
-        )
         NotificationManager.shared.scheduleReminders(
             for: newPromi,
             language: userStore.selectedLanguage

@@ -17,7 +17,6 @@ struct SettingsView: View {
     @State private var showReplayOnboarding = false
     @State private var notificationsEnabled: Bool = UserDefaults.standard.bool(forKey: "promi.notificationsEnabled")
     @State private var showPaywall = false
-    @State private var showLegal = false
     @State private var showUsernameEditor = false
     @State private var showTerms = false
     @State private var showPrivacy = false

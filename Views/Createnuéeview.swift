@@ -676,6 +676,7 @@ struct CreateNuéeView: View {
         }
         .buttonStyle(.plain)
         .disabled(!canCreate)
+        .accessibilityLabel(isEnglish ? "Create Nuée" : "Créer la Nuée")
         .padding(.horizontal, 22)
         .padding(.top, 8)
         .padding(.bottom, 28)
