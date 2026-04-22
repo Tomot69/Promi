@@ -854,7 +854,11 @@ struct AddPromiView: View {
                     )
                 }
         
+        let isFirst = promiStore.promis.isEmpty
         promiStore.addPromi(newPromi)
+        if isFirst {
+            Haptics.shared.success()
+        }
         karmaStore.updateKarma(basedOn: promiStore.promis)
         userStore.recordPromiCreation()
         NotificationManager.shared.scheduleReminders(

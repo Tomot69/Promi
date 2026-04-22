@@ -265,11 +265,13 @@ struct DraftsView: View {
                         .foregroundColor(Color.white.opacity(0.68))
                 }
 
-                Text("Aucun brouillon")
+                Text(isEnglish ? "No drafts" : "Aucun brouillon")
                     .font(.system(size: 20, weight: .light))
                     .foregroundColor(Color.white.opacity(0.88))
 
-                Text("Les Promis et Nuées commencés sans validation sont conservés ici.")
+                Text(isEnglish
+                     ? "Promis and Nuées started without saving are kept here."
+                     : "Les Promis et Nuées commencés sans validation sont conservés ici.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(Color.white.opacity(0.52))
                     .multilineTextAlignment(.center)

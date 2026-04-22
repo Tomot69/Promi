@@ -88,6 +88,7 @@ class KarmaStore: ObservableObject {
     /// de Promi tenu est avant hier, le streak est cassé → reset 0.
     func validateStreak() {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd"
         let todayStr = formatter.string(from: Date())
         let yesterdayStr = formatter.string(from: Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
@@ -122,6 +123,7 @@ class KarmaStore: ObservableObject {
     /// et enregistre un point dans l'historique karma.
     func recordPromiKept() {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyyMMdd"
         let todayStr = formatter.string(from: Date())
         let yesterdayStr = formatter.string(from: Calendar.current.date(byAdding: .day, value: -1, to: Date())!)

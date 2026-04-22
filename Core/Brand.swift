@@ -45,6 +45,7 @@ struct Brand {
 
 extension Notification.Name {
     static let promiShakeDetected = Notification.Name("promiShakeDetected")
+    static let promiCanvasEntrance = Notification.Name("promiCanvasEntrance")
 }
 
 struct ShakeDetectorView: UIViewRepresentable {

@@ -111,6 +111,7 @@ struct ContentView: View {
     @State private var isSortMenuExpanded = false
     @State private var isAddMenuExpanded = false
     @State private var canvasOpacity: Double = 0
+    @State private var hasPlayedEntrance = false
 
     // Tutorial overlay (shown once, on first landing on the home if the
     // user has not yet completed it). The currentTutorialStep tracks the
@@ -265,6 +266,10 @@ struct ContentView: View {
                 showTutorial = newValue
                 if !newValue {
                     userStore.completeTutorial()
+                    // Animation d'entrée : chaque dalle respire puis se stabilise
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        NotificationCenter.default.post(name: .promiCanvasEntrance, object: nil)
+                    }
                 }
             }
         )
@@ -292,8 +297,8 @@ struct ContentView: View {
     private var backgroundLayer: some View {
         visualMood.homeBackground
             .ignoresSafeArea()
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Promi canvas")
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Promi canvas")
     }
 
     private var fieldLayer: some View {
@@ -324,6 +329,12 @@ struct ContentView: View {
             homeFieldSize = geo.size
             withAnimation(.easeOut(duration: 0.3)) {
                 canvasOpacity = 1
+            }
+            // Utilisateurs récurrents : animation d'entrée des dalles
+            if userStore.hasCompletedTutorial {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    NotificationCenter.default.post(name: .promiCanvasEntrance, object: nil)
+                }
             }
         }
         .opacity(canvasOpacity)
@@ -369,6 +380,21 @@ struct ContentView: View {
             topLeftBrand(topInset: inset, isDarkField: isDarkField)
             topRightCluster(topInset: inset, isDarkField: isDarkField)
 
+            // Empreinte — nombre total de promesses tenues, gravé dans la toile
+            if karmaStore.karmaState.completedPromis > 0 {
+                VStack {
+                    Spacer()
+                    Text("\(karmaStore.karmaState.completedPromis) \(userStore.selectedLanguage.starts(with: "en") ? "kept" : (karmaStore.karmaState.completedPromis == 1 ? "tenue" : "tenues"))")
+                        .font(.system(size: 9, weight: .regular))
+                        .tracking(1.2)
+                        .foregroundColor(isDarkField ? .white.opacity(0.16) : .black.opacity(0.12))
+                        .frame(maxWidth: .infinity)
+                        .padding(.bottom, inset + 52)
+                }
+                .allowsHitTesting(false)
+                .ignoresSafeArea()
+            }
+
             bottomDock(bottomInset: inset, isDarkField: isDarkField)
         }
         .ignoresSafeArea()
@@ -399,11 +425,19 @@ struct ContentView: View {
     private func topLeftBrand(topInset: CGFloat, isDarkField: Bool) -> some View {
         VStack {
             HStack {
-                Text("Promi")
-                    .font(.system(size: 22, weight: .light))
-                    .foregroundColor(isDarkField ? .white.opacity(0.94) : .black.opacity(0.84))
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 4)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Promi")
+                        .font(.system(size: 22, weight: .light))
+                        .foregroundColor(isDarkField ? .white.opacity(0.94) : .black.opacity(0.84))
+
+                    Text(canvasMurmur)
+                        .font(.system(size: 13, weight: .light))
+                        .foregroundColor(isDarkField ? .white.opacity(0.72) : .black.opacity(0.58))
+                        .tracking(0.3)
+                        .animation(.easeInOut(duration: 1.2), value: canvasMurmur)
+                }
+                .padding(.horizontal, 4)
+                .padding(.vertical, 4)
                     .contentShape(Rectangle())
                     .onTapGesture(count: 3) {
                         pinkyPulseActive = true
@@ -596,6 +630,31 @@ struct ContentView: View {
         hasher.combine(promi.id)
         hasher.combine(promi.createdAt.timeIntervalSinceReferenceDate)
         return abs(hasher.finalize())
+    }
+
+    private var canvasMurmur: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let en = userStore.selectedLanguage.starts(with: "en")
+        let streak = karmaStore.currentStreak
+        let todayCount = promiStore.promis.filter {
+            $0.status == .open && Calendar.current.isDateInToday($0.dueDate)
+        }.count
+        let total = promiStore.promis.count
+
+        // Priorité : événement > heure > état
+        if total == 0 {
+            return en ? "the canvas is waiting" : "la toile attend"
+        }
+        if todayCount > 0 {
+            return en
+                ? "\(todayCount) \(todayCount == 1 ? "promise" : "promises") today"
+                : "\(todayCount) \(todayCount == 1 ? "promesse" : "promesses") aujourd'hui"
+        }
+        if streak >= 30 { return en ? "legendary" : "légendaire" }
+        if streak >= 7 { return en ? "solid" : "solide" }
+        if hour >= 22 || hour < 6 { return en ? "still up?" : "encore debout ?" }
+        if hour < 12 { return en ? "good morning" : "bon matin" }
+        return en ? "your word, your canvas" : "ta parole, ta toile"
     }
 
     private func closeFloatingMenusIfNeeded() {

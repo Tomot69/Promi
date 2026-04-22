@@ -1183,6 +1183,7 @@ fileprivate struct CommonPromiFieldView: View {
     var onLongPressPromi: ((PromiItem) -> Void)? = nil
 
     @StateObject private var cache = PromiFieldLayoutCache()
+    @StateObject private var waveDriver = WaveDriver()
 
     /// O(1) lookup of a Nuée by its id, used during cell rendering to find
     /// the swatch hex color of a Promi's parent Nuée (for the halo overlay)
@@ -1242,7 +1243,19 @@ fileprivate struct CommonPromiFieldView: View {
 
             // Outer cells (all themes). For Cristal these are stroke-only frames.
             ForEach(layout.cells) { cell in
+                let cx = cell.visibleBounds.midX / max(size.width, 1)
+                let cy = cell.visibleBounds.midY / max(size.height, 1)
+                let cellPos = ((1 - cy) + cx) / 2
+                let waveFront = waveDriver.phase * 2.2 - cellPos * 1.4
+                let lift: CGFloat = (waveFront > 0 && waveFront < 1.0)
+                    ? sin(waveFront * .pi) * sin(waveFront * .pi * 0.5)
+                    : 0
+                let amplitude = CGFloat(10 + abs(cell.id.hashValue) % 8)
+                let depthScale = 1.0 + lift * 0.02
+
                 cellView(for: cell)
+                    .offset(y: -lift * amplitude)
+                    .scaleEffect(depthScale)
             }
 
             // Cristal: interactive label overlays for promoted medium cells.
@@ -1267,6 +1280,9 @@ fileprivate struct CommonPromiFieldView: View {
         .frame(width: max(size.width, 1), height: max(size.height, 1), alignment: .topLeading)
         .animation(.easeOut(duration: 0.2), value: cache.key)
         .onAppear { regenerate() }
+        .onReceive(NotificationCenter.default.publisher(for: .promiCanvasEntrance)) { _ in
+            waveDriver.start()
+        }
         .onChange(of: renderKey) { _, _ in regenerate() }
     }
 
@@ -3993,4 +4009,81 @@ fileprivate struct SeededRNG: RandomNumberGenerator {
         state = state &* 6364136223846793005 &+ 1442695040888963407
         return state
     }
+    // MARK: - Wave animation driver (60 fps, indépendant de SwiftUI animation)
+
+    final class WaveDriver: ObservableObject {
+        @Published var phase: CGFloat = 2.0  // >1 = repos, onde invisible
+        private var displayLink: CADisplayLink?
+        private var startTime: CFTimeInterval = 0
+        private let duration: CFTimeInterval = 1.8
+
+        func start() {
+            stop()
+            phase = 0
+            startTime = CACurrentMediaTime()
+            let link = CADisplayLink(target: self, selector: #selector(tick))
+            link.add(to: .main, forMode: .common)
+            displayLink = link
+        }
+
+        func stop() {
+            displayLink?.invalidate()
+            displayLink = nil
+        }
+
+        @objc private func tick() {
+            let elapsed = CACurrentMediaTime() - startTime
+            let t = min(elapsed / duration, 1.0)
+            // Ease-in-out cubique
+            let eased = t < 0.5
+                ? 4 * t * t * t
+                : 1 - pow(-2 * t + 2, 3) / 2
+            phase = eased
+            if t >= 1.0 {
+                phase = 2.0  // repos final, toutes les dalles à lift=0
+                stop()
+            }
+        }
+
+        deinit { stop() }
+    }
+}
+// MARK: - Wave animation driver (60 fps via CADisplayLink)
+
+import QuartzCore
+
+final class WaveDriver: ObservableObject {
+    @Published var phase: CGFloat = 2.0
+    private var displayLink: CADisplayLink?
+    private var startTime: CFTimeInterval = 0
+    private let duration: CFTimeInterval = 1.8
+
+    func start() {
+        stop()
+        phase = 0
+        startTime = CACurrentMediaTime()
+        let link = CADisplayLink(target: self, selector: #selector(tick))
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+    }
+
+    func stop() {
+        displayLink?.invalidate()
+        displayLink = nil
+    }
+
+    @objc private func tick() {
+        let elapsed = CACurrentMediaTime() - startTime
+        let t = min(elapsed / duration, 1.0)
+        let eased = t < 0.5
+            ? 4 * t * t * t
+            : 1 - pow(-2 * t + 2, 3) / 2
+        phase = eased
+        if t >= 1.0 {
+            phase = 2.0
+            stop()
+        }
+    }
+
+    deinit { stop() }
 }

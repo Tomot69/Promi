@@ -67,33 +67,34 @@ enum PromiColorMood: String, CaseIterable, Identifiable {
     }
 
     var subtitle: String {
-        switch self {
-        case .terrePromi: return "terre chaude, corail discret, densité organique"
-        case .nuitCobalt: return "fond nocturne, cobalt net, accents froids"
-        case .ivoireCorail: return "fond clair, corail vif, lecture lumineuse"
+            let en = Locale.current.language.languageCode?.identifier.starts(with: "en") == true
+            switch self {
+            case .terrePromi: return en ? "warm earth, subtle coral, organic density" : "terre chaude, corail discret, densité organique"
+            case .nuitCobalt: return en ? "night base, sharp cobalt, cool accents" : "fond nocturne, cobalt net, accents froids"
+            case .ivoireCorail: return en ? "light base, vivid coral, luminous read" : "fond clair, corail vif, lecture lumineuse"
 
-        case .craieMarine: return "craie douce, marine graphique"
-        case .sableMenthe: return "sable pâle, menthe fraîche"
-        case .mineralPrune: return "minéral dense, prune feutrée"
+            case .craieMarine: return en ? "soft chalk, graphic navy" : "craie douce, marine graphique"
+            case .sableMenthe: return en ? "pale sand, fresh mint" : "sable pâle, menthe fraîche"
+            case .mineralPrune: return en ? "dense mineral, muted plum" : "minéral dense, prune feutrée"
 
-        case .jardinPromi: return "spectre végétal, vivant, lumineux"
-        case .auroreCobalt: return "cobalt, indigo, glissement atmosphérique"
-        case .citrusBrume: return "agrumes pâles, brume colorée, aérien"
+            case .jardinPromi: return en ? "vegetal spectrum, vivid, luminous" : "spectre végétal, vivant, lumineux"
+            case .auroreCobalt: return en ? "cobalt, indigo, atmospheric shift" : "cobalt, indigo, glissement atmosphérique"
+            case .citrusBrume: return en ? "pale citrus, colored mist, airy" : "agrumes pâles, brume colorée, aérien"
 
-        case .auroreFraise: return "pastels d’aube, pêche, sauge, lavande"
-        case .foretSousBois: return "verts profonds, mousse, écorce, champignon"
-        case .neonMidi: return "néons électriques sur nuit absolue"
+            case .auroreFraise: return en ? "dawn pastels, peach, sage, lavender" : "pastels d'aube, pêche, sauge, lavande"
+            case .foretSousBois: return en ? "deep greens, moss, bark, mushroom" : "verts profonds, mousse, écorce, champignon"
+            case .neonMidi: return en ? "electric neons on absolute night" : "néons électriques sur nuit absolue"
 
-        case .vitrailCathédrale: return "rouge profond, cobalt, ocre, émeraude, violet"
-        case .vitrailAube: return "rose, lavande, bleu ciel, pêche, mint lumineux"
-        case .vitrailNuit: return "indigo, prune, bordeaux, sapin, anthracite"
+            case .vitrailCathédrale: return en ? "deep red, cobalt, ochre, emerald, violet" : "rouge profond, cobalt, ocre, émeraude, violet"
+            case .vitrailAube: return en ? "rose, lavender, sky blue, peach, bright mint" : "rose, lavande, bleu ciel, pêche, mint lumineux"
+            case .vitrailNuit: return en ? "indigo, plum, burgundy, fir, charcoal" : "indigo, prune, bordeaux, sapin, anthracite"
 
-        case .trameJardin: return "fond blanc, contours vert mousse, point corail"
-        case .trameObsidienne: return "encre, contours ambre, point phosphore"
-        case .trameAdobe: return "sable chaud, contours cuir, point blanc cassé"
-        case .trameConfettis: return "crème, contours anthracite, points multicolores"
+            case .trameJardin: return en ? "white base, moss outlines, coral dot" : "fond blanc, contours vert mousse, point corail"
+            case .trameObsidienne: return en ? "ink, amber outlines, phosphor dot" : "encre, contours ambre, point phosphore"
+            case .trameAdobe: return en ? "warm sand, leather outlines, off-white dot" : "sable chaud, contours cuir, point blanc cassé"
+            case .trameConfettis: return en ? "cream, charcoal outlines, multicolor dots" : "crème, contours anthracite, points multicolores"
+            }
         }
-    }
 
     var homeBackground: Color {
         switch self {
@@ -493,17 +494,23 @@ struct PaletteView: View {
 private struct StudioHeader: View {
     let prefersDarkChrome: Bool
 
+    private var isFrench: Bool {
+        Locale.current.language.languageCode?.identifier.starts(with: "fr") == true
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Promi · Le Studio")
-                .font(.system(size: 28, weight: .light))
-                .foregroundColor(textPrimary.opacity(0.92))
-                .tracking(0.2)
+            Text(isFrench ? "Promi · Le Studio" : "Promi · The Studio")
+                            .font(.system(size: 28, weight: .light))
+                            .foregroundColor(textPrimary.opacity(0.92))
+                            .tracking(0.2)
 
-            Text("Vertical pour la structure.\nHorizontal pour l’ambiance couleur.")
-                .font(.system(size: 14, weight: .regular))
-                .foregroundColor(textPrimary.opacity(0.56))
-                .lineSpacing(3)
+                        Text(isFrench
+                             ? "Vertical pour la structure.\nHorizontal pour l'ambiance couleur."
+                             : "Vertical for structure.\nHorizontal for color mood.")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(textPrimary.opacity(0.56))
+                            .lineSpacing(3)
         }
         .padding(.top, 12)
     }
@@ -645,13 +652,17 @@ private struct ActiveMoodFooter: View {
     let mood: PromiColorMood
     let prefersDarkChrome: Bool
 
+    private var isFrench: Bool {
+        Locale.current.language.languageCode?.identifier.starts(with: "fr") == true
+    }
+
     var body: some View {
         HStack(spacing: 10) {
             Circle()
                 .fill(Color.orange.opacity(0.92))
                 .frame(width: 7, height: 7)
 
-            Text("Actif")
+            Text(isFrench ? "Actif" : "Active")
                 .font(.system(size: 12, weight: .regular))
                 .foregroundColor(textPrimary.opacity(0.50))
 
